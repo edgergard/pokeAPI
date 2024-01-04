@@ -15,6 +15,7 @@ export default {
       'button-submit': '#3730a3',
       'button-submit-hower': '#6366f1',
       'button-submit-active': '#818cf8',
+      'label-error': '#ef4444',
     }
   },
   plugins: [],

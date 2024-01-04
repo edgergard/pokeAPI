@@ -1,7 +1,27 @@
-const Form = () => {
+import { Dispatch, SetStateAction } from "react";
+import { FieldValues, useForm } from "react-hook-form";
+
+type Props = {
+  onFirstNameChange: Dispatch<SetStateAction<string>>;
+  onLastNameChange: Dispatch<SetStateAction<string>>;
+};
+
+const Form: React.FC<Props> = ({ onFirstNameChange, onLastNameChange }) => {
+  const { handleSubmit, register, formState: { errors }, reset } = useForm();
+
+  const onSubmit = (data: FieldValues) => {
+    onFirstNameChange(data.fname);
+    onLastNameChange(data.lname);
+
+    reset();
+  };
+
   return (
-    <div className="flex  px-12">
-      <form action="" className="flex items-center gap-4 mr-16">
+    <div className="flex px-12">
+      <form 
+        onSubmit={handleSubmit(onSubmit)} 
+        className="flex items-center gap-4 mr-16"
+      >
         <div className="flex flex-col">
           <label className="mb-2 font-semibold flex gap-1">
             First name
@@ -11,17 +31,30 @@ const Form = () => {
             </svg>
           </label>
 
-          <input 
-            type="text" 
-            id="fname" 
-            name="fname" 
-            placeholder="Enter your name"
-            className="rounded-lg px-4 py-2 w-64 hover:outline hover:outline-2 outline-button-submit focus:outline focus:outline-2"
+          <input
+            {...register("fname", {
+              required: true, 
+              minLength: 2, 
+              maxLength: 12,
+              pattern: /^[A-Za-z]+$/i,
+            })}
+            id="fname"
+            placeholder="Enter your first name"
+            className={`
+              rounded-lg px-4 py-2 w-64 hover:outline hover:outline-2 focus:outline focus:outline-2
+              ${errors.fname ? 'outline-label-error' : 'outline-button-submit'}
+            `}
           />
 
-          <label className="mt-2 text-form-required">
-            This information is required.
-          </label>
+          {errors.fname ? (
+            <label className="mt-2 text-label-error">
+              Please type a valid first name.
+            </label>
+          ) : (
+            <label className="mt-2 text-form-required">
+              This information is required.
+            </label>
+          )}
         </div>
 
         <div className="flex flex-col">
@@ -34,16 +67,29 @@ const Form = () => {
           </label>
 
           <input 
-            type="text"
+            {...register("lname", {
+              required: true, 
+              minLength: 2, 
+              maxLength: 12,
+              pattern: /^[A-Za-z]+$/,
+            })}
             id="lname"
-            name="lname"
-            placeholder="Enter your surname"
-            className="rounded-lg px-4 py-2 w-64 hover:outline hover:outline-2 outline-button-submit focus:outline focus:outline-2"
+            placeholder="Enter your last name"
+            className={`
+              rounded-lg px-4 py-2 w-64 hover:outline hover:outline-2 focus:outline focus:outline-2
+              ${errors.lname ? 'outline-label-error' : 'outline-button-submit'}
+            `}
           />
+          {errors.lname ? (
+            <label className="mt-2 text-label-error">
+              Please type a valid last name.
+            </label>
+          ) : (
+            <label className="mt-2 text-form-required">
+              This information is required.
+            </label>
+          )}
 
-          <label className="mt-2 text-form-required">
-            This information is required.
-          </label>
         </div>
   
         <button 
@@ -57,23 +103,23 @@ const Form = () => {
         </button>
       </form>
 
-        <div className="relative flex flex-col">
-          <label htmlFor="" className="mb-2 font-semibold">
-            Select your pokemon:
-          </label>
-          <select className="appearance-none rounded px-4 py-2 w-64 h-10 hover:outline hover:outline-2 outline-button-submit focus:outline focus:outline-2 cursor-pointer">
-            <option value="1">1</option>
-            <option value="2">2</option>
-            <option value="3">3</option>
-            <option value="4">4</option>
-          </select>
+      <div className="relative flex flex-col">
+        <label htmlFor="" className="mb-2 font-semibold">
+          Select your pokemon:
+        </label>
+        <select className="appearance-none rounded px-4 py-2 w-64 h-10 hover:outline hover:outline-2 outline-button-submit focus:outline focus:outline-2 cursor-pointer">
+          <option value="1">1</option>
+          <option value="2">2</option>
+          <option value="3">3</option>
+          <option value="4">4</option>
+        </select>
 
-          <div className="absolute top-11 right-0 flex items-center pr-4 pointer-events-none">
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-4 h-4">
-              <path fillRule="evenodd" d="M12.53 16.28a.75.75 0 0 1-1.06 0l-7.5-7.5a.75.75 0 0 1 1.06-1.06L12 14.69l6.97-6.97a.75.75 0 1 1 1.06 1.06l-7.5 7.5Z" clipRule="evenodd" />
-            </svg>
-          </div>
+        <div className="absolute top-11 right-0 flex items-center pr-4 pointer-events-none">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-4 h-4">
+            <path fillRule="evenodd" d="M12.53 16.28a.75.75 0 0 1-1.06 0l-7.5-7.5a.75.75 0 0 1 1.06-1.06L12 14.69l6.97-6.97a.75.75 0 1 1 1.06 1.06l-7.5 7.5Z" clipRule="evenodd" />
+          </svg>
         </div>
+      </div>
     </div>
   );
 };
