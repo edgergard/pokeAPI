@@ -1,12 +1,18 @@
-import { Dispatch, SetStateAction } from "react";
+import { Dispatch, SetStateAction, useEffect } from "react";
 import { FieldValues, useForm } from "react-hook-form";
+import Loader from "./Loader";
 
 type Props = {
   onFirstNameChange: Dispatch<SetStateAction<string>>;
   onLastNameChange: Dispatch<SetStateAction<string>>;
+  isLoading: boolean;
 };
 
-const Form: React.FC<Props> = ({ onFirstNameChange, onLastNameChange }) => {
+const Form: React.FC<Props> = ({ 
+  onFirstNameChange, 
+  onLastNameChange,
+  isLoading,
+}) => {
   const { handleSubmit, register, formState: { errors }, reset } = useForm();
 
   const onSubmit = (data: FieldValues) => {
@@ -102,24 +108,31 @@ const Form: React.FC<Props> = ({ onFirstNameChange, onLastNameChange }) => {
           Submit
         </button>
       </form>
-
-      <div className="relative flex flex-col">
-        <label htmlFor="" className="mb-2 font-semibold">
-          Select your pokemon:
-        </label>
-        <select className="appearance-none rounded px-4 py-2 w-64 h-10 hover:outline hover:outline-2 outline-button-submit focus:outline focus:outline-2 cursor-pointer">
-          <option value="1">1</option>
-          <option value="2">2</option>
-          <option value="3">3</option>
-          <option value="4">4</option>
-        </select>
-
-        <div className="absolute top-11 right-0 flex items-center pr-4 pointer-events-none">
-          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-4 h-4">
-            <path fillRule="evenodd" d="M12.53 16.28a.75.75 0 0 1-1.06 0l-7.5-7.5a.75.75 0 0 1 1.06-1.06L12 14.69l6.97-6.97a.75.75 0 1 1 1.06 1.06l-7.5 7.5Z" clipRule="evenodd" />
-          </svg>
+      
+      {isLoading ? (
+        <div className="flex items-center pl-28">
+          <Loader />
         </div>
-      </div>
+      ) : (
+        <div className="relative flex flex-col">
+          <label htmlFor="" className="mb-2 font-semibold">
+            Select your pokemon:
+          </label>
+          <select className="appearance-none rounded px-4 py-2 w-64 h-10 hover:outline hover:outline-2 outline-button-submit focus:outline focus:outline-2 cursor-pointer">
+            <option value="1">1</option>
+            <option value="2">2</option>
+            <option value="3">3</option>
+            <option value="4">4</option>
+          </select>
+
+          <div className="absolute top-11 right-0 flex items-center pr-4 pointer-events-none">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-4 h-4">
+              <path fillRule="evenodd" d="M12.53 16.28a.75.75 0 0 1-1.06 0l-7.5-7.5a.75.75 0 0 1 1.06-1.06L12 14.69l6.97-6.97a.75.75 0 1 1 1.06 1.06l-7.5 7.5Z" clipRule="evenodd" />
+            </svg>
+          </div>
+        </div>
+      )}
+
     </div>
   );
 };
