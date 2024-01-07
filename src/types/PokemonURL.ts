@@ -1,4 +1,4 @@
-export type Pokemon = {
+export type PokemonURL = {
   name: string,
   url: string,
 };

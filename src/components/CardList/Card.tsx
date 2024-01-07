@@ -1,37 +1,39 @@
 import PokemonImage from '../../public/pokemon-image.png';
+import { PokemonData } from '../../types/PokemonData';
+import { capitalize } from '../../utils/functions';
 
-const Card = () => {
+type Props = {
+  pokemon: PokemonData;
+};
+
+const Card: React.FC<Props> = ({ pokemon }) => {
+  const { id, name, types, stats, sprites, base_experience } = pokemon;
+
   return (
-      <div className="h-96 w-64 max-w-md rounded-2xl border-8 border-card-border flex flex-col">
-        <div className="relative">
+      <div className="w-64 rounded-2xl flex flex-col"> 
+        <div className="relative bg-white border-t-8 border-l-8 border-r-8 border-card-border rounded-t-2xl">
           <img 
-            src={PokemonImage} 
+            src={sprites.other['official-artwork'].front_default}
             alt="pokemon-image"
-            className="w-64 rounded-t-lg"
+            className="w-96 "
           />
 
-          <button className="absolute top-2 right-2 w-10 h-10 bg-card-type-badge hover:bg-card-text-bold rounded-full flex justify-center items-center transition-all">
-            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-8 h-8 text-white">
-              <path strokeLinecap="round" strokeLinejoin="round" d="M6 18 18 6M6 6l12 12" />
-            </svg>
-          </button>
-
-          <div className="absolute top-2 left-2 w-10 h-10 bg-card-type-badge rounded-full flex justify-center items-center">
+          <div className="absolute top-2 right-2 w-12 h-12 bg-card-type-badge rounded-full flex justify-center items-center ">
             <p className="text-base font-bold text-white">
-              000
+              {id}
             </p>
           </div>
         </div>
 
-        <div className="flex-1 p-3.5 rounded-b-lg bg-card-background">
+        <div className="flex-1 p-3.5 rounded-b-2xl bg-card-background border-b-8 border-l-8 border-r-8 border-card-border">
           <div className="flex items-center gap-x-2">
             <p className="text-2xl font-extrabold text-card-text-bold">
-              Venusaur
+              {capitalize(name)}
             </p>
 
             <div className="h-8 px-2.5 py-0.5 rounded-full bg-card-type-badge flex items-center">
               <p className="text-base font-bold text-white">
-                Grass
+              {capitalize(types[0].type.name)}
               </p>
             </div>
           </div>
@@ -39,27 +41,27 @@ const Card = () => {
           <ul className="flex flex-wrap gap-1 mt-4">
             <li className="flex gap-x-1 px-2.5 py-0.5 rounded-md bg-card-stats-badge">
               <p className="text-card-type-badge text-xs">EXP</p>
-              <p className="text-card-type-badge font-bold text-xs">101</p>
+              <p className="text-card-type-badge font-bold text-xs">{base_experience}</p>
             </li>
     
             <li className="flex gap-x-1 px-2.5 py-0.5 rounded-md bg-card-stats-badge">
               <p className="text-card-type-badge text-xs">HP</p>
-              <p className="text-card-type-badge font-bold text-xs">48</p>
+              <p className="text-card-type-badge font-bold text-xs">{stats[0].base_stat}</p>
             </li>
             
             <li className="flex gap-x-1 px-2.5 py-0.5 rounded-md bg-card-stats-badge">
               <p className="text-card-type-badge text-xs">Attack</p>
-              <p className="text-card-type-badge font-bold text-xs">48</p>
+              <p className="text-card-type-badge font-bold text-xs">{stats[1].base_stat}</p>
             </li>
 
             <li className="flex gap-x-1 px-2.5 py-0.5 rounded-md bg-card-stats-badge">
               <p className="text-card-type-badge text-xs">Defense</p>
-              <p className="text-card-type-badge font-bold text-xs">48</p>
+              <p className="text-card-type-badge font-bold text-xs">{stats[2].base_stat}</p>
             </li>
 
             <li className="flex gap-x-1 px-2.5 py-0.5 rounded-md bg-card-stats-badge">
               <p className="text-card-type-badge text-xs">Speed</p>
-              <p className="text-card-type-badge font-bold text-xs">48</p>
+              <p className="text-card-type-badge font-bold text-xs">{stats[5].base_stat}</p>
             </li>
           </ul>
         </div>
