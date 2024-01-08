@@ -1,7 +1,7 @@
 <h1 align="center">PokeAPI task</h1>
 
 - [DEMO](https://edgergard.github.io/pokeAPI/)
-- [Rick and Morty API](https://pokeapi.co/)
+- [PokeAPI](https://pokeapi.co/)
  <h2 align="center">About</h2>
 
   This project is an implementation of open source PokeAPI.
