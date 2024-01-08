@@ -1,9 +1,9 @@
-import React from 'react';
+import React, { ReactNode } from 'react';
 import ReactDOM from 'react-dom';
 
 type Props = {
   isOpened: boolean;
-  children: any;
+  children: ReactNode;
 };
 
 const Modal:React.FC<Props> = ({ isOpened, children }) => {
