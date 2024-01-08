@@ -1,11 +1,14 @@
 {
   "name": "technical-interview",
-  "private": true,
+  "private": false,
+  "homepage": "https://edgergard.github.io/pokeAPI",
   "version": "1.0.0",
   "type": "module",
   "scripts": {
     "dev": "vite",
     "build": "tsc && vite build",
+    "predeploy": "yarn run build",
+    "deploy": "gh-pages -d dist",
     "preview": "vite preview",
     "storybook": "storybook dev -p 6006",
     "build-storybook": "storybook build"
@@ -33,6 +36,7 @@
     "@types/react": "^18.0.27",
     "@types/react-dom": "^18.0.10",
     "@vitejs/plugin-react": "^3.1.0",
+    "gh-pages": "^6.1.1",
     "storybook": "7.6.7",
     "typescript": "^4.9.3",
     "vite": "^4.1.0"
