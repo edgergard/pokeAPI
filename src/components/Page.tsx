@@ -69,7 +69,7 @@ const Page = () => {
                   text-white font-semibold transition-all
                 `}
               >
-                <ResetIcon size={6} />
+                <ResetIcon />
 
                 Reset
               </button>

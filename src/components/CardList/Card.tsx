@@ -1,4 +1,3 @@
-import PokemonImage from '../../public/pokemon-image.png';
 import { PokemonData } from '../../types/PokemonData';
 import { capitalize } from '../../utils/functions';
 

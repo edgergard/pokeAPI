@@ -103,7 +103,7 @@ const Form: React.FC<Props> = ({
           <label className="mb-2 font-semibold flex gap-1">
             First name
 
-            <LabelIcon size={6} />
+            <LabelIcon />
           </label>
 
           <div
@@ -127,7 +127,7 @@ const Form: React.FC<Props> = ({
 
             {fnameQuery && (
               <button onClick={() => setValue('fname', '')}>
-                <CloseIcon size={5} />
+                <CloseIcon />
               </button>
             )}
           </div>
@@ -147,7 +147,7 @@ const Form: React.FC<Props> = ({
           <label className="mb-2 font-semibold flex gap-1">
             Last name
     
-            <LabelIcon size={6} />
+            <LabelIcon />
           </label>
 
           <div
@@ -170,7 +170,7 @@ const Form: React.FC<Props> = ({
 
             {lnameQuery && (
               <button onClick={() => setValue('lname', '')}>
-                <CloseIcon size={5} />
+                <CloseIcon />
               </button>
             )}
           </div>
@@ -195,7 +195,7 @@ const Form: React.FC<Props> = ({
             <label className="flex gap-1 mb-2 font-semibold">
               Select your pokemons
 
-              <LabelIcon size={6} />
+              <LabelIcon />
             </label>
 
             <div
@@ -215,7 +215,7 @@ const Form: React.FC<Props> = ({
                     <span>{capitalize(pokemon)}</span>
                     
                     <button onClick={() => handleRemovePokemon(index)}>
-                      <CloseIcon size={5} />
+                      <CloseIcon />
                     </button>
                   </li>
                 ))}
@@ -241,10 +241,10 @@ const Form: React.FC<Props> = ({
                   <button 
                     onClick={() => setSelectedPokemons([])}
                   >
-                    <CloseIcon size={5} />
+                    <CloseIcon />
                   </button>
                 ) : (
-                  <DropdownIcon size={5} />
+                  <DropdownIcon />
                 )}
               </div>
             </div>
@@ -286,7 +286,7 @@ const Form: React.FC<Props> = ({
             text-white font-semibold transition-all
           `}
         >
-          <CheckIcon size={6} />
+          <CheckIcon />
 
           Submit
         </button>

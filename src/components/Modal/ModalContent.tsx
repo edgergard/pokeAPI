@@ -4,7 +4,7 @@ import { FormData } from '../../types/FormData';
 import { getSinglePokemonData } from '../../api/api';
 import Loader from '../Loader';
 import { PokemonData } from '../../types/PokemonData';
-import CloseIcon from '../Icons/CloseIcon';
+import CloseModalIcon from '../Icons/CloseIconModal';
 
 type Props = {
   onClose: () => void;
@@ -56,7 +56,7 @@ const ModalContent:React.FC<Props> = ({
           onClick={onClose} 
           className="p-2 rounded-full text-black hover:bg-card-background active:bg-button-submit-active transition-all"
         >
-          <CloseIcon size={10} />
+          <CloseModalIcon />
         </button>
       </div>
       
