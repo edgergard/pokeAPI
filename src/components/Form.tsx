@@ -114,8 +114,8 @@ const Form: React.FC<Props> = ({
           >
             <input
               {...register("fname", {
-                required: true, 
-                minLength: 2, 
+                required: true,
+                minLength: 2,
                 maxLength: 12,
                 pattern: /^[A-Za-z]+$/i,
               })}
