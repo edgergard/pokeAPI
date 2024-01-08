@@ -7,7 +7,7 @@ type Props = {
 };
 
 const Modal:React.FC<Props> = ({ isOpened, children }) => {
-  if (!isOpened) return;
+  if (!isOpened) return null;
 
   const portalContainer = document.getElementById('portal');
 
