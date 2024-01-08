@@ -4,6 +4,7 @@ import { FormData } from '../../types/FormData';
 import { getSinglePokemonData } from '../../api/api';
 import Loader from '../Loader';
 import { PokemonData } from '../../types/PokemonData';
+import CloseIcon from '../Icons/CloseIcon';
 
 type Props = {
   onClose: () => void;
@@ -39,30 +40,23 @@ const ModalContent:React.FC<Props> = ({
         setModalPokemonList(pokemonData);
       })
       .catch(error => {
-        console.error('Error fetching Pokemon data:', error);
+        throw new Error('Error fetching Pokemon data:', error);
       })
       .finally(() => setIsLoading(false));
   }, []);
-  
-  console.log(modalPokemonList);
+
   return (
     <div className="w-6/12 bg-white rounded-lg py-8 px-8">
       <div className="flex justify-between items-center mb-8">
         <p className="text-4xl font-bold">
-          {`Name: ${formData.fname} ${formData.lname}`}
+          {`Trainer name: ${formData.fname} ${formData.lname}`}
         </p>
 
-        <button onClick={onClose} className="p-2 rounded-full text-black hover:bg-card-background active:bg-button-submit-active transition-all">
-          <svg 
-            xmlns="http://www.w3.org/2000/svg" 
-            fill="none" 
-            viewBox="0 0 24 24" 
-            strokeWidth={1.5} 
-            stroke="currentColor" 
-            className="w-10 h-10"
-          >
-            <path strokeLinecap="round" strokeLinejoin="round" d="M6 18 18 6M6 6l12 12" />
-          </svg>
+        <button 
+          onClick={onClose} 
+          className="p-2 rounded-full text-black hover:bg-card-background active:bg-button-submit-active transition-all"
+        >
+          <CloseIcon size={10} />
         </button>
       </div>
       
@@ -78,8 +72,8 @@ const ModalContent:React.FC<Props> = ({
 
       <div className="flex justify-end gap-x-6 text-3xl font-semibold">
         <button 
-        onClick={() => onCancel()}
-        className="px-4 pb-1 rounded-lg hover:bg-card-background transition-all active:bg-button-submit-active"
+          onClick={() => onCancel()}
+          className="px-4 pb-1 rounded-lg hover:bg-card-background transition-all active:bg-button-submit-active"
         >
           Cancel
         </button>

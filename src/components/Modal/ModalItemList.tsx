@@ -8,8 +8,8 @@ type Props = {
 const ModalItemList: React.FC<Props> = ({ modalPokemonList }) => {
   return (
     <div className="flex flex-col gap-y-2">
-      {modalPokemonList.map((pokemon) => (
-        <ModalItem pokemon={pokemon} />
+      {modalPokemonList.map((pokemon, index) => (
+        <ModalItem pokemon={pokemon} key={index} />
       ))}
   </div>
   );

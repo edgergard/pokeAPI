@@ -10,6 +10,7 @@ const Modal:React.FC<Props> = ({ isOpened, children }) => {
   if (!isOpened) return;
 
   const portalContainer = document.getElementById('portal');
+
   if (!portalContainer) return null;
 
   return ReactDOM.createPortal(

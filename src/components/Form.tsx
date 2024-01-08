@@ -8,6 +8,11 @@ import ModalContent from "./Modal/ModalContent";
 import { FormData } from "../types/FormData";
 import { PokemonData } from "../types/PokemonData";
 
+import CloseIcon from "./Icons/CloseIcon";
+import LabelIcon from "./Icons/LabelIcon";
+import StarIcon from "./Icons/StarIcon";
+import DropdownIcon from "./Icons/DropdownIcon";
+
 type Props = {
   onFirstNameChange: Dispatch<SetStateAction<string>>;
   onLastNameChange: Dispatch<SetStateAction<string>>;
@@ -92,16 +97,15 @@ const Form: React.FC<Props> = ({
           <label className="mb-2 font-semibold flex gap-1">
             First name
 
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-6 h-6">
-              <path fillRule="evenodd" d="M2.25 12c0-5.385 4.365-9.75 9.75-9.75s9.75 4.365 9.75 9.75-4.365 9.75-9.75 9.75S2.25 17.385 2.25 12Zm8.706-1.442c1.146-.573 2.437.463 2.126 1.706l-.709 2.836.042-.02a.75.75 0 0 1 .67 1.34l-.04.022c-1.147.573-2.438-.463-2.127-1.706l.71-2.836-.042.02a.75.75 0 1 1-.671-1.34l.041-.022ZM12 9a.75.75 0 1 0 0-1.5.75.75 0 0 0 0 1.5Z" clipRule="evenodd" />
-            </svg>
+            <LabelIcon size={6} />
           </label>
 
           <div
             className={` flex bg-white gap-6
-              rounded-lg px-2 py-2 w-64 hover:outline hover:outline-2 focus:outline focus:outline-2
+              rounded-lg px-4 py-2 w-64 hover:outline hover:outline-2 focus:outline focus:outline-2
               ${errors.fname ? 'outline-label-error' : 'outline-button-submit'}
-            `}>
+            `}
+          >
             <input
               {...register("fname", {
                 required: true, 
@@ -117,15 +121,7 @@ const Form: React.FC<Props> = ({
 
             {fnameQuery && (
               <button onClick={() => setValue('fname', '')}>
-                <svg 
-                  xmlns="http://www.w3.org/2000/svg" 
-                  fill="none" viewBox="0 0 24 24" 
-                  strokeWidth={1.5} 
-                  stroke="currentColor"
-                  className="w-5 h-5"
-                >
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M6 18 18 6M6 6l12 12" />
-                </svg>
+                <CloseIcon size={5} />
               </button>
             )}
           </div>
@@ -146,15 +142,13 @@ const Form: React.FC<Props> = ({
           <label className="mb-2 font-semibold flex gap-1">
             Last name
     
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-6 h-6">
-              <path fillRule="evenodd" d="M2.25 12c0-5.385 4.365-9.75 9.75-9.75s9.75 4.365 9.75 9.75-4.365 9.75-9.75 9.75S2.25 17.385 2.25 12Zm8.706-1.442c1.146-.573 2.437.463 2.126 1.706l-.709 2.836.042-.02a.75.75 0 0 1 .67 1.34l-.04.022c-1.147.573-2.438-.463-2.127-1.706l.71-2.836-.042.02a.75.75 0 1 1-.671-1.34l.041-.022ZM12 9a.75.75 0 1 0 0-1.5.75.75 0 0 0 0 1.5Z" clipRule="evenodd" />
-            </svg>
+            <LabelIcon size={6} />
           </label>
 
           <div
             className={` flex bg-white gap-6
-              rounded-lg px-2 py-2 w-64 hover:outline hover:outline-2 focus:outline focus:outline-2
-              ${errors.fname ? 'outline-label-error' : 'outline-button-submit'}
+              rounded-lg px-4 py-2 w-64 hover:outline hover:outline-2 focus:outline focus:outline-2
+              ${errors.lname ? 'outline-label-error' : 'outline-button-submit'}
             `}>
             <input
               {...register("lname", {
@@ -171,15 +165,7 @@ const Form: React.FC<Props> = ({
 
             {lnameQuery && (
               <button onClick={() => setValue('lname', '')}>
-                <svg 
-                  xmlns="http://www.w3.org/2000/svg" 
-                  fill="none" viewBox="0 0 24 24" 
-                  strokeWidth={1.5} 
-                  stroke="currentColor"
-                  className="w-5 h-5 "
-                >
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M6 18 18 6M6 6l12 12" />
-                </svg>
+                <CloseIcon size={5} />
               </button>
             )}
           </div>
@@ -204,9 +190,7 @@ const Form: React.FC<Props> = ({
             <label className="flex gap-1 mb-2 font-semibold">
               Select your pokemons
 
-              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-6 h-6">
-                <path fillRule="evenodd" d="M2.25 12c0-5.385 4.365-9.75 9.75-9.75s9.75 4.365 9.75 9.75-4.365 9.75-9.75 9.75S2.25 17.385 2.25 12Zm8.706-1.442c1.146-.573 2.437.463 2.126 1.706l-.709 2.836.042-.02a.75.75 0 0 1 .67 1.34l-.04.022c-1.147.573-2.438-.463-2.127-1.706l.71-2.836-.042.02a.75.75 0 1 1-.671-1.34l.041-.022ZM12 9a.75.75 0 1 0 0-1.5.75.75 0 0 0 0 1.5Z" clipRule="evenodd" />
-              </svg>
+              <LabelIcon size={6} />
             </label>
 
             <div
@@ -224,17 +208,10 @@ const Form: React.FC<Props> = ({
                     className="flex items-center gap-1 bg-button-submit rounded-lg px-2 pb-0.5 text-white font-semibold"
                   >
                     <span>{capitalize(pokemon)}</span>
-
-                    <svg 
-                      xmlns="http://www.w3.org/2000/svg" 
-                      fill="none" viewBox="0 0 24 24" 
-                      strokeWidth={1.5} 
-                      stroke="currentColor" 
-                      className="w-5 h-5 text-white cursor-pointer"
-                      onClick={() => handleRemovePokemon(index)}
-                    >
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M6 18 18 6M6 6l12 12" />
-                    </svg>
+                    
+                    <button onClick={() => handleRemovePokemon(index)}>
+                      <CloseIcon size={5} />
+                    </button>
                   </li>
                 ))}
               </ul>
@@ -259,20 +236,10 @@ const Form: React.FC<Props> = ({
                   <button 
                     onClick={() => setSelectedPokemons([])}
                   >
-                    <svg 
-                      xmlns="http://www.w3.org/2000/svg" 
-                      fill="none" viewBox="0 0 24 24" 
-                      strokeWidth={1.5} 
-                      stroke="currentColor"
-                      className="w-5 h-5"
-                    >
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M6 18 18 6M6 6l12 12" />
-                    </svg>
+                    <CloseIcon size={5} />
                   </button>
                 ) : (
-                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-5 h-5">
-                    <path fillRule="evenodd" d="M12.53 16.28a.75.75 0 0 1-1.06 0l-7.5-7.5a.75.75 0 0 1 1.06-1.06L12 14.69l6.97-6.97a.75.75 0 1 1 1.06 1.06l-7.5 7.5Z" clipRule="evenodd" />
-                  </svg>
+                  <DropdownIcon size={5} />
                 )}
               </div>
             </div>
@@ -314,9 +281,8 @@ const Form: React.FC<Props> = ({
             text-white font-semibold transition-all
           `}
         >
-          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-5 h-6">
-            <path fillRule="evenodd" d="M10.788 3.21c.448-1.077 1.976-1.077 2.424 0l2.082 5.006 5.404.434c1.164.093 1.636 1.545.749 2.305l-4.117 3.527 1.257 5.273c.271 1.136-.964 2.033-1.96 1.425L12 18.354 7.373 21.18c-.996.608-2.231-.29-1.96-1.425l1.257-5.273-4.117-3.527c-.887-.76-.415-2.212.749-2.305l5.404-.434 2.082-5.005Z" clipRule="evenodd" />
-          </svg>
+          <StarIcon size={6} />
+
           Submit
         </button>
       </form>
