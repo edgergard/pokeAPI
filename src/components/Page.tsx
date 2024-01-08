@@ -5,7 +5,7 @@ import { getAllPokemonURL } from '../api/api';
 import { PokemonURL } from '../types/PokemonURL';
 import { PokemonData } from '../types/PokemonData';
 
-import StarIcon from './Icons/StarIcon';
+import ResetIcon from './Icons/ResetIcon';
 
 const Page = () => {
   const [firstName, setFirstName] = useState('');
@@ -69,7 +69,7 @@ const Page = () => {
                   text-white font-semibold transition-all
                 `}
               >
-                <StarIcon size={6} />
+                <ResetIcon size={6} />
 
                 Reset
               </button>

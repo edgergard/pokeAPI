@@ -10,8 +10,8 @@ import { PokemonData } from "../types/PokemonData";
 
 import CloseIcon from "./Icons/CloseIcon";
 import LabelIcon from "./Icons/LabelIcon";
-import StarIcon from "./Icons/StarIcon";
 import DropdownIcon from "./Icons/DropdownIcon";
+import CheckIcon from "./Icons/CheckIcon";
 
 type Props = {
   onFirstNameChange: Dispatch<SetStateAction<string>>;
@@ -52,7 +52,12 @@ const Form: React.FC<Props> = ({
   const isTeamFull = selectedPokemons.length === 4;
 
   const onSubmit = (data: FieldValues) => {
+    console.log("Form submitted:", data);
     setIsModalOpened(true);
+  };
+
+  const checkKeyDown = (event: React.KeyboardEvent) => {
+    if (event.key === 'Enter') event.preventDefault();
   };
 
   const modalCancel = () => {
@@ -90,7 +95,8 @@ const Form: React.FC<Props> = ({
   return (
     <div className="flex px-12">
       <form 
-        onSubmit={handleSubmit(onSubmit)} 
+        onSubmit={handleSubmit(onSubmit)}
+        onKeyDown={(event) => checkKeyDown(event)}
         className="flex gap-4"
       >
         <div className="flex flex-col">
@@ -126,7 +132,6 @@ const Form: React.FC<Props> = ({
             )}
           </div>
 
-          
           {errors.fname ? (
             <label className="mt-2 text-label-error">
               Please type a valid first name.
@@ -281,20 +286,20 @@ const Form: React.FC<Props> = ({
             text-white font-semibold transition-all
           `}
         >
-          <StarIcon size={6} />
+          <CheckIcon size={6} />
 
           Submit
         </button>
       </form>
 
       <Modal isOpened={isModalOpened}>
-          <ModalContent 
-            onClose={() => setIsModalOpened(false)}
-            onCancel={modalCancel}
-            onSave={modalSave}
-            formData={watch() as FormData}
-            selectedPokemons={selectedPokemons}
-          />
+        <ModalContent
+          onClose={() => setIsModalOpened(false)}
+          onCancel={modalCancel}
+          onSave={modalSave}
+          formData={watch() as FormData}
+          selectedPokemons={selectedPokemons}
+        />
       </Modal>
     </div>
   );
