@@ -2,7 +2,7 @@ import {Dispatch, SetStateAction, useState } from "react";
 import { FieldValues, useForm } from "react-hook-form";
 import Loader from "./Loader";
 import { PokemonURL } from "../types/PokemonURL";
-import { capitalize, filterPokemons } from "../utils/functions";
+import { filterPokemons } from "../utils/functions";
 import Modal from "./Modal/Modal";
 import ModalContent from "./Modal/ModalContent";
 import { FormData } from "../types/FormData";
@@ -20,7 +20,7 @@ type Props = {
   pokemonsURL: PokemonURL[];
   selectedPokemons: string[];
   setSelectedPokemons: Dispatch<SetStateAction<string[]>>;
-  setPagePokemonList: Dispatch<SetStateAction<PokemonData[]>>;
+  setPagePokemonList: Dispatch<SetStateAction<PokemonData[] | null[]>>;
 };
 
 const Form: React.FC<Props> = ({ 
@@ -212,7 +212,7 @@ const Form: React.FC<Props> = ({
                     key={index} 
                     className="flex items-center gap-1 bg-button-submit rounded-lg px-2 pb-0.5 text-white font-semibold"
                   >
-                    <span>{capitalize(pokemon)}</span>
+                    <span className="capitalize">{pokemon}</span>
                     
                     <button onClick={() => handleRemovePokemon(index)}>
                       <CloseIcon />
@@ -257,9 +257,9 @@ const Form: React.FC<Props> = ({
                       <li 
                         key={pokemon.name} 
                         onClick={() => handleSelecItemClick(pokemon)}
-                        className="px-4 py-2 cursor-pointer hover:bg-gray-100 hover:bg-page-background font-semibold"
+                        className="px-4 py-2 cursor-pointer hover:bg-gray-100 hover:bg-page-background font-semibold capitalize"
                       >
-                        {capitalize(pokemon.name)}
+                        {pokemon.name}
                       </li>
                     ))}
                   </ul>

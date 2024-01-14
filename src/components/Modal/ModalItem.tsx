@@ -1,5 +1,4 @@
 import { PokemonData } from "../../types/PokemonData";
-import { capitalize } from "../../utils/functions";
 
 type Props = {
   pokemon: PokemonData;
@@ -17,13 +16,13 @@ const ModalItem: React.FC<Props> = ({ pokemon }) => {
     />
 
     <div className="flex flex-col items-center gap-y-2 w-96">
-      <p className="text-2xl font-extrabold text-card-text-bold">
-        {capitalize(name)}
+      <p className="text-2xl font-extrabold text-card-text-bold capitalize">
+        {name}
       </p>
 
       <div className="h-8 px-2.5 py-0.5 rounded-full bg-card-type-badge flex items-center">
-        <p className="text-base font-bold text-white">
-          {capitalize(types[0].type.name)}
+        <p className="text-base font-bold text-white capitalize">
+          {types[0].type.name}
         </p>
       </div>
     </div>

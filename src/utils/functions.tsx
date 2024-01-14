@@ -7,7 +7,3 @@ export const filterPokemons = (query: string, pokemons: PokemonURL[]) => {
 
   return filteredPokemons;
 };
-
-export const capitalize = (string: string) => {
-  return string.charAt(0).toUpperCase() + string.slice(1);
-};

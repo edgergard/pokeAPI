@@ -12,7 +12,7 @@ const Page = () => {
   const [lastName, setLastName] = useState('');
   const [pokemonsURL, setPokemonsURL] = useState<PokemonURL[]>([]);
   const [selectedPokemons, setSelectedPokemons] = useState<string[]>([]);
-  const [pagePokemonList, setPagePokemonList] = useState<PokemonData[]>([]);
+  const [pagePokemonList, setPagePokemonList] = useState<PokemonData[] | null[]>(new Array(4).fill(null));
   const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
@@ -35,7 +35,7 @@ const Page = () => {
   const reset = () => {
     setFirstName('');
     setLastName('');
-    setPagePokemonList([]);
+    setPagePokemonList(new Array(4).fill(null));
   };
 
   return (
@@ -59,7 +59,7 @@ const Page = () => {
           {firstName && lastName ? (
             <>
               <p className="text-6xl font-bold">
-              {`Trainer name: ${firstName} ${lastName}`}
+                {`Trainer name: ${firstName} ${lastName}`}
               </p>
 
               <button
