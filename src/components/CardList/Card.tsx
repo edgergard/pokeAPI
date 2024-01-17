@@ -5,7 +5,7 @@ type Props = {
   pokemon: PokemonData | null;
 };
 
-const Card: React.FC<Props> = ({ pokemon }) => {
+export const Card: React.FC<Props> = ({ pokemon }) => {
   return (
     <div className="w-64 rounded-2xl flex flex-col"> 
       <div className="relative bg-white border-t-8 border-l-8 border-r-8 border-card-border rounded-t-2xl">

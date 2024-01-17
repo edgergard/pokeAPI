@@ -163,7 +163,7 @@ const Form: React.FC<Props> = ({
                 pattern: /^[A-Za-z]+$/i,
               })}
               id="fname"
-              placeholder="Enter your first name"
+              placeholder="Enter your last name"
               className="outline-none w-full"
               autoComplete="off"
             />
