@@ -6,6 +6,7 @@ export {
   loadRoster,
   migrateLegacy,
   parseRoster,
+  persistRoster,
   useRoster,
   type Trainer,
 } from './model/roster';

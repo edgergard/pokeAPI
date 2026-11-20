@@ -2,7 +2,7 @@ import { describe, expect, it, vi } from 'vitest';
 import type { PokemonListItem } from '@/entities/pokemon';
 import { PRESET_TRAINERS } from './presets';
 import { randomRival } from './randomRival';
-import { LEGACY_TRAINER_KEY, ROSTER_KEY, loadRoster, parseRoster, type Trainer } from './roster';
+import { LEGACY_TRAINER_KEY, ROSTER_KEY, loadRoster, parseRoster, persistRoster, type Trainer } from './roster';
 
 const valid: Trainer = { id: 'a', firstName: 'Ash', lastName: 'K', team: ['pikachu', 'eevee', 'snorlax', 'mew'], savedAt: '2026-02-01T00:00:00.000Z' };
 const legacy = { firstName: 'Old', lastName: 'Timer', team: ['bulbasaur', 'charmander', 'squirtle', 'pidgey'], savedAt: '2025-01-01T00:00:00.000Z' };
@@ -29,13 +29,30 @@ describe('roster', () => {
     expect(parseRoster([{ ...valid, team: ['a', 'a', 'b', 'c'] }])).toEqual([]);
   });
 
-  it('migrates the legacy single trainer once and removes the legacy key', () => {
+  it('migrates the legacy single trainer on load without touching the legacy key', () => {
     const store = fakeStorage({ [LEGACY_TRAINER_KEY]: JSON.stringify(legacy) });
     const roster = loadRoster(store);
     expect(roster).toHaveLength(1);
     expect(roster[0]).toMatchObject({ firstName: legacy.firstName, team: legacy.team });
     expect(roster[0]?.id).toBeTruthy();
-    expect(store.removeItem).toHaveBeenCalledWith(LEGACY_TRAINER_KEY);
+    expect(store.removeItem).not.toHaveBeenCalled();
+  });
+
+  it('removes the legacy key only after the roster was written', () => {
+    const calls: string[] = [];
+    const store = {
+      setItem: (k: string) => void calls.push(`set:${k}`),
+      removeItem: (k: string) => void calls.push(`remove:${k}`),
+    };
+    persistRoster(store, [valid]);
+    expect(calls).toEqual([`set:${ROSTER_KEY}`, `remove:${LEGACY_TRAINER_KEY}`]);
+  });
+
+  it('keeps the legacy key when the roster write fails', () => {
+    const removeItem = vi.fn();
+    const store = { setItem: () => { throw new Error('quota'); }, removeItem };
+    expect(() => persistRoster(store, [valid])).not.toThrow();
+    expect(removeItem).not.toHaveBeenCalled();
   });
 
   it('merges the stored roster with a legacy trainer', () => {

@@ -59,16 +59,24 @@ function readJson(storage: Pick<Storage, 'getItem'>, key: string): unknown {
   }
 }
 
-/** The stored roster plus a migrated legacy trainer (once: the legacy key is removed). Never throws. */
-export function loadRoster(storage: Pick<Storage, 'getItem' | 'removeItem'>): Trainer[] {
+/** The stored roster plus a migrated legacy trainer. Read-only: `persistRoster` retires the legacy key. Never throws. */
+export function loadRoster(storage: Pick<Storage, 'getItem'>): Trainer[] {
   const roster = parseRoster(readJson(storage, ROSTER_KEY));
   const legacy = migrateLegacy(readJson(storage, LEGACY_TRAINER_KEY));
+  return legacy && !roster.some((t) => t.id === legacy.id) ? [...roster, legacy] : roster;
+}
+
+/**
+ * Writes the roster, then (only if that succeeded) removes the legacy key it may have absorbed.
+ * Storage failures are swallowed: the legacy key stays, so nothing is lost on reload.
+ */
+export function persistRoster(storage: Pick<Storage, 'setItem' | 'removeItem'>, trainers: readonly Trainer[]): void {
   try {
+    storage.setItem(ROSTER_KEY, JSON.stringify(trainers));
     storage.removeItem(LEGACY_TRAINER_KEY);
   } catch {
-    /* storage unavailable */
+    /* storage unavailable — keep in-memory value */
   }
-  return legacy && !roster.some((t) => t.id === legacy.id) ? [...roster, legacy] : roster;
 }
 
 function initialRoster(): Trainer[] {
@@ -87,9 +95,9 @@ export function useRoster() {
 
   useEffect(() => {
     try {
-      window.localStorage.setItem(ROSTER_KEY, JSON.stringify(stored));
+      persistRoster(window.localStorage, stored);
     } catch {
-      /* storage unavailable — keep in-memory value */
+      /* localStorage inaccessible — keep in-memory value */
     }
   }, [stored]);
 
