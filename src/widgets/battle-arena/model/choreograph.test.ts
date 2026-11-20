@@ -94,4 +94,17 @@ describe('choreograph', () => {
   it('returns a paused timeline', () => {
     expect(choreograph(shortEvents, createNullDirector(), { onEvent: () => {} }).timeline.paused()).toBe(true);
   });
+
+  it('delivers each event once: rewinding or scrubbing back never re-fires', () => {
+    const seen: string[] = [];
+    const { timeline, seconds } = choreograph(shortEvents, createNullDirector(), { onEvent: (e) => seen.push(e.kind) });
+    timeline.progress(1);
+    const afterForward = [...seen];
+    expect(afterForward).toEqual(shortEvents.map((e) => e.kind));
+    timeline.progress(0);
+    timeline.time(seconds * 0.6);
+    timeline.time(seconds * 0.2);
+    timeline.progress(1);
+    expect(seen).toEqual(afterForward);
+  });
 });

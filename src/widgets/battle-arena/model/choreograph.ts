@@ -46,6 +46,11 @@ function solveScale(total: (scale: number) => number, target: number): number {
   return hi;
 }
 
+/**
+ * Turns battle events into one paused master timeline.
+ * Delivery contract: forward playback delivers each event's `onEvent` exactly once and in order;
+ * seeking or playing backward never re-delivers. To replay from the start, call choreograph() again.
+ */
 export function choreograph(
   events: BattleEvent[],
   director: StageDirector,
@@ -55,6 +60,13 @@ export function choreograph(
   const minSeconds = opts.minShortSeconds ?? 0.35;
   const seenAttackers = new Set<string>();
   const units: Unit[] = [];
+  let highestDelivered = -1;
+  // Zero-duration calls also fire on reverse crossings, so deliver by event index, never twice.
+  const deliver = (index: number, event: BattleEvent) => {
+    if (index <= highestDelivered) return;
+    highestDelivered = index;
+    opts.onEvent(event);
+  };
 
   const addUnit = (compress: Compress, build: (sub: Timeline) => void) => {
     const sub = gsap.timeline();
@@ -62,8 +74,8 @@ export function choreograph(
     units.push({ sub, duration: sub.duration(), compress });
   };
   // Each beat reports its event the moment it starts, except a move's result, which lands at impact.
-  const simple = (event: BattleEvent, beat?: () => Timeline) => addUnit('never', (sub) => {
-    sub.call(() => opts.onEvent(event), [], 0);
+  const simple = (index: number, event: BattleEvent, beat?: () => Timeline) => addUnit('never', (sub) => {
+    sub.call(() => deliver(index, event), [], 0);
     if (beat) sub.add(beat(), 0);
   });
 
@@ -76,12 +88,13 @@ export function choreograph(
       case 'move': {
         const next = events[i + 1];
         const result = isResult(next) ? next : null;
+        const moveIndex = i;
         if (result) i += 1;
         const first = !seenAttackers.has(event.attackerId);
         seenAttackers.add(event.attackerId);
         const tier: Tier = result ? tierFor(result, first) : 'full';
         addUnit(tier === 'short' ? 'short' : 'full', (sub) => {
-          sub.call(() => opts.onEvent(event), [], 0);
+          sub.call(() => deliver(moveIndex, event), [], 0);
           let t = 0;
           if (tier === 'full') {
             const anticipation = director.anticipate(event.attackerId, event.move, tier);
@@ -92,7 +105,7 @@ export function choreograph(
           sub.add(lunge, t);
           t += lunge.duration();
           if (result) {
-            sub.call(() => opts.onEvent(result), [], t);
+            sub.call(() => deliver(moveIndex + 1, result), [], t);
             const info = result.kind === 'hit'
               ? { damage: result.damage, effectiveness: result.effectiveness, critical: result.critical }
               : null;
@@ -101,10 +114,10 @@ export function choreograph(
         });
         break;
       }
-      case 'enter': simple(event, () => director.dealIn(event.fighterId)); break;
-      case 'ko': simple(event, () => director.knockOut(event.fighterId)); break;
-      case 'end': simple(event, () => director.victory(event.winner)); break;
-      default: simple(event); // turnStart (or a stray result): no beat, still reported in order
+      case 'enter': simple(i, event, () => director.dealIn(event.fighterId)); break;
+      case 'ko': simple(i, event, () => director.knockOut(event.fighterId)); break;
+      case 'end': simple(i, event, () => director.victory(event.winner)); break;
+      default: simple(i, event); // turnStart (or a stray result): no beat, still reported in order
     }
   }
 
