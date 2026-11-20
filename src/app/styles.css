@@ -19,6 +19,8 @@
   --color-accent: #ffd23f;
   --color-accent-strong: #ffe27a;
   --color-danger: #ff6b6b;
+  --color-side-red: #ff7a66; /* Red corner: warm coral */
+  --color-side-blue: #5eb0ff; /* Blue corner: cool azure */
 
   --shadow-glow: inset 0 0 0 1px rgb(255 255 255 / 0.15), 0 10px 30px -10px rgb(255 210 63 / 0.6);
 }
