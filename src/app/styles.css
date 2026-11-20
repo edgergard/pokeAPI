@@ -1,0 +1,1260 @@
+@import 'tailwindcss';
+
+@theme {
+  --font-sans: 'Inter', ui-sans-serif, system-ui, sans-serif;
+  --font-display: 'Bricolage Grotesque', 'Inter', ui-sans-serif, sans-serif;
+  --font-mono: 'JetBrains Mono', ui-monospace, monospace;
+
+  --color-ink-950: #07080b;
+  --color-ink-900: #0f1117;
+  --color-ink-850: #151821;
+  --color-ink-800: #1b1f2a;
+  --color-ink-600: #3a4152;
+  --color-ink-500: #5d6578;
+  --color-ink-400: #868ea2;
+  --color-ink-300: #aab1c2;
+  --color-ink-200: #cdd2de;
+  --color-ink-100: #e7e9ef;
+
+  --color-accent: #ffd23f;
+  --color-accent-strong: #ffe27a;
+  --color-danger: #ff6b6b;
+
+  --shadow-glow: inset 0 0 0 1px rgb(255 255 255 / 0.15), 0 10px 30px -10px rgb(255 210 63 / 0.6);
+}
+
+@layer base {
+  html {
+    color-scheme: dark;
+  }
+
+  body {
+    @apply bg-ink-950 font-sans text-ink-100 antialiased;
+  }
+
+  ::selection {
+    background: rgb(255 210 63 / 0.35);
+  }
+
+  /* Motion tokens — plain :root (not @theme) so they are never tree-shaken. */
+  :root {
+    --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1); /* entrances, reveals */
+    --ease-standard: cubic-bezier(0.2, 0.8, 0.2, 1); /* UI state changes, FLIP */
+    --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1); /* pops, settles */
+    --ease-exit: cubic-bezier(0.4, 0, 1, 1); /* exits */
+    --ease-ambient: cubic-bezier(0.37, 0, 0.63, 1); /* loops only */
+
+    --dur-xs: 120ms;
+    --dur-sm: 200ms;
+    --dur-md: 320ms;
+    --dur-lg: 500ms;
+    --dur-xl: 700ms;
+    --dur-2xl: 900ms;
+
+    --stagger: 60ms;
+  }
+}
+
+/* No backdrop-filter: the aurora drifts underneath, which would force a 20px re-blur every frame.
+   Behind the card is only a soft gradient, so a slightly denser fill reads the same. */
+@utility glass {
+  background: linear-gradient(180deg, rgb(255 255 255 / 0.07), rgb(255 255 255 / 0.035));
+  border: 1px solid rgb(255 255 255 / 0.09);
+  box-shadow:
+    inset 0 1px 0 rgb(255 255 255 / 0.06),
+    0 30px 60px -30px rgb(0 0 0 / 0.8);
+}
+
+@utility text-gradient {
+  background: linear-gradient(100deg, #ffd23f 0%, #ff8a4c 45%, #ff5d8f 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+/* The colour lives in .aurora-blob children so each glow can drift on its own. */
+@utility aurora {
+  overflow: hidden;
+  mask-image: linear-gradient(to bottom, black 55%, transparent);
+}
+
+@utility dot-grid {
+  background-image: radial-gradient(rgb(255 255 255 / 0.12) 1px, transparent 1px);
+  background-size: 14px 14px;
+  mask-image: radial-gradient(circle at 50% 60%, black, transparent 75%);
+}
+
+/* The highlight sweeps on its own layer by transform, so the placeholder never repaints. Host needs relative + overflow-hidden. */
+@utility shimmer {
+  &::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(100deg, transparent 30%, rgb(255 255 255 / 0.04) 50%, transparent 70%);
+    transform: translateX(-100%);
+    pointer-events: none;
+  }
+
+  :root[data-motion='full'] & {
+    &::after {
+      animation: shimmer 1.6s linear infinite;
+    }
+  }
+}
+
+/* ======================================================================
+   Motion
+   Only transform / opacity / filter / clip-path are animated.
+   Entrances use fill `backwards` so nothing owns a property once done.
+   Every infinite loop lives inside :root[data-motion='full'] (resolved from the OS setting + in-app toggle).
+   GSAP (shared/lib/gsap.ts) owns: the hero heading split, scroll scrubs, the name scramble,
+   slot drag/Flip and the form spotlight — the CSS below never animates those same properties while
+   GSAP holds them: the one-shot card deal is finished ([data-settled]) the moment a slot is dragged.
+   ====================================================================== */
+
+/* ---------- Keyframes ---------- */
+
+@keyframes shimmer {
+  from {
+    transform: translateX(-100%);
+  }
+  to {
+    transform: translateX(100%);
+  }
+}
+
+@keyframes rise {
+  from {
+    opacity: 0;
+    transform: translateY(14px) scale(0.98);
+  }
+}
+
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+}
+
+@keyframes fade-out {
+  to {
+    opacity: 0;
+  }
+}
+
+/* Curtain-up */
+@keyframes reveal-down {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+}
+
+@keyframes reveal-up {
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+}
+
+@keyframes reveal-pop {
+  from {
+    opacity: 0;
+    transform: scale(0.9);
+  }
+}
+
+@keyframes reveal-card {
+  from {
+    opacity: 0;
+    transform: translateY(24px) scale(0.97);
+    filter: blur(6px);
+  }
+}
+
+/* Aurora drift */
+@keyframes aurora-a {
+  50% {
+    transform: translate(6vw, 3vh) scale(1.1);
+  }
+  100% {
+    transform: translate(-4vw, 5vh) scale(0.95);
+  }
+}
+
+@keyframes aurora-b {
+  50% {
+    transform: translate(-5vw, 4vh) scale(1.12);
+  }
+  100% {
+    transform: translate(3vw, -2vh) scale(0.92);
+  }
+}
+
+@keyframes aurora-c {
+  50% {
+    transform: translate(4vw, -4vh) scale(0.9);
+    opacity: 0.75;
+  }
+  100% {
+    transform: translate(-6vw, 2vh) scale(1.15);
+    opacity: 1;
+  }
+}
+
+/* Showcase */
+@keyframes eyebrow-in {
+  from {
+    opacity: 0;
+    transform: translateX(-8px);
+  }
+}
+
+@keyframes name-stamp {
+  0% {
+    opacity: 0;
+    transform: scale(1.12);
+    filter: blur(8px);
+  }
+  60% {
+    opacity: 1;
+    transform: scale(0.985);
+    filter: blur(0);
+  }
+  100% {
+    transform: none;
+    filter: none;
+  }
+}
+
+@keyframes swap-in {
+  from {
+    opacity: 0;
+    transform: scale(0.97);
+  }
+}
+
+@keyframes deal {
+  0% {
+    opacity: 0;
+    transform: translate(var(--from-x, 0), -120px) rotate(var(--tilt)) scale(0.85);
+  }
+  60% {
+    opacity: 1;
+    transform: translate(0, 6px) rotate(calc(var(--tilt) * -0.15)) scale(1.01);
+  }
+  100% {
+    transform: none;
+  }
+}
+
+@keyframes land-flash {
+  0% {
+    opacity: 0;
+    transform: scale(0.3);
+  }
+  30% {
+    opacity: 0.9;
+  }
+  100% {
+    opacity: 0;
+    transform: scale(1.6);
+  }
+}
+
+@keyframes burst-ring {
+  from {
+    opacity: 1;
+    transform: scale(0.4);
+  }
+  to {
+    opacity: 0;
+    transform: scale(2.4);
+  }
+}
+
+@keyframes spark {
+  0% {
+    transform: translate(0, 0) scale(0.6) rotate(0);
+    opacity: 1;
+  }
+  70% {
+    transform: translate(var(--dx), var(--dy)) rotate(var(--rot));
+    opacity: 1;
+  }
+  100% {
+    transform: translate(var(--dx), calc(var(--dy) + 40px)) scale(0.4) rotate(var(--rot));
+    opacity: 0;
+  }
+}
+
+/* Placeholders */
+@keyframes ball-breathe {
+  from {
+    transform: scale(1);
+    opacity: 0.1;
+  }
+  to {
+    transform: scale(1.06);
+    opacity: 0.16;
+  }
+}
+
+/* The glow is a static drop-shadow (see .ball-charge); only transform + opacity move. */
+@keyframes ball-charge {
+  0%,
+  100% {
+    transform: rotate(0) scale(1);
+    opacity: 0.2;
+  }
+  50% {
+    transform: rotate(-8deg) scale(1.05);
+    opacity: 0.45;
+  }
+}
+
+@keyframes slot-shake {
+  0%,
+  100% {
+    transform: none;
+  }
+  20% {
+    transform: translateX(-4px);
+  }
+  40% {
+    transform: translateX(4px);
+  }
+  60% {
+    transform: translateX(-3px);
+  }
+  80% {
+    transform: translateX(2px);
+  }
+}
+
+/* Validation — two identical names so alternating them restarts the shake. */
+@keyframes shake-a {
+  0%,
+  100% {
+    transform: none;
+  }
+  20% {
+    transform: translateX(-6px);
+  }
+  40% {
+    transform: translateX(5px);
+  }
+  60% {
+    transform: translateX(-3px);
+  }
+  80% {
+    transform: translateX(2px);
+  }
+}
+
+@keyframes shake-b {
+  0%,
+  100% {
+    transform: none;
+  }
+  20% {
+    transform: translateX(-6px);
+  }
+  40% {
+    transform: translateX(5px);
+  }
+  60% {
+    transform: translateX(-3px);
+  }
+  80% {
+    transform: translateX(2px);
+  }
+}
+
+@keyframes err-in {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+}
+
+@keyframes hint-in {
+  from {
+    opacity: 0;
+    transform: translateY(2px);
+  }
+}
+
+/* Chips */
+@keyframes chip-pop {
+  0% {
+    opacity: 0;
+    transform: scale(0.85);
+  }
+  60% {
+    opacity: 1;
+    transform: scale(1.06);
+  }
+  100% {
+    transform: none;
+  }
+}
+
+@keyframes chip-out {
+  to {
+    opacity: 0;
+    transform: scale(0.7);
+    filter: blur(3px);
+  }
+}
+
+@keyframes chip-img-out {
+  to {
+    transform: rotate(-12deg);
+  }
+}
+
+@keyframes sheen {
+  from {
+    transform: translateX(-150%) skewX(-20deg);
+  }
+  to {
+    transform: translateX(350%) skewX(-20deg);
+  }
+}
+
+/* Readiness */
+@keyframes slot-sweep {
+  from {
+    transform: translateX(-100%);
+  }
+  to {
+    transform: translateX(250%);
+  }
+}
+
+@keyframes btn-pop-a {
+  45% {
+    transform: scale(1.035);
+  }
+}
+
+@keyframes btn-pop-b {
+  45% {
+    transform: scale(1.035);
+  }
+}
+
+@keyframes btn-shine-a {
+  from {
+    transform: translateX(-150%) skewX(-20deg);
+  }
+  to {
+    transform: translateX(350%) skewX(-20deg);
+  }
+}
+
+@keyframes btn-shine-b {
+  from {
+    transform: translateX(-150%) skewX(-20deg);
+  }
+  to {
+    transform: translateX(350%) skewX(-20deg);
+  }
+}
+
+@keyframes nudge-a {
+  50% {
+    transform: translateX(4px);
+  }
+}
+
+@keyframes nudge-b {
+  50% {
+    transform: translateX(4px);
+  }
+}
+
+/* Combobox */
+@keyframes list-unroll {
+  from {
+    opacity: 0.6;
+    transform: translateY(-6px);
+    clip-path: inset(0 0 100% 0 round 16px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+    clip-path: inset(0 0 0 0 round 16px);
+  }
+}
+
+@keyframes option-in {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+}
+
+/* Dialog */
+@keyframes dialog-in {
+  from {
+    opacity: 0;
+    transform: translateY(16px) scale(0.96);
+  }
+}
+
+@keyframes dialog-out {
+  to {
+    opacity: 0;
+    transform: translateY(8px) scale(0.97);
+  }
+}
+
+@keyframes row-in {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+}
+
+/* Card data */
+@keyframes bar-grow {
+  from {
+    transform: scaleX(0);
+  }
+}
+
+@keyframes tip-flash {
+  0% {
+    opacity: 0;
+  }
+  40% {
+    opacity: 0.9;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+
+@keyframes glint {
+  from {
+    transform: translateX(-120%) skewX(-15deg);
+  }
+  to {
+    transform: translateX(320%) skewX(-15deg);
+  }
+}
+
+@keyframes dot-pulse {
+  50% {
+    transform: scale(1.6);
+  }
+}
+
+@keyframes art-float {
+  from {
+    transform: none;
+  }
+  to {
+    transform: translateY(-6px) rotate(0.6deg);
+  }
+}
+
+@keyframes art-shadow {
+  from {
+    transform: none;
+    opacity: 0.5;
+  }
+  to {
+    transform: scaleX(0.86);
+    opacity: 0.3;
+  }
+}
+
+/* ---------- 1. Curtain-up load-in ---------- */
+
+.reveal-down {
+  animation: reveal-down var(--dur-lg) var(--ease-out-expo) backwards;
+}
+
+.reveal-up {
+  animation: reveal-up var(--dur-lg) var(--ease-out-expo) backwards;
+}
+
+.reveal-pop {
+  animation: reveal-pop var(--dur-md) var(--ease-spring) backwards;
+}
+
+/* `backwards` matters here: a lingering `filter` would keep the card on its own layer forever. */
+.reveal-card {
+  animation: reveal-card var(--dur-xl) var(--ease-out-expo) backwards;
+}
+
+.reveal-down,
+.reveal-up,
+.reveal-pop,
+.reveal-card {
+  animation-delay: calc(80ms + var(--i, 0) * var(--stagger));
+}
+
+/* ---------- 1b. Hero heading (GSAP SplitText) ----------
+   SplitText wraps each char in a `.hero-char-mask` (overflow: clip). The padding / negative margin pair
+   grows the clip box past the tight 0.95 line-height without moving anything, so descenders and the
+   slight rotation are never shaved while the chars rise from below the line. */
+
+/* With tag: 'span' (valid inside an h1) SplitText leaves display to us. */
+.hero-line {
+  display: block;
+}
+
+.hero-word,
+.hero-char,
+.hero-char-mask {
+  display: inline-block;
+  position: relative;
+}
+
+.hero-char-mask {
+  padding: 0.16em 0.08em;
+  margin: -0.16em -0.08em;
+}
+
+/* Chars inside the gradient span paint their own slice of it (offsets set in HeroHeading.tsx). */
+.hero-char-gradient {
+  background: linear-gradient(100deg, #ffd23f 0%, #ff8a4c 45%, #ff5d8f 100%) no-repeat;
+  background-size: var(--grad-w, 100%) 100%;
+  background-position: var(--grad-x, 0) 0;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+/* ---------- 2. Living aurora ---------- */
+
+.aurora-blob {
+  position: absolute;
+}
+
+.aurora-blob-a {
+  left: calc(15% - 40rem);
+  top: calc(10% - 22rem);
+  width: 80rem;
+  height: 44rem;
+  background: radial-gradient(40rem 22rem at 50% 50%, rgb(255 210 63 / 0.13), transparent 70%);
+}
+
+.aurora-blob-b {
+  left: calc(85% - 36rem);
+  top: -24rem;
+  width: 72rem;
+  height: 48rem;
+  background: radial-gradient(36rem 24rem at 50% 50%, rgb(124 108 255 / 0.18), transparent 70%);
+}
+
+.aurora-blob-c {
+  left: calc(60% - 30rem);
+  top: calc(40% - 20rem);
+  width: 60rem;
+  height: 40rem;
+  background: radial-gradient(30rem 20rem at 50% 50%, rgb(255 93 143 / 0.08), transparent 70%);
+}
+
+:root[data-motion='full'] {
+  .aurora-blob-a {
+    animation: aurora-a 28s var(--ease-ambient) infinite alternate;
+  }
+
+  .aurora-blob-b {
+    animation: aurora-b 36s var(--ease-ambient) infinite alternate;
+  }
+
+  .aurora-blob-c {
+    animation: aurora-c 44s var(--ease-ambient) infinite alternate;
+  }
+
+  /* Under a modal the ::backdrop blur would be recomputed every frame; the page is unreadable there anyway. */
+  body:has(dialog[open]) :is(.aurora-blob, .art-float, .art-shadow, .ball-breathe, .ball-charge),
+  body:has(dialog[open]) .shimmer::after {
+    animation-play-state: paused;
+  }
+}
+
+/* ---------- 3. Showcase wake-up ---------- */
+
+.eyebrow-in {
+  animation: eyebrow-in var(--dur-lg) var(--ease-out-expo) backwards;
+}
+
+/* Origin bottom-left so a long name never overflows the left edge while scaled. */
+.name-stamp {
+  transform-origin: left bottom;
+  animation: name-stamp var(--dur-lg) var(--ease-standard) 80ms backwards;
+}
+
+.name-fade {
+  animation: fade-in var(--dur-md) ease-out backwards;
+}
+
+.card-enter {
+  animation: rise var(--dur-lg) var(--ease-standard) backwards;
+}
+
+.swap-in {
+  animation: swap-in var(--dur-md) var(--ease-standard) backwards;
+}
+
+/* Everything inside the showcase holds its first frame until the section is reached. */
+:root[data-motion='full'] {
+  .showcase:not([data-inview]) *,
+  .showcase:not([data-inview]) *::before,
+  .showcase:not([data-inview]) *::after {
+    animation-play-state: paused;
+  }
+}
+
+/* ---------- 4. Team lock-in ---------- */
+
+.card-deal {
+  --tilt: 0deg;
+  animation: deal var(--dur-xl) var(--ease-out-expo) backwards;
+  animation-delay: calc(350ms + var(--i, 0) * 120ms);
+}
+
+.card-deal:nth-child(1) {
+  --tilt: -8deg;
+}
+
+.card-deal:nth-child(2) {
+  --tilt: -3deg;
+}
+
+.card-deal:nth-child(3) {
+  --tilt: 3deg;
+}
+
+.card-deal:nth-child(4) {
+  --tilt: 8deg;
+}
+
+/* Four columns: cards converge from the grid centre. */
+@media (min-width: 80rem) {
+  .card-deal {
+    --from-x: calc((1.5 - var(--i, 0)) * 30%);
+  }
+}
+
+.card-deal::before {
+  content: '';
+  position: absolute;
+  inset: -8%;
+  z-index: -1;
+  border-radius: 2rem;
+  background: radial-gradient(closest-side, rgb(255 210 63 / 0.45), transparent);
+  opacity: 0;
+  pointer-events: none;
+  animation: land-flash var(--dur-lg) var(--ease-out-expo) both;
+  animation-delay: calc(350ms + var(--i, 0) * 120ms + 400ms);
+}
+
+/* Resting state is invisible and fill is `none`, so nothing shows before or after. */
+.burst-ring {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 240px;
+  height: 240px;
+  margin: -120px 0 0 -120px;
+  border: 2px solid rgb(255 210 63 / 0.6);
+  border-radius: 9999px;
+  opacity: 0;
+  animation: burst-ring var(--dur-xl) var(--ease-out-expo) 1060ms;
+}
+
+.burst-spark {
+  position: absolute;
+  left: 0;
+  top: 0;
+  translate: -50% -50%;
+  opacity: 0;
+  animation: spark var(--dur-2xl) var(--ease-out-expo) 1060ms;
+}
+
+/* ---------- 4b. Slot reorder (GSAP Draggable + Flip) ---------- */
+
+.team-slot:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 4px;
+}
+
+.drag-handle {
+  cursor: grab;
+  backdrop-filter: blur(6px);
+  transition:
+    background-color var(--dur-sm) ease-out,
+    color var(--dur-sm) ease-out,
+    border-color var(--dur-sm) ease-out;
+}
+
+/* 44px touch target around the small pill. */
+.drag-handle::before {
+  content: '';
+  position: absolute;
+  inset: -0.5rem -0.25rem;
+}
+
+.drag-handle:hover,
+.team-slot:focus-visible .drag-handle,
+[data-dragging] .drag-handle {
+  border-color: rgb(255 210 63 / 0.4);
+  background-color: rgb(255 210 63 / 0.15);
+  color: var(--color-accent);
+}
+
+[data-dragging] {
+  z-index: 30;
+}
+
+[data-dragging] .drag-handle {
+  cursor: grabbing;
+}
+
+/* Lifted look is a static shadow: painted once on pickup, never per frame. */
+[data-dragging] > :first-child {
+  box-shadow:
+    0 0 0 1px rgb(255 210 63 / 0.35),
+    0 40px 70px -24px rgb(0 0 0 / 0.9);
+}
+
+[data-drop-target] {
+  outline: 2px dashed rgb(255 210 63 / 0.7);
+  outline-offset: 4px;
+}
+
+/* No tilt while a slot is picked up (usePointerTilt also stops writing). */
+[data-tilt-paused] .card-tilt {
+  transform: none;
+}
+
+[data-tilt-paused] .holo {
+  opacity: 0;
+}
+
+/* A reorder really moves keyed nodes in the DOM, and a moved node restarts its CSS animations.
+   Once the team has been rearranged, the one-shot entrances stay finished instead of replaying.
+   The stat bar still runs for 1ms so its animationstart/end keep driving the count-up. */
+.team-grid[data-settled] {
+  :is(.card-deal, .card-enter, .swap-in, .slot-shake, .glint > span:first-child),
+  .card-deal::before,
+  .glint::after,
+  .stat-fill::after {
+    animation: none;
+  }
+
+  .stat-fill {
+    animation-duration: 1ms;
+    animation-delay: 0s;
+  }
+}
+
+/* ---------- 5. Living placeholders ---------- */
+
+.ball-breathe {
+  opacity: 0.1;
+}
+
+.ball-charge {
+  opacity: 0.2;
+}
+
+.slot-shake {
+  animation: slot-shake var(--dur-md) var(--ease-standard);
+}
+
+:root[data-motion='full'] {
+  /* Negative delay offsets the phase, so the four empty slots ripple left to right. */
+  .ball-breathe {
+    animation: ball-breathe 3200ms var(--ease-ambient) infinite alternate;
+    animation-delay: calc(var(--i, 0) * -400ms);
+  }
+
+  /* Rasterised once; the pulsing opacity makes the glow breathe without repainting the filter. */
+  .ball-charge {
+    filter: drop-shadow(0 0 8px rgb(255 210 63 / 0.55));
+    animation: ball-charge 1400ms var(--ease-ambient) infinite;
+  }
+}
+
+/* ---------- 6. Validation ---------- */
+
+[data-shake='a'] {
+  animation: shake-a var(--dur-md) var(--ease-standard);
+}
+
+[data-shake='b'] {
+  animation: shake-b var(--dur-md) var(--ease-standard);
+}
+
+.err-in {
+  animation: err-in var(--dur-sm) var(--ease-out-expo) backwards;
+}
+
+.hint-in {
+  animation: hint-in var(--dur-sm) ease-out backwards;
+}
+
+/* ---------- 7. Chip lifecycle ---------- */
+
+.chip-enter {
+  animation: chip-pop var(--dur-md) var(--ease-out-expo) backwards;
+}
+
+/* Separate inner layer so the chip itself never clips the flying sprite. */
+.chip-shine::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  width: 40%;
+  background: linear-gradient(100deg, transparent, rgb(255 255 255 / 0.35), transparent);
+  transform: translateX(-150%) skewX(-20deg);
+  animation: sheen var(--dur-xl) var(--ease-standard) 200ms backwards;
+}
+
+.chip[data-leaving] {
+  animation: chip-out var(--dur-sm) var(--ease-exit) forwards;
+  animation-delay: calc(var(--i, 0) * 40ms);
+}
+
+.chip[data-leaving] img {
+  animation: chip-img-out var(--dur-sm) var(--ease-exit) forwards;
+  animation-delay: calc(var(--i, 0) * 40ms);
+}
+
+/* ---------- 8. Readiness chain ---------- */
+
+/* Draining: shrink toward the right on the exit curve. */
+.slot-fill {
+  transform: scaleX(0);
+  transform-origin: right;
+  transition: transform var(--dur-sm) var(--ease-exit);
+}
+
+/* Charging: grow from the left with a little spring. */
+.slot-fill[data-filled] {
+  transform: scaleX(1);
+  transform-origin: left;
+  transition: transform var(--dur-md) var(--ease-spring);
+}
+
+[data-complete] .slot-fill::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  width: 50%;
+  background: linear-gradient(90deg, transparent, rgb(255 255 255 / 0.7), transparent);
+  transform: translateX(-100%);
+  animation: slot-sweep var(--dur-xl) var(--ease-standard) backwards;
+  animation-delay: calc(200ms + var(--i, 0) * var(--stagger));
+}
+
+/* Composes with Tailwind's active:scale (the `scale` property). */
+[data-unlock='a'] {
+  animation: btn-pop-a var(--dur-md) var(--ease-spring) 260ms;
+}
+
+[data-unlock='b'] {
+  animation: btn-pop-b var(--dur-md) var(--ease-spring) 260ms;
+}
+
+.btn-shine::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  width: 35%;
+  background: linear-gradient(100deg, transparent, rgb(255 255 255 / 0.35), transparent);
+  transform: translateX(-150%) skewX(-20deg);
+}
+
+[data-unlock='a'] .btn-shine::after {
+  animation: btn-shine-a var(--dur-xl) var(--ease-standard) 320ms backwards;
+}
+
+[data-unlock='b'] .btn-shine::after {
+  animation: btn-shine-b var(--dur-xl) var(--ease-standard) 320ms backwards;
+}
+
+[data-unlock='a'] svg {
+  animation: nudge-a var(--dur-md) var(--ease-spring) 380ms;
+}
+
+[data-unlock='b'] svg {
+  animation: nudge-b var(--dur-md) var(--ease-spring) 380ms;
+}
+
+/* ---------- 9. Combobox ---------- */
+
+/* `backwards` releases the clip at rest so shadow-2xl is not cut off. */
+.dropdown-enter {
+  animation: list-unroll var(--dur-sm) var(--ease-standard) backwards;
+}
+
+[data-opening] [role='option'] {
+  animation: option-in var(--dur-sm) var(--ease-out-expo) backwards;
+  animation-delay: calc(var(--i, 0) * 20ms);
+}
+
+/* Gliding highlight: one generated pill (invisible to AT) instead of per-row backgrounds. */
+.listbox-pill::before {
+  content: '';
+  position: absolute;
+  left: 0.375rem;
+  right: 0.375rem;
+  top: 0.375rem;
+  z-index: 0;
+  height: var(--row-h, 3rem);
+  border-radius: 0.75rem;
+  background: rgb(255 255 255 / 0.08);
+  transform: translateY(var(--active-y, 0));
+  transition: transform var(--dur-xs) var(--ease-standard);
+  pointer-events: none;
+}
+
+.listbox-pill:not(:has([role='option']))::before {
+  display: none;
+}
+
+/* ---------- 10. Dialog ---------- */
+
+.dialog[open] {
+  animation: dialog-in var(--dur-md) var(--ease-out-expo);
+}
+
+.dialog::backdrop {
+  background: rgb(4 5 8 / 0.7);
+  backdrop-filter: blur(6px);
+}
+
+
+.dialog[data-closing] {
+  animation: dialog-out var(--dur-sm) var(--ease-exit) forwards;
+  pointer-events: none;
+}
+
+/* The kill switch's `*` never matches ::backdrop, so its fades are opted in here instead. */
+:root[data-motion='full'] {
+  .dialog[open]::backdrop {
+    animation: fade-in var(--dur-sm) ease-out;
+  }
+
+  .dialog[data-closing]::backdrop {
+    animation: fade-out var(--dur-sm) ease-in forwards;
+  }
+}
+
+.row-in {
+  animation: row-in var(--dur-lg) var(--ease-out-expo) backwards;
+  animation-delay: calc(80ms + var(--i, 0) * var(--stagger));
+}
+
+/* ---------- 11. Card tilt + holo ---------- */
+
+/* `transform` is free for the tilt: Tailwind v4's hover:-translate-y-1 uses `translate`. */
+.card-tilt {
+  transform: perspective(900px) rotateX(var(--rx, 0deg)) rotateY(var(--ry, 0deg));
+  transition:
+    transform var(--dur-xl) var(--ease-spring),
+    translate 300ms var(--ease-standard);
+}
+
+.card-tilt[data-tilting] {
+  transition:
+    transform var(--dur-xs) linear,
+    translate 300ms var(--ease-standard);
+  will-change: transform;
+}
+
+.holo {
+  opacity: 0;
+  overflow: hidden;
+  border-radius: inherit;
+  mix-blend-mode: screen;
+  transition: opacity var(--dur-lg) ease-out;
+}
+
+[data-tilting] > .holo {
+  opacity: 1;
+  transition-duration: var(--dur-sm);
+}
+
+/* Both layers only move by transform, so the gradients never repaint per frame. */
+.holo::before,
+.holo::after {
+  content: '';
+  position: absolute;
+  transition: transform var(--dur-xl) var(--ease-spring);
+}
+
+[data-tilting] > .holo::before,
+[data-tilting] > .holo::after {
+  transition-duration: var(--dur-xs);
+}
+
+.holo::before {
+  left: -50%;
+  top: -50%;
+  width: 200%;
+  height: 200%;
+  background: radial-gradient(closest-side, rgb(255 255 255 / 0.18), transparent 60%);
+  transform: translate(calc(var(--px, 0) * 25%), calc(var(--py, 0) * 25%));
+}
+
+.holo::after {
+  top: 0;
+  bottom: 0;
+  left: -100%;
+  width: 300%;
+  background: repeating-linear-gradient(
+    115deg,
+    transparent 0 8%,
+    color-mix(in oklab, var(--type) 45%, white) 10%,
+    transparent 14%
+  );
+  opacity: 0.22;
+  transform: translateX(calc(var(--px, 0) * -12%));
+}
+
+/* ---------- 12. Artwork float + parallax ---------- */
+
+.art-float {
+  translate: calc(var(--px, 0) * -10px) calc(var(--py, 0) * -8px);
+  transition: translate var(--dur-xl) var(--ease-spring);
+}
+
+[data-tilting] .art-float {
+  transition-duration: var(--dur-xs);
+}
+
+:root[data-motion='full'] {
+  .art-float {
+    animation: art-float var(--float-dur, 2400ms) var(--ease-ambient) var(--float-delay, 600ms) infinite alternate;
+  }
+
+  /* Animates `transform`; the centring uses the `translate` property, so both hold. */
+  .art-shadow {
+    animation: art-shadow var(--float-dur, 2400ms) var(--ease-ambient) var(--float-delay, 600ms) infinite alternate;
+  }
+}
+
+/* ---------- 13. Card data cascade ---------- */
+
+.stat-fill {
+  position: relative;
+  transform-origin: left;
+  animation: bar-grow var(--dur-2xl) var(--ease-out-expo) backwards;
+  animation-delay: var(--bar-delay, 200ms);
+}
+
+.stat-fill::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  width: 2px;
+  background: white;
+  opacity: 0;
+  animation: tip-flash var(--dur-md) ease-out;
+  animation-delay: calc(var(--bar-delay, 200ms) + 700ms);
+}
+
+.glint::before,
+.glint::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  width: 40%;
+  background: linear-gradient(100deg, transparent, rgb(255 255 255 / 0.55), transparent);
+  transform: translateX(-120%) skewX(-15deg);
+  pointer-events: none;
+}
+
+/* One sweep when the data lands… */
+.glint::after {
+  animation: glint var(--dur-xl) var(--ease-standard) backwards;
+  animation-delay: calc(var(--glint-base, 300ms) + var(--glint-i, 0) * 120ms);
+}
+
+/* …and one more on card hover, on its own layer so leaving the card never replays the first.
+   Fine pointers only, like the tilt: a tap's sticky :hover would otherwise trigger it. */
+@media (hover: hover) and (pointer: fine) {
+  .group:hover .glint::before {
+    animation: glint var(--dur-xl) var(--ease-standard) 120ms backwards;
+  }
+}
+
+.glint > span:first-child {
+  animation: dot-pulse var(--dur-md) var(--ease-spring);
+  animation-delay: calc(var(--glint-base, 300ms) + var(--glint-i, 0) * 120ms);
+}
+
+/* ---------- 14. Form spotlight (GSAP quickTo on the variables) ---------- */
+
+/* Lives at z-index -1 inside an `isolate` card: above the glass fill, below the content. */
+.spotlight {
+  --spot-x: 0;
+  --spot-y: 0;
+  --spot-o: 0;
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  overflow: hidden;
+  border-radius: inherit;
+  pointer-events: none;
+}
+
+/* Pre-painted glow moved by transform; quickTo only changes the numbers. */
+.spotlight::before {
+  content: '';
+  position: absolute;
+  left: -14rem;
+  top: -14rem;
+  width: 28rem;
+  height: 28rem;
+  border-radius: 9999px;
+  background: radial-gradient(closest-side, rgb(255 226 122 / 0.11), rgb(255 255 255 / 0.035) 50%, transparent);
+  transform: translate3d(calc(var(--spot-x) * 1px), calc(var(--spot-y) * 1px), 0);
+  opacity: var(--spot-o);
+}
+
+:root[data-motion='reduced'] .spotlight {
+  display: none;
+}
+
+@media not ((hover: hover) and (pointer: fine)) {
+  .spotlight {
+    display: none;
+  }
+}
+
+/* ---------- Reduced motion kill switch ---------- */
+
+:root[data-motion='reduced'] {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    animation-delay: 0s !important;
+    transition-duration: 0.01ms !important;
+    transition-delay: 0s !important;
+    scroll-behavior: auto !important;
+  }
+}
