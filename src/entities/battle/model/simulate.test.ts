@@ -102,6 +102,38 @@ describe('simulateBattle', () => {
   });
 });
 
+describe('KO ordering', () => {
+  function glassTeams(): [BattleTeam, BattleTeam] {
+    const red = makeTeam('red', ['normal'], [TACKLE], 100);
+    const blue = makeTeam('blue', ['normal'], [TACKLE], 50);
+    red.fighters.forEach((f) => { f.stats = { ...f.stats, attack: 500, hp: 500 }; });
+    blue.fighters.forEach((f) => { f.stats = { ...f.stats, hp: 5 }; });
+    return [red, blue];
+  }
+
+  it('a KO-ed second attacker never acts, and a replacement is silent until it enters', () => {
+    const { events } = simulateBattle(...glassTeams(), 3);
+    expect(events.some((e) => e.kind === 'move' && e.attackerId.startsWith('blue'))).toBe(false);
+    expect(events.filter((e) => e.kind === 'ko')).toHaveLength(4);
+  });
+
+  it('no event involves a fighter between its predecessor KO and its own enter', () => {
+    for (const seed of [1, 2, 3]) {
+      for (const teams of [sampleTeams(), glassTeams()]) {
+        const { events } = simulateBattle(...teams, seed);
+        const entered = new Set<string>();
+        for (const e of events) {
+          if (e.kind === 'enter') entered.add(e.fighterId);
+          else if (e.kind === 'move' || e.kind === 'miss' || e.kind === 'noEffect' || e.kind === 'hit') {
+            expect(entered.has(e.attackerId)).toBe(true);
+            expect(entered.has(e.targetId)).toBe(true);
+          }
+        }
+      }
+    }
+  });
+});
+
 describe('calcDamage', () => {
   it('matches the formula for a fixed roll', () => {
     // base = floor(floor(22*40*75/60)/50)+2 = 24; STAB none (fire vs normal user); x1 eff

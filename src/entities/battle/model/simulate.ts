@@ -96,10 +96,12 @@ export function simulateBattle(
     const blueSpeed = activeOf('blue').stats.speed;
     const redFirst = redSpeed === blueSpeed ? rng() < 0.5 : redSpeed > blueSpeed;
     const order: Side[] = redFirst ? ['red', 'blue'] : ['blue', 'red'];
+    // Fighters are fixed for the turn: a replacement sent in by a KO only enters next turn.
+    const fighters: Record<Side, Fighter> = { red: activeOf('red'), blue: activeOf('blue') };
     for (const s of order) {
-      const attacker = activeOf(s);
-      const defender = activeOf(other(s));
-      // A fighter KO'd earlier this turn does not act (active index may have advanced).
+      const attacker = fighters[s];
+      const defender = fighters[other(s)];
+      // A fighter KO'd earlier this turn does not act.
       if ((hp.get(attacker.id) ?? 0) <= 0 || (hp.get(defender.id) ?? 0) <= 0) continue;
       if (act(turn, attacker, defender)) return finish(turn, s, 'knockout');
     }
