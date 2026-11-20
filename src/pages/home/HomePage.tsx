@@ -1,10 +1,11 @@
 import { useRef, useState, type CSSProperties } from 'react';
 import { Pokeball } from '@/entities/pokemon';
-import { useTrainer } from '@/entities/trainer';
+import { useRoster } from '@/entities/trainer';
 import { MotionToggle } from '@/features/motion-toggle/MotionToggle';
 import { TeamBuilderForm } from '@/features/team-builder';
 import { gsap, useGSAP } from '@/shared/lib/gsap';
 import { usePrefersReducedMotion } from '@/shared/lib/motion';
+import { href } from '@/shared/lib/router';
 import { useScrollTriggerRefresh } from '@/shared/lib/useScrollTriggerRefresh';
 import { Spotlight } from '@/shared/ui/Spotlight';
 import { TeamShowcase } from '@/widgets/team-showcase/TeamShowcase';
@@ -18,9 +19,13 @@ const AURORA_LAYERS = [
 ] as const;
 
 export function HomePage() {
-  const { trainer, save, swap, reset } = useTrainer();
+  const { trainers, add, remove, swap } = useRoster();
+  const [selectedId, setSelectedId] = useState<string | null>(null);
   /** Counts saves made in this session — drives the showcase lock-in sequence (never on reload). */
   const [celebration, setCelebration] = useState(0);
+  /** The trainer the lock-in belongs to; picking another trainer ends it, so switching never replays it. */
+  const [celebratedId, setCelebratedId] = useState<string | null>(null);
+  const shownId = trainers.find((t) => t.id === selectedId)?.id ?? trainers[0]?.id ?? null;
 
   const pageRef = useRef<HTMLDivElement>(null);
   const contentRef = useRef<HTMLDivElement>(null);
@@ -78,6 +83,12 @@ export function HomePage() {
           <div className="flex items-center gap-2">
           <MotionToggle />
           <a
+            href={href('/battle')}
+            className="flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-semibold text-ink-100 transition-colors hover:bg-white/5 hover:text-white"
+          >
+            Battle
+          </a>
+          <a
             href="https://github.com/edgergard/pokeAPI"
             target="_blank"
             rel="noreferrer"
@@ -121,14 +132,29 @@ export function HomePage() {
             <h2 className="mb-6 font-display text-xl font-bold tracking-tight">New trainer card</h2>
             <TeamBuilderForm
               onSave={(values) => {
-                save(values);
+                const saved = add(values);
+                setSelectedId(saved.id);
+                setCelebratedId(saved.id);
                 setCelebration((count) => count + 1);
               }}
             />
           </div>
         </section>
 
-        <TeamShowcase trainer={trainer} onReset={reset} onSwap={swap} celebration={celebration} />
+        <TeamShowcase
+          trainers={trainers}
+          selectedId={shownId}
+          onSelect={(id) => {
+            setSelectedId(id);
+            setCelebratedId(null);
+          }}
+          onRemove={(id) => {
+            remove(id);
+            if (id === celebratedId) setCelebratedId(null);
+          }}
+          onSwap={swap}
+          celebration={shownId !== null && shownId === celebratedId ? celebration : 0}
+        />
       </div>
     </div>
   );

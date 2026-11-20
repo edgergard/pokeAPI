@@ -1,11 +1,12 @@
 import { useEffect, useRef, useState, type CSSProperties } from 'react';
-import { GripHorizontal, RotateCcw } from 'lucide-react';
+import { ChevronDown, GripHorizontal, Swords, Trash2 } from 'lucide-react';
 import { PokemonCard, PokemonCardPlaceholder, typeColor, usePokemonList, type Pokemon } from '@/entities/pokemon';
 import { TEAM_SIZE, type Trainer } from '@/entities/trainer';
 import { cn } from '@/shared/lib/cn';
 import { formatName } from '@/shared/lib/format';
 import { GSAP_EASE, gsap, useGSAP } from '@/shared/lib/gsap';
 import { prefersReducedMotion, usePrefersReducedMotion } from '@/shared/lib/motion';
+import { href } from '@/shared/lib/router';
 import { useGsapInteractive } from '@/shared/lib/useGsapInteractive';
 import { useInView } from '@/shared/lib/useInView';
 import { Button } from '@/shared/ui/Button';
@@ -13,11 +14,14 @@ import { LockInBurst } from './LockInBurst';
 import { useSlotReorder } from './useSlotReorder';
 
 type Props = {
-  trainer: Trainer | null;
-  onReset: () => void;
-  /** Swaps two team slots (drag & drop or Alt + arrows). */
-  onSwap: (from: number, to: number) => void;
-  /** Number of saves in this session; a bump plays the lock-in sequence. */
+  /** The visitor's trainers, newest first. */
+  trainers: Trainer[];
+  selectedId: string | null;
+  onSelect: (id: string) => void;
+  onRemove: (id: string) => void;
+  /** Swaps two team slots of a trainer (drag & drop or Alt + arrows). */
+  onSwap: (id: string, from: number, to: number) => void;
+  /** Number of saves in this session; a bump plays the lock-in sequence (0 = none for this trainer). */
   celebration?: number;
 };
 
@@ -32,7 +36,10 @@ const SCRAMBLE_DELAY = 0.35;
 const LETTERS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz';
 const randomLetter = () => LETTERS[Math.floor(Math.random() * LETTERS.length)] ?? 'x';
 
-export function TeamShowcase({ trainer, onReset, onSwap, celebration = 0 }: Props) {
+export function TeamShowcase({ trainers, selectedId, onSelect, onRemove, onSwap, celebration = 0 }: Props) {
+  const trainer = trainers.find((t) => t.id === selectedId) ?? trainers[0] ?? null;
+  /** Stable per trainer and per save: the grid remounts on a new save or a switch, never on a reorder. */
+  const gridKey = trainer ? `${trainer.id}:${trainer.savedAt}` : 'none';
   const team = trainer?.team ?? [];
   const { data, statuses } = usePokemonList(team);
   const slots = Array.from({ length: TEAM_SIZE }, (_, i) => i);
@@ -64,9 +71,9 @@ export function TeamShowcase({ trainer, onReset, onSwap, celebration = 0 }: Prop
   const { onSlotKeyDown, settled } = useSlotReorder({
     gridRef,
     team,
-    version: trainer?.savedAt ?? 'none',
+    version: gridKey,
     enabled: trainer !== null,
-    onSwap,
+    onSwap: (from, to) => trainer && onSwap(trainer.id, from, to),
     announce,
   });
 
@@ -183,10 +190,37 @@ export function TeamShowcase({ trainer, onReset, onSwap, celebration = 0 }: Prop
         </div>
 
         {trainer && (
-          <Button variant="outline" onClick={onReset}>
-            <RotateCcw className="size-4" />
-            Reset
-          </Button>
+          <div className="flex flex-wrap items-center gap-2">
+            {trainers.length > 1 && (
+              <label className="relative flex items-center">
+                <span className="sr-only">Switch trainer</span>
+                <select
+                  value={trainer.id}
+                  onChange={(e) => onSelect(e.target.value)}
+                  className="h-10 max-w-[12rem] cursor-pointer appearance-none rounded-xl border border-white/12 bg-ink-900/70 py-0 pr-9 pl-3.5 text-sm font-semibold text-ink-100 transition-colors hover:border-white/25 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
+                >
+                  {trainers.map((t) => (
+                    <option key={t.id} value={t.id}>
+                      {t.firstName} {t.lastName}
+                    </option>
+                  ))}
+                </select>
+                <ChevronDown className="pointer-events-none absolute right-3 size-4 text-ink-400" aria-hidden />
+              </label>
+            )}
+            <Button
+              variant="outline"
+              aria-label={`Remove ${fullName}`}
+              onClick={() => {
+                onRemove(trainer.id);
+                // The focused button goes away with the trainer: keep keyboard users in the showcase.
+                requestAnimationFrame(() => headingRef.current?.focus({ preventScroll: true }));
+              }}
+            >
+              <Trash2 className="size-4" />
+              Remove
+            </Button>
+          </div>
         )}
       </header>
 
@@ -194,7 +228,7 @@ export function TeamShowcase({ trainer, onReset, onSwap, celebration = 0 }: Prop
       <div ref={stageRef}>
         {/* Re-keyed per save so the slots remount (and deal) even when the same team is saved again. */}
         <div
-          key={trainer?.savedAt ?? 'none'}
+          key={gridKey}
           ref={gridRef}
           role={trainer ? 'list' : undefined}
           aria-label={trainer ? 'Team slots' : undefined}
@@ -245,6 +279,17 @@ export function TeamShowcase({ trainer, onReset, onSwap, celebration = 0 }: Prop
           {fresh && <LockInBurst key={trainer.savedAt} colors={burstColors} />}
         </div>
       </div>
+
+      {trainer && (
+        <a
+          href={href('/battle')}
+          className="group flex w-fit items-center gap-2 rounded-xl bg-accent px-5 py-3 text-[15px] font-semibold text-ink-950 shadow-glow transition-all duration-150 hover:bg-accent-strong focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent active:scale-[0.98]"
+        >
+          <Swords className="size-4" aria-hidden />
+          Battle with this team
+          <span aria-hidden className="transition-transform group-hover:translate-x-0.5">→</span>
+        </a>
+      )}
 
       {/* Keyed per save: a fresh node is an addition, so saving again under the same name is announced too. */}
       <p className="sr-only" aria-live="polite">
