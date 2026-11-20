@@ -1,7 +1,8 @@
 import { describe, expect, it } from 'vitest';
-import { DirectionalLight, Group, Mesh, PlaneGeometry, Points, Scene, Texture } from 'three';
+import { DirectionalLight, Group, Mesh, PlaneGeometry, Points, Scene, ShaderMaterial, Texture } from 'three';
 import type { BattleEvent, Fighter, Move, Side } from '@/entities/battle';
 import { choreograph } from '../model/choreograph';
+import type { StageDirector } from '../model/director';
 import type { BattleStage } from './BattleStage';
 import { CameraRig } from './cameraRig';
 import { createStageDirector } from './director3d';
@@ -31,7 +32,9 @@ function fakeStage(perSide = 3) {
   const fighters = (['red', 'blue'] as const).flatMap((side) => Array.from({ length: perSide }, (_, i) => fighter(side, i)));
   const roles = new Map<string, { role: SlotRole | null; faceDown: boolean }>();
   const tints = new Map<string, number>();
-  const cards = new Map(fighters.map((f) => {
+  /** Highest tint each card reached since the last `peaks.clear()`. */
+  const peaks = new Map<string, number>();
+  const makeCards = () => new Map(fighters.map((f) => {
     const pivot = new Group();
     const face = new Mesh(new PlaneGeometry(), new HoloMaterial({ map: new Texture(), color: '#ff6a3d', shared, phase: 0 }));
     const back = new Mesh(new PlaneGeometry(), new HoloMaterial({ map: new Texture(), color: '#ff7a66', shared, phase: 0 }));
@@ -40,8 +43,18 @@ function fakeStage(perSide = 3) {
     const group = new Group();
     group.add(pivot);
     scene.add(group);
-    return [f.id, { group, pivot, face, fighter: f, setTint: (_c: string, amount: number) => void tints.set(f.id, amount) }];
+    const setTint = (_c: string, amount: number) => {
+      tints.set(f.id, amount);
+      peaks.set(f.id, Math.max(peaks.get(f.id) ?? 0, amount));
+    };
+    return [f.id, { group, pivot, face, fighter: f, setTint }];
   }));
+  let cards = makeCards();
+  /** Like `BattleStage.load()` again: the old cards (and their textures) are replaced. */
+  const reload = () => {
+    for (const c of cards.values()) scene.remove(c.group);
+    cards = makeCards();
+  };
   const card = (id: string) => {
     const c = cards.get(id);
     if (!c) throw new Error(id);
@@ -66,7 +79,7 @@ function fakeStage(perSide = 3) {
     setRole: (id: string, role: SlotRole | null, faceDown = false) => void roles.set(id, { role, faceDown }),
     setKeyTint: () => {},
   };
-  return { stage: stage as unknown as BattleStage, card, roles, tints, scene, camera };
+  return { stage: stage as unknown as BattleStage, card, roles, tints, peaks, scene, camera, reload };
 }
 
 const BATTLE: BattleEvent[] = [
@@ -87,12 +100,23 @@ const BATTLE: BattleEvent[] = [
   { kind: 'end', turn: 3, winner: 'red', reason: 'turnCap', summary: [] },
 ];
 
+function run(events: BattleEvent[], director: StageDirector) {
+  const { timeline, seconds } = choreograph(events, director, { onEvent: () => {} });
+  for (let t = 0; t <= seconds + 1 / 60; t += 1 / 60) timeline.time(Math.min(t, seconds));
+  return { timeline, seconds };
+}
+
 function play(events: BattleEvent[], reducedMotion = false) {
   const fake = fakeStage();
   const director = createStageDirector(fake.stage, { reducedMotion });
-  const { timeline, seconds } = choreograph(events, director, { onEvent: () => {} });
-  for (let t = 0; t <= seconds + 1 / 60; t += 1 / 60) timeline.time(Math.min(t, seconds));
-  return { ...fake, director, seconds, timeline };
+  return { ...fake, director, ...run(events, director) };
+}
+
+/** Plays one beat to its end at 60 fps, outside any choreography. */
+function step(beat: gsap.core.Timeline) {
+  beat.pause(0);
+  for (let t = 0; t <= beat.duration() + 1 / 60; t += 1 / 60) beat.time(Math.min(t, beat.duration()));
+  beat.kill();
 }
 
 const visibleFx = (scene: Scene) => scene.children.filter((c) => c instanceof Points && c.visible).length;
@@ -177,5 +201,42 @@ describe('createStageDirector', () => {
     expect(roles.get('red-0')?.role).toBeNull();
     expect(visibleFx(scene)).toBe(0);
     expect(camera.held?.name).toBe('victory');
+  });
+
+  it('rebuilds shards after the stage reloads, instead of reusing the previous battle cards', () => {
+    const fake = fakeStage();
+    const director = createStageDirector(fake.stage, { reducedMotion: false });
+    const koOnly = BATTLE.slice(0, 6);
+    run(koOnly, director);
+    fake.reload();
+    const face = fake.card('blue-0').face.material;
+    if (!(face instanceof HoloMaterial)) throw new Error('face');
+    run(koOnly, director);
+    const groups = fake.scene.children.filter((c) => c.name === 'blue-0-shards');
+    expect(groups).toHaveLength(1);
+    const shard = groups[0]?.children[0];
+    const material = shard instanceof Mesh ? shard.material : null;
+    expect(material).toBeInstanceOf(ShaderMaterial);
+    expect((material as ShaderMaterial).uniforms.uFace?.value).toBe(face.uniforms.uMap.value);
+    director.dispose();
+    expect(fake.scene.children.filter((c) => c.name.endsWith('-shards'))).toHaveLength(0);
+  });
+
+  it.each([false, true])('never flashes twice within 350 ms of wall-clock time (reduced motion: %s)', (reducedMotion) => {
+    let clock = 1000;
+    const fake = fakeStage();
+    const director = createStageDirector(fake.stage, { reducedMotion, now: () => clock });
+    const accent = { damage: 50, effectiveness: 2 as const, critical: true };
+    const flash = () => {
+      fake.peaks.clear();
+      step(director.impact('blue-0', 'hit', accent, 'full'));
+      return fake.peaks.get('blue-0') ?? 0;
+    };
+    expect(flash()).toBeGreaterThan(0.2);
+    clock += 200; // e.g. ×2 speed or compressed beats: the next hit lands too soon
+    expect(flash()).toBe(0);
+    clock += 200; // 400 ms after the last flash
+    expect(flash()).toBeGreaterThan(0.2);
+    director.dispose();
   });
 });

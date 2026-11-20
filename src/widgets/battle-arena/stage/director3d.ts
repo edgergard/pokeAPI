@@ -1,17 +1,4 @@
-import {
-  type BufferGeometry,
-  Color,
-  DoubleSide,
-  Group,
-  type IUniform,
-  Mesh,
-  ShaderMaterial,
-  type Texture,
-  UniformsLib,
-  UniformsUtils,
-  Vector2,
-  Vector3,
-} from 'three';
+import { Color, Vector3 } from 'three';
 import { createRng, type Move, type Side } from '@/entities/battle';
 import { typeColor } from '@/entities/pokemon';
 import { gsap, GSAP_EASE } from '@/shared/lib/gsap';
@@ -21,8 +8,8 @@ import type { Shot, ShotName } from './cameraRig';
 import { SIDE_COLOR } from './cardTexture';
 import { FX_HIT, FX_SECONDS, FxPool, type FxShot, fxFamily } from './fx';
 import { HoloMaterial } from './holoMaterial';
-import { CARD_HEIGHT, CARD_HOVER, CARD_RADIUS, CARD_WIDTH, type SlotRole, slotPosition } from './layout';
-import { createShards } from './shards';
+import { CARD_HEIGHT, CARD_HOVER, CARD_WIDTH, type SlotRole, slotPosition } from './layout';
+import { resetShards, ShatterCache } from './shatter';
 
 /*
  * The 3D stage director: turns each choreography beat into a self-contained GSAP timeline that
@@ -44,13 +31,17 @@ import { createShards } from './shards';
  * Accents (camera shake, white flash) only on super-effective hits, critical hits and KOs.
  * Reduced motion: every beat is ≤ 0.3 s of fades (tint to the stage's ink colour) and cuts,
  * with no shake and no flash; a KO fades out instead of shattering.
+ * Flash rate: impact tint pulses share a wall-clock budget (a pulse within FLASH_GAP_MS of the
+ * previous one is skipped), so x2 speed or compressed beats never exceed 3 flashes per second.
  */
 
 type Timeline = gsap.core.Timeline;
 
 const INK = '#07080b';
 const TAU = Math.PI * 2;
-const SHARDS_PER_CARD = 24;
+/** Minimum wall-clock gap between two impact flashes/pulses (fewer than 3 per second). */
+export const FLASH_GAP_MS = 350;
+const AXIS_Y = new Vector3(0, 1, 0);
 
 /** Beat lengths at 1× (see Global Constraints). Short tier: lunge + impact ≈ 0.7 s. */
 const BEAT = {
@@ -70,26 +61,37 @@ type Status = 'deck' | 'bench' | 'active' | 'out';
 type Entry = { id: string; side: Side; slot: number; status: Status };
 type Pose = { position: Vector3; rotationY: number };
 
-type ShardSet = {
-  group: Group;
-  meshes: Mesh<BufferGeometry, ShaderMaterial>[];
-  /** Resting (unbroken) local positions of each shard. */
-  base: Vector3[];
-  uniforms: { uOpacity: IUniform<number>; uDim: IUniform<number> };
-  material: ShaderMaterial;
-  seed: number;
-};
-
 export type StageDirector3D = StageDirector & {
-  /** Releases the FX pool and shard meshes (the stage's own dispose also covers them). */
+  /** Removes and frees this director's FX emitters and shard groups from the stage's scene. */
   dispose(): void;
 };
 
-export function createStageDirector(stage: BattleStage, opts: { reducedMotion: boolean }): StageDirector3D {
+export type StageDirectorOptions = {
+  reducedMotion: boolean;
+  /** Wall clock in ms for the flash-rate cap (default `performance.now`); injectable for tests. */
+  now?: () => number;
+};
+
+/**
+ * Creates the director for one stage.
+ *
+ * Lifecycle contract:
+ * - Create it after `stage.load()` has resolved: `intro()` reads `stage.fighters`.
+ * - One director may serve several battles on the same stage, including after another
+ *   `stage.load()`: each `intro()` re-reads the fighters, and a card's shards are re-cut when the
+ *   stage has replaced that card (same fighter id, new handle and textures).
+ * - Kill the previous battle's timeline before choreographing a new one.
+ * - When the motion setting flips, create a new director and call the old one's `dispose()`:
+ *   its FX emitters and shard groups otherwise stay in the scene. (`stage.dispose()` frees
+ *   them too, on unmount.)
+ */
+export function createStageDirector(stage: BattleStage, opts: StageDirectorOptions): StageDirector3D {
   const reduced = opts.reducedMotion;
+  const now = opts.now ?? (() => performance.now());
   const rig = stage.camera;
   const pool = new FxPool(stage.scene);
-  const shardSets = new Map<string, ShardSet>();
+  const shatter = new ShatterCache(stage.scene, stage.lights.key.color);
+  let lastFlash = Number.NEGATIVE_INFINITY;
   const tints = new Map<string, { color: string; amount: number }>();
   const model = new Map<string, Entry>();
   /** The exchange in flight: set by lunge(), consumed by the impact() that follows it. */
@@ -181,6 +183,41 @@ export function createStageDirector(stage: BattleStage, opts: { reducedMotion: b
     s.color = color;
     s.amount = amount;
     stage.card(id).setTint(color, amount);
+  };
+
+  const riseEase = gsap.parseEase('power2.out');
+  const fallEase = gsap.parseEase('sine.inOut');
+  /**
+   * One tint pulse on a card: up to `peak` over `rise` s, back to 0 over `fall` s. Pulses share a
+   * wall-clock budget: one starting within FLASH_GAP_MS of the previous is skipped entirely.
+   */
+  const pulse = (t: Timeline, id: string, color: string, peak: number, rise: number, fall: number, at: number) => {
+    const s = tintState(id);
+    const k = { v: 0 };
+    let on = false;
+    const apply = (amount: number) => {
+      s.amount = amount;
+      stage.card(id).setTint(s.color, amount);
+    };
+    t.to(k, {
+      v: rise + fall,
+      duration: rise + fall,
+      ease: 'none',
+      onStart: () => {
+        const time = now();
+        on = time - lastFlash >= FLASH_GAP_MS;
+        if (!on) return;
+        lastFlash = time;
+        s.color = color;
+      },
+      onUpdate: () => {
+        if (!on) return;
+        apply(k.v < rise ? peak * riseEase(k.v / rise) : peak * (1 - fallEase((k.v - rise) / fall)));
+      },
+      onComplete: () => {
+        if (on) apply(0);
+      },
+    }, at);
   };
 
   const keyTo = (t: Timeline, color: string, amount: number, duration: number, at: number) => {
@@ -283,50 +320,6 @@ export function createStageDirector(stage: BattleStage, opts: { reducedMotion: b
   };
 
   // ---------------------------------------------------------------------------------------------
-  // Shards
-
-  const seedOf = (id: string) => [...id].reduce((h, c) => Math.imul(h ^ c.charCodeAt(0), 0x01000193) >>> 0, 0x811c9dc5);
-
-  const shardSet = (id: string): ShardSet => {
-    const existing = shardSets.get(id);
-    if (existing) return existing;
-    const handle = stage.card(id);
-    const faceMaterial = handle.face.material;
-    const back = handle.group.getObjectByName('back');
-    const backMaterial = back instanceof Mesh ? back.material : null;
-    const face = faceMaterial instanceof HoloMaterial ? faceMaterial.uniforms.uMap.value : null;
-    const backMap = backMaterial instanceof HoloMaterial ? backMaterial.uniforms.uMap.value : face;
-    const { material, uniforms } = createShardMaterial(face, backMap, stage.lights.key.color);
-
-    const group = new Group();
-    group.name = `${id}-shards`;
-    group.visible = false;
-    const base: Vector3[] = [];
-    const meshes = createShards(CARD_WIDTH, CARD_HEIGHT, SHARDS_PER_CARD, seedOf(id)).map((geometry) => {
-      const c = geometry.userData.centroid as { x: number; y: number };
-      geometry.translate(-c.x, -c.y, 0); // spin about the shard's own centre
-      const mesh = new Mesh(geometry, material);
-      mesh.position.set(c.x, c.y, 0);
-      base.push(new Vector3(c.x, c.y, 0));
-      group.add(mesh);
-      return mesh;
-    });
-    stage.scene.add(group);
-    const set: ShardSet = { group, meshes, base, uniforms, material, seed: seedOf(id) };
-    shardSets.set(id, set);
-    return set;
-  };
-
-  const resetShards = (set: ShardSet) => {
-    set.meshes.forEach((mesh, i) => {
-      const b = set.base[i];
-      if (b) mesh.position.copy(b);
-      mesh.rotation.set(0, 0, 0);
-    });
-    set.uniforms.uOpacity.value = 1;
-  };
-
-  // ---------------------------------------------------------------------------------------------
   // Shared beat pieces
 
   /** Finishes an FX shot whose impact never came (a move without a result), so no effect lingers. */
@@ -341,10 +334,7 @@ export function createStageDirector(stage: BattleStage, opts: { reducedMotion: b
     pool.reset();
     rig.shake.set(0, 0, 0);
     stage.setKeyTint('#ffffff', 0);
-    for (const set of shardSets.values()) {
-      set.group.visible = false;
-      resetShards(set);
-    }
+    shatter.resetAll();
     for (const e of model.values()) {
       const handle = stage.card(e.id);
       handle.group.visible = true;
@@ -572,8 +562,7 @@ export function createStageDirector(stage: BattleStage, opts: { reducedMotion: b
     if (reduced) {
       const t = timeline(REDUCED.impact);
       if (result === 'hit') {
-        tintTo(t, targetId, INK, 0.3, 0.1, 'sine.out', 0);
-        tintTo(t, targetId, INK, 0, 0.15, 'sine.in', 0.1);
+        pulse(t, targetId, INK, 0.3, 0.1, 0.15, 0);
       }
       return t;
     }
@@ -613,16 +602,13 @@ export function createStageDirector(stage: BattleStage, opts: { reducedMotion: b
 
       if (accent) {
         // One white flash (never repeated within a beat → far under 3 Hz).
-        tintTo(t, targetId, '#ffffff', 0.55, 0.05, 'power2.out', 0);
-        tintTo(t, targetId, '#ffffff', 0, 0.32, 'power2.out', 0.05);
+        pulse(t, targetId, '#ffffff', 0.55, 0.05, 0.32, 0);
         const strength = (eff >= 4 ? 0.09 : eff > 1 ? 0.06 : 0) + (info.critical ? 0.04 : 0);
         cameraShake(t, strength, 0.32, 0);
       } else if (eff < 1) {
-        tintTo(t, targetId, INK, 0.25, 0.06, 'sine.out', 0);
-        tintTo(t, targetId, INK, 0, 0.3, 'sine.inOut', 0.06);
+        pulse(t, targetId, INK, 0.25, 0.06, 0.3, 0);
       } else {
-        tintTo(t, targetId, '#fff3e0', 0.16, 0.06, 'sine.out', 0);
-        tintTo(t, targetId, '#fff3e0', 0, 0.28, 'sine.inOut', 0.06);
+        pulse(t, targetId, '#fff3e0', 0.16, 0.06, 0.28, 0);
       }
     } else if (result === 'miss') {
       // A quick sidestep out of the effect's path, then back.
@@ -636,8 +622,7 @@ export function createStageDirector(stage: BattleStage, opts: { reducedMotion: b
       poseTo(t, targetId, settle, { duration: seconds - 0.2, ease: GSAP_EASE.standard }, 0.18);
     } else {
       // No effect: the card barely registers it — a cool, faint shimmer.
-      tintTo(t, targetId, '#9aa4b8', 0.15, 0.08, 'sine.out', 0);
-      tintTo(t, targetId, '#9aa4b8', 0, 0.3, 'sine.inOut', 0.08);
+      pulse(t, targetId, '#9aa4b8', 0.15, 0.08, 0.3, 0);
     }
 
     if (tier === 'full') cameraTo(t, () => rig.shot('wide'), seconds - 0.05, 'power2.inOut', 0.05, { name: 'wide' });
@@ -661,7 +646,7 @@ export function createStageDirector(stage: BattleStage, opts: { reducedMotion: b
 
     const t = timeline(BEAT.knockOut);
     flushPending(t);
-    const set = shardSet(fighterId);
+    const set = shatter.get(stage.card(fighterId));
     const { group } = stage.card(fighterId);
     const CRACK = 0.18;
 
@@ -769,15 +754,23 @@ export function createStageDirector(stage: BattleStage, opts: { reducedMotion: b
     // Glide to the victory framing, then a slow orbit that settles and holds.
     const ORBIT = 0.38;
     cameraTo(t, () => rig.shot('victory'), 1.1, 'power2.inOut', 0);
+    // The framing is resolved once when the orbit starts; each frame only rotates a stored
+    // offset about the target (no allocation, no shot maths per frame).
     const k = { v: 0 };
+    const centre = new Vector3();
+    const offset = new Vector3();
     t.to(k, {
       v: ORBIT,
       duration: BEAT.victory - 1.1,
       ease: 'sine.inOut',
+      onStart: () => {
+        const shot = rig.shot('victory');
+        centre.copy(shot.target);
+        offset.subVectors(shot.position, shot.target);
+      },
       onUpdate: () => {
-        const s = rig.shot('victory', k.v);
-        rig.position.copy(s.position);
-        rig.target.copy(s.target);
+        rig.position.copy(offset).applyAxisAngle(AXIS_Y, k.v).add(centre);
+        rig.target.copy(centre);
       },
       onComplete: () => rig.cut('victory', ORBIT),
     }, 1.1);
@@ -794,12 +787,7 @@ export function createStageDirector(stage: BattleStage, opts: { reducedMotion: b
     victory,
     dispose() {
       pool.dispose();
-      for (const set of shardSets.values()) {
-        stage.scene.remove(set.group);
-        for (const mesh of set.meshes) mesh.geometry.dispose();
-        set.material.dispose();
-      }
-      shardSets.clear();
+      shatter.dispose();
     },
   };
 }
@@ -807,68 +795,4 @@ export function createStageDirector(stage: BattleStage, opts: { reducedMotion: b
 /** A point `distance` in front of a card's face (along its yaw-facing normal). */
 function facePoint(pose: Pose, distance: number, out: Vector3): Vector3 {
   return out.set(Math.sin(pose.rotationY), 0, Math.cos(pose.rotationY)).multiplyScalar(distance).add(pose.position);
-}
-
-/**
- * Shard surface: the card's face on the front, its back on the reverse (one flat geometry, two
- * textures picked by `gl_FrontFacing`), clipped to the rounded card outline, fading as one.
- */
-function createShardMaterial(face: Texture | null, back: Texture | null, keyColor: Color) {
-  const uniforms = {
-    ...UniformsUtils.clone(UniformsLib.fog),
-    uFace: { value: face },
-    uBack: { value: back },
-    uKey: { value: keyColor }, // the stage's key light colour, by reference
-    uDimColor: { value: new Color(INK) },
-    uDim: { value: 0 },
-    uOpacity: { value: 1 },
-    uSize: { value: new Vector2(CARD_WIDTH, CARD_HEIGHT) },
-    uRadius: { value: CARD_RADIUS },
-  };
-  const material = new ShaderMaterial({
-    uniforms,
-    fog: true,
-    transparent: true,
-    side: DoubleSide,
-    vertexShader: /* glsl */ `
-      varying vec2 vUv;
-      #include <common>
-      #include <fog_pars_vertex>
-      void main() {
-        vUv = uv;
-        vec4 mvPosition = modelViewMatrix * vec4(position, 1.0);
-        gl_Position = projectionMatrix * mvPosition;
-        #include <fog_vertex>
-      }
-    `,
-    fragmentShader: /* glsl */ `
-      uniform sampler2D uFace;
-      uniform sampler2D uBack;
-      uniform vec3 uKey;
-      uniform vec3 uDimColor;
-      uniform float uDim;
-      uniform float uOpacity;
-      uniform vec2 uSize;
-      uniform float uRadius;
-      varying vec2 vUv;
-      #include <common>
-      #include <fog_pars_fragment>
-      void main() {
-        vec2 p = (vUv - 0.5) * uSize;
-        vec2 q = abs(p) - (uSize * 0.5 - uRadius);
-        if (length(max(q, 0.0)) - uRadius > 0.0) discard; // rounded card corners
-        vec3 albedo = gl_FrontFacing
-          ? texture2D(uFace, vUv).rgb
-          : texture2D(uBack, vec2(1.0 - vUv.x, vUv.y)).rgb;
-        vec3 color = albedo * mix(vec3(1.0), uKey, 0.14) * 0.95;
-        color = mix(color, uDimColor, uDim);
-        gl_FragColor = vec4(color, uOpacity);
-        #include <tonemapping_fragment>
-        #include <colorspace_fragment>
-        #include <fog_fragment>
-      }
-    `,
-  });
-  material.toneMapped = false;
-  return { material, uniforms };
 }
