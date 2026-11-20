@@ -3,6 +3,7 @@ import { BattleSetup, type Picks } from '@/features/battle-setup';
 import type { BattleTeam } from '@/entities/battle';
 import { href } from '@/shared/lib/router';
 import { Button } from '@/shared/ui/Button';
+import { StagePreview } from './StagePreview'; // TEMPORARY (Task 8) — Task 10 mounts the arena widget
 
 type State =
   | { phase: 'setup' }
@@ -33,6 +34,8 @@ export default function BattlePage() {
         />
       ) : (
         <section className="flex flex-col gap-4 rounded-3xl border border-white/10 bg-ink-900/70 p-5" aria-label="Battle">
+          {/* TEMPORARY (Task 8): bare stage preview until the arena widget lands in Task 10. */}
+          <StagePreview red={state.red} blue={state.blue} />
           <p className="text-ink-300">Arena coming soon. Fighters ready:</p>
           <div className="grid gap-4 sm:grid-cols-2">
             {[state.red, state.blue].map((team) => (

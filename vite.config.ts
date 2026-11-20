@@ -11,16 +11,22 @@ export default defineConfig(({ command, isPreview }) => ({
     alias: { '@': fileURLToPath(new URL('./src', import.meta.url)) },
   },
   build: {
+    // The lazily loaded three.js chunk is ~560 kB minified (~145 kB gzip) after tree-shaking — expected.
+    chunkSizeWarningLimit: 600,
     rollupOptions: {
       output: {
         // GSAP core + first-paint plugins change far less often than app code: own chunk, cached across
         // deploys. Draggable, Flip, ScrambleText and their utils stay out of it, so they ride the on-demand
         // chunk of shared/lib/gsap-interactive.ts instead of the critical path.
-        manualChunks: (id) =>
-          /[\\/]node_modules[\\/](gsap|@gsap)[\\/]/.test(id) &&
-          !/[\\/]gsap[\\/](Draggable|Flip|ScrambleTextPlugin)\.js$|[\\/]gsap[\\/]utils[\\/]/.test(id)
+        // three.js likewise gets its own long-lived chunk; only the battle stage imports it, so it is
+        // fetched once a battle starts and never touches the home page.
+        manualChunks: (id) => {
+          if (/[\\/]node_modules[\\/]three[\\/]/.test(id)) return 'three';
+          return /[\\/]node_modules[\\/](gsap|@gsap)[\\/]/.test(id) &&
+            !/[\\/]gsap[\\/](Draggable|Flip|ScrambleTextPlugin)\.js$|[\\/]gsap[\\/]utils[\\/]/.test(id)
             ? 'gsap'
-            : undefined,
+            : undefined;
+        },
       },
     },
   },
