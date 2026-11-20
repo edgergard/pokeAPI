@@ -179,6 +179,24 @@ export function PokemonCombobox({ value, onChange, onBlur, max, error }: Props) 
     inputRef.current.focus();
   }, [value]);
 
+  // Filling the last slot unmounts the focused input; hand focus to the newest chip's remove button
+  // so keyboard and screen-reader users keep their place (the next Tab reaches "Review team").
+  const wasFull = useRef(isFull);
+  useLayoutEffect(() => {
+    const becameFull = isFull && !wasFull.current;
+    wasFull.current = isFull;
+    if (!becameFull || document.activeElement !== document.body) return;
+    const last = value[value.length - 1];
+    const button = last ? chipEls.current.get(last)?.querySelector<HTMLButtonElement>('button') : null;
+    button?.focus();
+  }, [isFull, value]);
+
+  // Keep the keyboard-highlighted option visible inside the scrolling listbox.
+  useLayoutEffect(() => {
+    if (!showList || !activeOption) return;
+    document.getElementById(`${listId}-${activeOption.name}`)?.scrollIntoView({ block: 'nearest' });
+  }, [showList, activeOption, listId]);
+
   const remove = (name: string) => {
     focusInputNext.current = true;
     onChange(value.filter((n) => n !== name));

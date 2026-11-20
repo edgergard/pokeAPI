@@ -23,6 +23,8 @@ type Props = {
 
 /** Time for the confirm dialog's exit before scrolling to the showcase. */
 const DIALOG_EXIT_MS = 180;
+/** After the dialog's exit fallback (300ms) so its own focus restoration can't override ours. */
+const FOCUS_AFTER_SAVE_MS = 350;
 /** Only letters, spaces, hyphens and apostrophes are scrambled (ScrambleText writes innerHTML). */
 const SCRAMBLE_SAFE = /^[\p{L}\p{M}\s'’-]+$/u;
 /** Lines the name scramble up with the cards being dealt (.card-deal starts at 350ms). */
@@ -37,6 +39,7 @@ export function TeamShowcase({ trainer, onReset, onSwap, celebration = 0 }: Prop
   const reduced = usePrefersReducedMotion();
 
   const sectionRef = useRef<HTMLElement>(null);
+  const headingRef = useRef<HTMLHeadingElement>(null);
   const headerRef = useRef<HTMLElement>(null);
   const stageRef = useRef<HTMLDivElement>(null);
   const gridRef = useRef<HTMLDivElement>(null);
@@ -67,10 +70,10 @@ export function TeamShowcase({ trainer, onReset, onSwap, celebration = 0 }: Prop
     announce,
   });
 
-  // Bring the freshly saved team into view; focus is never moved.
+  // Bring the freshly saved team into view.
   useEffect(() => {
     if (celebration === 0) return;
-    const timer = setTimeout(() => {
+    const scroll = setTimeout(() => {
       const section = sectionRef.current;
       if (!section) return;
       const { top } = section.getBoundingClientRect();
@@ -78,7 +81,17 @@ export function TeamShowcase({ trainer, onReset, onSwap, celebration = 0 }: Prop
         section.scrollIntoView({ behavior: prefersReducedMotion() ? 'auto' : 'smooth', block: 'start' });
       }
     }, DIALOG_EXIT_MS);
-    return () => clearTimeout(timer);
+    // The dialog's "Save team" button goes inert and the form's submit button is disabled after reset,
+    // so focus would fall to <body>. Once the dialog has fully closed, land it on the trainer heading.
+    const focus = setTimeout(() => {
+      const active = document.activeElement;
+      const lost = !active || active === document.body || (active as HTMLButtonElement).disabled === true;
+      if (lost) headingRef.current?.focus({ preventScroll: true });
+    }, FOCUS_AFTER_SAVE_MS);
+    return () => {
+      clearTimeout(scroll);
+      clearTimeout(focus);
+    };
   }, [celebration]);
 
   // Section reveal, scrubbed by scroll: the header and the card stage drift up into place.
@@ -142,7 +155,12 @@ export function TeamShowcase({ trainer, onReset, onSwap, celebration = 0 }: Prop
           <span className="eyebrow-in font-mono text-[11px] font-bold tracking-[0.2em] text-ink-500 uppercase">
             Trainer
           </span>
-          <h2 id="trainer-heading" className="font-display text-4xl font-extrabold tracking-tight sm:text-5xl">
+          <h2
+            id="trainer-heading"
+            ref={headingRef}
+            tabIndex={-1}
+            className="font-display text-4xl font-extrabold tracking-tight outline-none sm:text-5xl"
+          >
             {trainer ? (
               <span key={fullName} className={cn('inline-block', !fresh && 'name-stamp')}>
                 <span className="sr-only">{fullName}</span>
@@ -151,7 +169,7 @@ export function TeamShowcase({ trainer, onReset, onSwap, celebration = 0 }: Prop
                 </span>
               </span>
             ) : (
-              <span key="unknown" className="name-fade inline-block text-ink-600">
+              <span key="unknown" className="name-fade inline-block text-ink-400">
                 Unknown trainer
               </span>
             )}

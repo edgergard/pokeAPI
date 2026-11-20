@@ -10,7 +10,7 @@
   --color-ink-850: #151821;
   --color-ink-800: #1b1f2a;
   --color-ink-600: #3a4152;
-  --color-ink-500: #5d6578;
+  --color-ink-500: #818a9e; /* ≥4.5:1 on ink-800…950 (WCAG AA) */
   --color-ink-400: #868ea2;
   --color-ink-300: #aab1c2;
   --color-ink-200: #cdd2de;

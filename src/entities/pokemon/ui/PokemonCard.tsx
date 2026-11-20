@@ -49,7 +49,7 @@ export function PokemonCard({ pokemon, slot, entrance = 'rise' }: Props) {
         <span className="absolute top-4 left-4 font-mono text-xs font-bold text-white/70">
           {formatDexNumber(id)}
         </span>
-        <span className="absolute top-4 right-4 font-mono text-[10px] font-bold tracking-widest text-white/40 uppercase">
+        <span className="absolute top-4 right-4 font-mono text-[10px] font-bold tracking-widest text-white/70 uppercase">
           Slot {slot + 1}
         </span>
 

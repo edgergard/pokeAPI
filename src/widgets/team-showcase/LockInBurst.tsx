@@ -40,6 +40,8 @@ export function LockInBurst({ colors }: Props) {
     [palette],
   );
 
+  // A save seen with motion off counts as shown, so switching motion back on never replays it out of context.
+  if (reduced && !done) setDone(true);
   if (reduced || done) return null;
 
   const onStart = (e: AnimationEvent) => {

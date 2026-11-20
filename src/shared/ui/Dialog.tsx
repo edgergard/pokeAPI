@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, type ReactNode } from 'react';
+import { useEffect, useId, useRef, useState, type ReactNode } from 'react';
 import { X } from 'lucide-react';
 import { cn } from '@/shared/lib/cn';
 import { prefersReducedMotion } from '@/shared/lib/motion';
@@ -19,6 +19,8 @@ const EXIT_FALLBACK_MS = 300;
 /** Native <dialog>: focus trapping, Esc handling and top-layer rendering come for free. */
 export function Dialog({ open, onClose, title, description, children, footer, className }: Props) {
   const ref = useRef<HTMLDialogElement>(null);
+  const titleId = useId();
+  const descriptionId = useId();
   // `mounted` outlives `open` by the exit animation; derived during render so content never blinks.
   const [mounted, setMounted] = useState(open);
   if (open && !mounted) setMounted(true);
@@ -63,6 +65,8 @@ export function Dialog({ open, onClose, title, description, children, footer, cl
     <dialog
       ref={ref}
       data-closing={closing || undefined}
+      aria-labelledby={titleId}
+      aria-describedby={content.description ? descriptionId : undefined}
       onCancel={(event) => {
         event.preventDefault();
         onClose();
@@ -83,8 +87,14 @@ export function Dialog({ open, onClose, title, description, children, footer, cl
         <div inert={closing} className="flex max-h-[calc(100dvh-2rem)] flex-col">
           <header className="flex items-start justify-between gap-4 border-b border-white/8 px-6 pt-6 pb-5">
             <div className="min-w-0">
-              <h2 className="font-display text-2xl font-bold tracking-tight">{content.title}</h2>
-              {content.description && <p className="mt-1 text-sm text-ink-400">{content.description}</p>}
+              <h2 id={titleId} className="font-display text-2xl font-bold tracking-tight">
+                {content.title}
+              </h2>
+              {content.description && (
+                <p id={descriptionId} className="mt-1 text-sm text-ink-400">
+                  {content.description}
+                </p>
+              )}
             </div>
             <button
               type="button"
