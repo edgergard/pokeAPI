@@ -1,20 +1,32 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/pokeAPI/favicon.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Luna Edge technical interview</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-    
-    <script type="module" crossorigin src="/pokeAPI/assets/index-4a56084b.js"></script>
-    <link rel="stylesheet" href="/pokeAPI/assets/index-e3ea0014.css">
+    <meta name="theme-color" content="#0b0c10" />
+    <meta name="description" content="Build your Pokémon team of four — powered by PokeAPI." />
+    <title>Trainer Studio · PokeAPI</title>
+    <script>
+      // Resolve the motion setting before first paint (mirrors src/shared/lib/motion.ts).
+      (function () {
+        var pref = 'system';
+        try { pref = localStorage.getItem('trainer-studio:motion') || 'system'; } catch (e) {}
+        var reduced = pref === 'off' || (pref !== 'on' && matchMedia('(prefers-reduced-motion: reduce)').matches);
+        document.documentElement.dataset.motion = reduced ? 'reduced' : 'full';
+      })();
+    </script>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@500;700&display=swap"
+      rel="stylesheet"
+    />
+    <script type="module" crossorigin src="/pokeAPI/assets/index-K-r5Dgm-.js"></script>
+    <link rel="modulepreload" crossorigin href="/pokeAPI/assets/gsap-hCjQcbYY.js">
+    <link rel="stylesheet" crossorigin href="/pokeAPI/assets/index-JWK98jI-.css">
   </head>
   <body>
-    <div id="root"></div>
-    <div id="portal"></div>
-    
+    <div id="root"></div>
   </body>
 </html>
