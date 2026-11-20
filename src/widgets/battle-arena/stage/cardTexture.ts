@@ -48,14 +48,26 @@ export async function resolveArtwork(
 const imageCache = new Map<string, Promise<HTMLImageElement>>();
 
 /** CORS-enabled image load (WebGL refuses tainted pixels), cached per URL across battles. */
-export function loadImage(url: string): Promise<HTMLImageElement> {
+export function loadImage(url: string, timeoutMs = 4000): Promise<HTMLImageElement> {
   const cached = imageCache.get(url);
   if (cached) return cached;
   const img = new Image();
   img.crossOrigin = 'anonymous';
   img.decoding = 'async';
   img.src = url;
-  const pending = img.decode().then(() => img);
+  // A stalled artwork request must not hold the battle back: after the timeout it rejects, the
+  // caller paints the placeholder face, and the cache entry is dropped so a later battle retries.
+  // The timer can fire late, after a long main-thread stall (shader compiles on first render),
+  // when the image has in fact arrived — so an image that is already complete still wins.
+  let timer: ReturnType<typeof setTimeout> | undefined;
+  const timeout = new Promise<HTMLImageElement>((resolve, reject) => {
+    timer = setTimeout(() => {
+      if (img.complete && img.naturalWidth > 0) return resolve(img);
+      img.src = '';
+      reject(new Error(`Artwork timed out: ${url}`));
+    }, timeoutMs);
+  });
+  const pending = Promise.race([img.decode().then(() => img), timeout]).finally(() => clearTimeout(timer));
   pending.catch(() => imageCache.delete(url)); // let a later battle retry
   imageCache.set(url, pending);
   return pending;

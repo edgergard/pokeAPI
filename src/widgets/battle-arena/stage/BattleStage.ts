@@ -9,6 +9,7 @@ import {
   Mesh,
   NeutralToneMapping,
   type Object3D,
+  Points,
   Scene,
   ShaderMaterial,
   SRGBColorSpace,
@@ -45,6 +46,12 @@ const INK_950 = '#07080b';
 const INK_800 = '#1b1f2a';
 const KEY_NEUTRAL = new Color('#fff3e0');
 
+/** The key light's colour for a given tint: neutral warm white blended towards `color`. */
+export function keyTintColor(color: string, amount: number, out: Color): Color {
+  return out.copy(KEY_NEUTRAL).lerp(_tint.set(color), Math.min(1, Math.max(0, amount)));
+}
+const _tint = new Color();
+
 export type StageLights = {
   /** Warm key from front-right; the director tints it towards the active fighter's type. */
   key: DirectionalLight;
@@ -55,7 +62,7 @@ export type StageLights = {
   fill: HemisphereLight;
 };
 
-type CardEntry = CardParts & { role: SlotRole | null };
+type CardEntry = CardParts & { role: SlotRole | null; faceDown: boolean };
 
 /**
  * The arena's three.js stage: renderer, scene, lights, floor, eight 3D cards and the camera rig.
@@ -157,7 +164,7 @@ export class BattleStage {
     fighters.forEach((fighter, i) => {
       const face = this.track(toTexture(paintCardFace(fighter, images[i] ?? null), anisotropy));
       const parts = createCard(fighter, geometries, { face, back: backs[fighter.side], shadow }, SIDE_COLOR[fighter.side], this.shared);
-      const entry: CardEntry = { ...parts, role: defaultRole(fighter) };
+      const entry: CardEntry = { ...parts, role: defaultRole(fighter), faceDown: false };
       this.cards.set(fighter.id, entry);
       this.scene.add(parts.handle.group, parts.shadow);
       this.place(entry);
@@ -165,6 +172,11 @@ export class BattleStage {
 
     const leadType = red.fighters[0]?.types[0];
     this.setKeyTint(typeColor(leadType), leadType ? 0.3 : 0);
+  }
+
+  /** Every loaded fighter, Red's team then Blue's, each in slot order. */
+  get fighters(): Fighter[] {
+    return [...this.cards.values()].map((entry) => entry.handle.fighter);
   }
 
   /** The director's handle on one card. Throws for unknown ids (a director bug, not a user state). */
@@ -175,25 +187,46 @@ export class BattleStage {
   }
 
   /**
-   * Records where a card belongs (`null` = off the board, e.g. after a KO). The stage snaps
-   * cards to their role on resize; the director tweens to `home()` when it moves one.
+   * Records where a card belongs (`null` = off the board, e.g. after a KO, or in flight) and
+   * whether it rests face-down (turned half a turn). The stage snaps cards to their role on
+   * resize; the director tweens to `home()` when it moves one.
    */
-  setRole(fighterId: string, role: SlotRole | null): void {
+  setRole(fighterId: string, role: SlotRole | null, faceDown = false): void {
     const entry = this.cards.get(fighterId);
-    if (entry) entry.role = role;
+    if (!entry) return;
+    entry.role = role;
+    entry.faceDown = faceDown;
   }
 
   /** Resting transform for a card's current role at the current aspect. */
   home(fighterId: string): { position: Vector3; rotationY: number } | null {
     const entry = this.cards.get(fighterId);
     if (!entry?.role) return null;
-    const { side } = entry.handle.fighter;
-    return { position: slotPosition(side, entry.role, this.aspect), rotationY: slotYaw(side, entry.role) };
+    return { position: this.slot(entry, entry.role), rotationY: this.restYaw(entry, entry.role, entry.faceDown) };
   }
 
-  /** Tints the key light (and the cards' print lighting) from neutral towards `color`. */
+  /** Where a card would rest in `role` (whatever its current role), at the current aspect. */
+  slotFor(fighterId: string, role: SlotRole, faceDown = false): { position: Vector3; rotationY: number } | null {
+    const entry = this.cards.get(fighterId);
+    if (!entry) return null;
+    return { position: this.slot(entry, role), rotationY: this.restYaw(entry, role, faceDown) };
+  }
+
+  /** The stage-owned idle-float pivot inside a card's group. Its x/z offset and x/y rotation are free for shakes. */
+  pivot(fighterId: string): Object3D {
+    const entry = this.cards.get(fighterId);
+    if (!entry) throw new Error(`BattleStage: no card for fighter "${fighterId}"`);
+    return entry.pivot;
+  }
+
+  /** Current aspect ratio (width / height) of the canvas. */
+  get aspectRatio(): number {
+    return this.aspect;
+  }
+
+  /** Tints the key light (and the cards' print lighting) from neutral towards `color`. No allocation. */
   setKeyTint(color: string, amount: number): void {
-    this.lights.key.color.copy(KEY_NEUTRAL).lerp(new Color(color), Math.min(1, Math.max(0, amount)));
+    keyTintColor(color, amount, this.lights.key.color);
   }
 
   // ------------------------------------------------------------------------------------------
@@ -260,11 +293,20 @@ export class BattleStage {
     return texture;
   }
 
+  private slot(entry: CardEntry, role: SlotRole): Vector3 {
+    return slotPosition(entry.handle.fighter.side, role, this.aspect);
+  }
+
+  /** Face-down cards turn half a turn towards the centre line, so the two sides mirror. */
+  private restYaw(entry: CardEntry, role: SlotRole, faceDown: boolean): number {
+    const { side } = entry.handle.fighter;
+    return slotYaw(side, role) + (faceDown ? (side === 'red' ? Math.PI : -Math.PI) : 0);
+  }
+
   private place(entry: CardEntry): void {
     if (!entry.role) return;
-    const { side } = entry.handle.fighter;
-    entry.handle.group.position.copy(slotPosition(side, entry.role, this.aspect));
-    entry.handle.group.rotation.set(0, slotYaw(side, entry.role), 0);
+    entry.handle.group.position.copy(this.slot(entry, entry.role));
+    entry.handle.group.rotation.set(0, this.restYaw(entry, entry.role, entry.faceDown), 0);
   }
 
   private clearCards(): void {
@@ -453,7 +495,7 @@ function disposeMaterial(material: Material | Material[]): void {
 }
 
 function disposeObject(obj: Object3D): void {
-  if (obj instanceof Mesh) {
+  if (obj instanceof Mesh || obj instanceof Points) {
     obj.geometry.dispose();
     disposeMaterial(obj.material);
   }

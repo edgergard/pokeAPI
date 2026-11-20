@@ -10,6 +10,7 @@ const FAR = 120;
 
 const _offset = new Vector3();
 const _axisY = new Vector3(0, 1, 0);
+const _look = new Vector3();
 
 /** Distance at which a box of half-size (halfW × halfH) fills the frame, with a small margin. */
 function fitDistance(halfW: number, halfH: number, aspect: number, margin = 1.08): number {
@@ -57,6 +58,11 @@ export class CameraRig {
    * `cut()` sets it; a director clears it while tweening and sets it again when a move lands.
    */
   held: { name: ShotName; orbit: number } | null = null;
+  /**
+   * Transient offset added to both the rendered position and the look-at point (a camera shake
+   * that never fights a position tween). The director animates it and returns it to zero.
+   */
+  readonly shake = new Vector3();
 
   private aspect = 16 / 9;
 
@@ -147,11 +153,12 @@ export class CameraRig {
   /** Apply position/target (+ idle drift) to the camera. `time` in seconds. */
   update(time: number): void {
     const d = this.drift;
+    const s = this.shake;
     this.camera.position.set(
-      this.position.x + Math.sin(time * 0.11) * 0.16 * d,
-      this.position.y + Math.sin(time * 0.17 + 1.3) * 0.07 * d,
-      this.position.z + Math.sin(time * 0.07 + 0.4) * 0.12 * d,
+      this.position.x + s.x + Math.sin(time * 0.11) * 0.16 * d,
+      this.position.y + s.y + Math.sin(time * 0.17 + 1.3) * 0.07 * d,
+      this.position.z + s.z + Math.sin(time * 0.07 + 0.4) * 0.12 * d,
     );
-    this.camera.lookAt(this.target);
+    this.camera.lookAt(_look.addVectors(this.target, s));
   }
 }

@@ -96,13 +96,13 @@ const fragmentShader = /* glsl */ `
 
     // Glare: a soft white spot sliding against the tilt.
     vec2 glareCenter = 0.5 - tilt * vec2(1.1, 0.9);
-    float glare = smoothstep(0.62, 0.0, distance(vUv * vec2(1.0, 1.4), glareCenter * vec2(1.0, 1.4)));
+    float glare = 1.0 - smoothstep(0.0, 0.62, distance(vUv * vec2(1.0, 1.4), glareCenter * vec2(1.0, 1.4)));
 
     // Foil: repeating 115° stripes that slide with the tilt and drift slowly over time.
     vec2 dir = vec2(cos(radians(115.0)), sin(radians(115.0)));
     float s = dot(vUv, dir) * 3.2 + tilt.x * 1.6 - tilt.y * 0.6 + uTime * 0.035 + uPhase;
     float f = fract(s);
-    float stripe = smoothstep(0.0, 0.1, f) * smoothstep(0.24, 0.12, f);
+    float stripe = smoothstep(0.0, 0.1, f) * (1.0 - smoothstep(0.12, 0.24, f));
     vec3 irid = 0.5 + 0.5 * cos(6.28318 * (s * 0.31 + vec3(0.0, 0.33, 0.67)));
     vec3 foilColor = mix(mix(uType, vec3(1.0), 0.45), irid, 0.22);
 
