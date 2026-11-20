@@ -62,4 +62,5 @@ npm run dev        # start dev server
 npm test           # unit tests
 npm run build      # typecheck + production build
 npm run deploy     # publish dist/ to GitHub Pages
+npm run movesets   # regenerate src/entities/battle/data/movesets.json from PokeAPI (rarely needed, ~2,000 requests)
 ```
