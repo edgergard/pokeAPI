@@ -41,7 +41,7 @@ export default function BattlePage() {
 
   return (
     <main className="relative isolate mx-auto flex min-h-dvh max-w-5xl flex-col gap-6 px-4 py-8 sm:py-12">
-      <BattleAmbient />
+      <BattleAmbient paused={state.phase === 'battle'} />
       <header className="flex flex-col gap-3">
         <div className="flex items-center justify-between gap-3">
           <a

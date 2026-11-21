@@ -46,8 +46,10 @@ function SpriteImage({ id, animated = true, mirrored = false, size = 64, alt = '
       className={cn(
         'shrink-0 select-none',
         // GIFs are tightly cropped pixel art of varying size: never upscaled (no blur), so relative sizes
-        // stay true. The PNG is a padded 96px canvas: contained and kept crisp.
-        source === 'animated' ? 'object-scale-down' : 'object-contain [image-rendering:pixelated]',
+        // stay true. The PNG is a padded 96px canvas, contained; nearest-neighbour only at whole multiples
+        // of 96 (a fractional reduction would drop pixel rows), smooth scaling otherwise.
+        source === 'animated' ? 'object-scale-down' : 'object-contain',
+        source === 'static' && size >= 96 && size % 96 === 0 && '[image-rendering:pixelated]',
         className,
       )}
       style={mirrored ? { scale: '-1 1' } : undefined}

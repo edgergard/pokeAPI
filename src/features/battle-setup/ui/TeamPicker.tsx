@@ -1,4 +1,4 @@
-import { useId, useRef, type CSSProperties } from 'react';
+import { useId, useRef, type AnimationEvent, type CSSProperties, type PointerEvent } from 'react';
 import { Dices } from 'lucide-react';
 import { PokemonSprite, TypeBadge, typeColor, usePokemonList } from '@/entities/pokemon';
 import { PRESET_TRAINERS, trainerOptionLabels, type Trainer } from '@/entities/trainer';
@@ -36,11 +36,13 @@ export function TeamPicker({ side, trainer, own, onChange, onRandom, randomReady
   const listRef = useRef<HTMLUListElement>(null);
   /** A new trainer or a new team (select, 🎲) replays the entrance; so does the first mount. */
   const teamKey = `${trainer.id}:${trainer.team.join(',')}`;
+  /** The entrance waits for the team data, so it springs the real cards, not the placeholders. */
+  const ready = !team.isPending;
 
   useGSAP(
     () => {
       const list = listRef.current;
-      if (reduced || !list) return;
+      if (reduced || !ready || !list) return;
       gsap.from(list.children, {
         opacity: 0,
         y: 18,
@@ -51,8 +53,17 @@ export function TeamPicker({ side, trainer, own, onChange, onRandom, randomReady
         clearProps: 'opacity,transform',
       });
     },
-    { scope: listRef, dependencies: [teamKey, reduced], revertOnUpdate: true },
+    { scope: listRef, dependencies: [teamKey, ready, reduced], revertOnUpdate: true },
   );
+
+  // Hover bounce: started on mouse enter and left to finish on its own (leaving early must not snap it back).
+  const bounce = (e: PointerEvent<HTMLLIElement>) => {
+    if (reduced || e.pointerType !== 'mouse') return;
+    e.currentTarget.querySelector<HTMLElement>('.fighter-bounce')?.setAttribute('data-bounce', '');
+  };
+  const bounceDone = (e: AnimationEvent<HTMLSpanElement>) => {
+    if (e.target === e.currentTarget) e.currentTarget.removeAttribute('data-bounce');
+  };
 
   const all = [...own, ...PRESET_TRAINERS, trainer];
   const byId = new Map<string, Trainer>(all.map((t) => [t.id, t]));
@@ -64,7 +75,7 @@ export function TeamPicker({ side, trainer, own, onChange, onRandom, randomReady
     <section
       aria-label={label}
       style={{ '--side': ACCENT[side] } as CSSProperties}
-      className="flex min-w-0 flex-col gap-4 rounded-3xl border border-(--side)/30 bg-ink-900/70 p-4 backdrop-blur sm:p-5"
+      className="flex min-w-0 flex-col gap-4 rounded-3xl border border-(--side)/30 bg-ink-900/85 p-4 sm:p-5"
     >
       <div className="flex items-center gap-2 font-mono text-[12px] font-semibold tracking-[0.12em] text-(--side) uppercase">
         <span className="size-2 rounded-full bg-(--side)" aria-hidden />
@@ -136,12 +147,16 @@ export function TeamPicker({ side, trainer, own, onChange, onRandom, randomReady
             <li
               key={`${name}-${i}`}
               style={{ '--i': i, '--type': typeColor(p?.types[0]) } as CSSProperties}
+              onPointerEnter={bounce}
               className="fighter-card flex min-w-0 flex-col items-center gap-1.5 rounded-2xl border border-white/8 bg-ink-850/80 p-2"
             >
               <span className="relative grid size-16 place-items-center" aria-hidden>
                 <span className="fighter-shadow absolute bottom-0.5 left-1/2 h-2 w-3/5 -translate-x-1/2 rounded-[50%] bg-black/70 blur-[2px]" />
                 <span className="fighter-hop grid size-full place-items-center">
-                  <span className="fighter-bounce grid size-full place-items-center">
+                  <span
+                    className="fighter-bounce grid size-full place-items-center"
+                    onAnimationEnd={bounceDone}
+                  >
                     {p ? (
                       // Front sprites face left: the Red corner (on the left from md up) turns to face Blue.
                       <PokemonSprite id={p.id} mirrored={side === 'red'} size={64} className="size-16" />

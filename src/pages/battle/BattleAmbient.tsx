@@ -24,10 +24,15 @@ const TINT = { red: 'var(--color-side-red)', blue: 'var(--color-side-blue)', gol
 /**
  * Battle page backdrop: drifting corner glows, a perspective floor, rising motes and slow pokéballs.
  * Pure CSS (transform / opacity loops under data-motion='full'); reduced motion keeps the glows only.
+ * `paused` freezes the loops (during a battle they would compete with the WebGL arena for the GPU).
  */
-export function BattleAmbient() {
+export function BattleAmbient({ paused = false }: { paused?: boolean }) {
   return (
-    <div aria-hidden className="battle-ambient pointer-events-none fixed inset-0 -z-10 overflow-hidden">
+    <div
+      aria-hidden
+      data-paused={paused || undefined}
+      className="battle-ambient pointer-events-none fixed inset-0 -z-10 overflow-hidden"
+    >
       <span className="amb-glow amb-glow-red" />
       <span className="amb-glow amb-glow-blue" />
       <span className="amb-floor" />

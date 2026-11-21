@@ -1378,9 +1378,15 @@
     0 0 32px -6px rgb(255 210 63 / 0.45);
 }
 
+.battle-cta {
+  isolation: isolate;
+}
+
+/* z-index -1 inside the CTA's own stacking context: above the yellow fill, below the label and icon. */
 .battle-cta::after {
   content: '';
   position: absolute;
+  z-index: -1;
   top: 0;
   bottom: 0;
   left: 0;
@@ -1484,19 +1490,20 @@
   }
 }
 
+/* Grows the ring by its inset, so stroke width and corners stay even at any button width. */
 @keyframes fight-ring {
   0% {
     opacity: 0.7;
-    transform: scale(1);
+    inset: 0;
   }
   70%,
   100% {
     opacity: 0;
-    transform: scale(1.08, 1.35);
+    inset: -7px;
   }
 }
 
-/* Hover / focus glow in the Pokémon's primary type colour (--type), painted once, faded by opacity. */
+/* Hover glow in the Pokémon's primary type colour (--type), painted once, faded by opacity. */
 .fighter-card {
   position: relative;
   isolation: isolate;
@@ -1515,11 +1522,11 @@
   pointer-events: none;
 }
 
-.fighter-card:is(:hover, :focus-within) {
+.fighter-card:hover {
   border-color: color-mix(in oklab, var(--type) 50%, transparent);
 }
 
-.fighter-card:is(:hover, :focus-within)::before {
+.fighter-card:hover::before {
   opacity: 1;
 }
 
@@ -1567,7 +1574,8 @@
     animation-delay: calc(var(--i, 0) * -550ms);
   }
 
-  .fighter-card:focus-within .fighter-bounce {
+  /* Set on mouse enter, cleared on animationend: the bounce always finishes, even if the pointer leaves. */
+  .fighter-bounce[data-bounce] {
     animation: fighter-bounce 520ms var(--ease-spring);
   }
 
@@ -1586,35 +1594,34 @@
   .fight-ready::after {
     animation: fight-ring 2600ms var(--ease-out-expo) infinite;
   }
-}
 
-/* Fine pointers only: a tap's sticky :hover must not replay the bounce. */
-@media (hover: hover) and (pointer: fine) {
-  :root[data-motion='full'] .fighter-card:hover .fighter-bounce {
-    animation: fighter-bounce 520ms var(--ease-spring);
+  /* The gold ring would sweep through the gold focus outline. */
+  .fight-ready:focus-visible::after {
+    animation: none;
   }
 }
 
 /* ---------- 17. Battle ambient backdrop ---------- */
 
+/* Translate and opacity only: a scale step would make the browser re-raster these large layers. */
 @keyframes amb-drift-red {
   from {
-    transform: translate(0, 0) scale(1);
+    translate: 0 0;
     opacity: 0.85;
   }
   to {
-    transform: translate(6vw, 8vh) scale(1.12);
+    translate: 6vw 8vh;
     opacity: 1;
   }
 }
 
 @keyframes amb-drift-blue {
   from {
-    transform: translate(0, 0) scale(1.08);
+    translate: 0 0;
     opacity: 1;
   }
   to {
-    transform: translate(-6vw, -6vh) scale(0.95);
+    translate: -6vw -6vh;
     opacity: 0.8;
   }
 }
@@ -1649,23 +1656,24 @@
   }
 }
 
+/* Each box ends where its gradient does (no transparent margin), keeping the composited layers small. */
 .amb-glow {
   position: absolute;
-  width: 72vmax;
-  height: 72vmax;
+  width: 52vmax;
+  height: 52vmax;
   border-radius: 9999px;
 }
 
 .amb-glow-red {
-  left: -40vmax;
-  top: -14vmax;
-  background: radial-gradient(closest-side, rgb(255 122 102 / 0.15), transparent 72%);
+  left: -30vmax;
+  top: -4vmax;
+  background: radial-gradient(closest-side, rgb(255 122 102 / 0.15), transparent);
 }
 
 .amb-glow-blue {
-  right: -40vmax;
-  bottom: -22vmax;
-  background: radial-gradient(closest-side, rgb(94 176 255 / 0.15), transparent 72%);
+  right: -30vmax;
+  bottom: -12vmax;
+  background: radial-gradient(closest-side, rgb(94 176 255 / 0.15), transparent);
 }
 
 /* Static perspective floor: painted once, never animated. */
@@ -1719,6 +1727,11 @@
 
   .amb-particle {
     animation: amb-rise var(--d, 20s) linear var(--delay, 0s) infinite;
+  }
+
+  /* During a battle the backdrop holds still: the WebGL arena gets the GPU. */
+  .battle-ambient[data-paused] :is(.amb-glow, .amb-ball, .amb-ball-spin, .amb-particle) {
+    animation-play-state: paused;
   }
 }
 
