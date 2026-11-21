@@ -71,16 +71,40 @@ export function reduceHud(state: HudState, event: BattleEvent): HudState {
 
 const SIDE_LABEL: Record<Side, string> = { red: 'Red', blue: 'Blue' };
 
+/** The side's trainer name, or its colour when there is none or both trainers share a name. */
+function ownerOf(side: Side, trainers?: Partial<Record<Side, string>>): string {
+  const own = trainers?.[side]?.trim();
+  const other = trainers?.[side === 'red' ? 'blue' : 'red']?.trim();
+  return own && own.toLowerCase() !== other?.toLowerCase() ? own : SIDE_LABEL[side];
+}
+
+/**
+ * How the log names a fighter: the species, prefixed with its trainer ("Mira’s Charizard") when
+ * the other team fields the same species, so listeners can tell the two apart.
+ */
+export function fighterLabel(
+  id: string,
+  fighters: Record<string, Fighter>,
+  trainers?: Partial<Record<Side, string>>,
+): string {
+  const f = fighters[id];
+  if (!f) return formatName(id);
+  const species = formatName(f.name);
+  const mirrored = Object.values(fighters).some((o) => o.side !== f.side && o.name === f.name);
+  return mirrored ? `${ownerOf(f.side, trainers)}’s ${species}` : species;
+}
+
 /**
  * One battle-log line per event (null for events with nothing to say, e.g. turn starts).
- * `trainers` names the winner in the closing line; without it the side's colour is used.
+ * `trainers` names the winner in the closing line (without it the side's colour is used) and
+ * tells same-species fighters apart.
  */
 export function describeEvent(
   event: BattleEvent,
   fighters: Record<string, Fighter>,
   trainers?: Partial<Record<Side, string>>,
 ): string | null {
-  const name = (id: string) => formatName(fighters[id]?.name ?? id);
+  const name = (id: string) => fighterLabel(id, fighters, trainers);
   switch (event.kind) {
     case 'enter':
       return `${name(event.fighterId)} steps into the arena.`;

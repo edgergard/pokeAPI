@@ -16,6 +16,7 @@ type Props = {
 
 const SIDE_TEXT: Record<Side, string> = { red: 'text-side-red', blue: 'text-side-blue' };
 const SIDE_BG: Record<Side, string> = { red: 'bg-side-red', blue: 'bg-side-blue' };
+const SIDE_NAME: Record<Side, string> = { red: 'Red', blue: 'Blue' };
 
 /**
  * The result screen for the `end` event, shown once its victory beat has played: winner, reason
@@ -85,6 +86,8 @@ export function ResultOverlay({ result, red, blue, onReplay, onNewBattle }: Prop
                       <span className={cn('truncate', !row.survived && 'text-ink-400 line-through decoration-ink-500')}>
                         {f ? formatName(f.name) : row.fighterId}
                       </span>
+                      {/* The coloured dot is decorative: say whose fighter it is (same species can be on both sides). */}
+                      {f && <span className="sr-only">{` (${SIDE_NAME[f.side]}, ${(f.side === 'red' ? red : blue).trainerName})`}</span>}
                       <span className="sr-only">{row.survived ? ' (still standing)' : ' (knocked out)'}</span>
                     </span>
                   </th>

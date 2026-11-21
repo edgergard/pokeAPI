@@ -12,3 +12,4 @@ export {
 } from './model/roster';
 export { PRESET_TRAINERS } from './model/presets';
 export { randomRival } from './model/randomRival';
+export { trainerOptionLabels } from './model/optionLabels';

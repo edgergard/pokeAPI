@@ -1,7 +1,7 @@
 import { useId, type CSSProperties } from 'react';
 import { Dices } from 'lucide-react';
 import { TypeBadge, spriteUrl, usePokemonList } from '@/entities/pokemon';
-import { PRESET_TRAINERS, type Trainer } from '@/entities/trainer';
+import { PRESET_TRAINERS, trainerOptionLabels, type Trainer } from '@/entities/trainer';
 import { Button } from '@/shared/ui/Button';
 import { controlClass } from '@/shared/ui/Field';
 import { cn } from '@/shared/lib/cn';
@@ -28,7 +28,11 @@ export function TeamPicker({ side, trainer, own, onChange, onRandom, randomReady
   const label = side === 'red' ? 'Red corner' : 'Blue corner';
   const isRival = trainer.id.startsWith('rival-');
 
-  const byId = new Map<string, Trainer>([...own, ...PRESET_TRAINERS, trainer].map((t) => [t.id, t]));
+  const all = [...own, ...PRESET_TRAINERS, trainer];
+  const byId = new Map<string, Trainer>(all.map((t) => [t.id, t]));
+  // Two trainers with the same name get a hint (their lead Pokémon) so the options stay distinct.
+  const labels = trainerOptionLabels(all);
+  const optionLabel = (t: Trainer) => labels.get(t.id) ?? trainerName(t);
 
   return (
     <section
@@ -61,7 +65,7 @@ export function TeamPicker({ side, trainer, own, onChange, onRandom, randomReady
                 <optgroup label="Your trainers">
                   {own.map((t) => (
                     <option key={t.id} value={t.id} className="bg-ink-900">
-                      {trainerName(t)}
+                      {optionLabel(t)}
                     </option>
                   ))}
                 </optgroup>
@@ -69,14 +73,14 @@ export function TeamPicker({ side, trainer, own, onChange, onRandom, randomReady
               <optgroup label="Presets">
                 {PRESET_TRAINERS.map((t) => (
                   <option key={t.id} value={t.id} className="bg-ink-900">
-                    {trainerName(t)}
+                    {optionLabel(t)}
                   </option>
                 ))}
               </optgroup>
               {isRival && (
                 <optgroup label="Random rival">
                   <option value={trainer.id} className="bg-ink-900">
-                    {trainerName(trainer)}
+                    {optionLabel(trainer)}
                   </option>
                 </optgroup>
               )}

@@ -128,6 +128,32 @@ describe('describeEvent', () => {
     expect(describeEvent({ kind: 'turnStart', turn: 2 }, fighters)).toBeNull();
   });
 
+  describe('same species on both sides', () => {
+    const mirror: Record<string, Fighter> = {
+      ...fighters,
+      'red-0': fighter('red', 0, 'charizard'),
+    };
+    const trainers = { red: 'Ash', blue: 'Mira' };
+
+    it('names each fighter with its trainer', () => {
+      expect(describeEvent(moveEvt, mirror, trainers)).toBe('Mira’s Charizard used Flamethrower!');
+      expect(describeEvent(hit(), mirror, trainers)).toBe('Ash’s Charizard has 80 HP left.');
+      expect(describeEvent({ kind: 'miss', turn: 1, attackerId: 'blue-0', targetId: 'red-0' }, mirror, trainers))
+        .toBe('Ash’s Charizard dodged Mira’s Charizard’s attack!');
+      expect(describeEvent({ kind: 'ko', turn: 1, fighterId: 'red-0' }, mirror, trainers))
+        .toBe('Ash’s Charizard is knocked out!');
+    });
+
+    it('keeps unique species plain', () => {
+      expect(describeEvent({ kind: 'enter', turn: 0, fighterId: 'blue-1' }, mirror, trainers)).toBe('Gengar steps into the arena.');
+    });
+
+    it('falls back to the side colour without trainer names, or when the names match', () => {
+      expect(describeEvent(moveEvt, mirror)).toBe('Blue’s Charizard used Flamethrower!');
+      expect(describeEvent(moveEvt, mirror, { red: 'Sam', blue: 'Sam' })).toBe('Blue’s Charizard used Flamethrower!');
+    });
+  });
+
   it('names the winning trainer when trainer names are given', () => {
     const trainers = { red: 'Ash', blue: 'Mira' };
     expect(describeEvent({ kind: 'end', turn: 9, winner: 'blue', reason: 'knockout', summary: [] }, fighters, trainers))
