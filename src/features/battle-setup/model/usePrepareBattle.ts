@@ -1,8 +1,9 @@
 import { useCallback, useState } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { pokemonQuery } from '@/entities/pokemon';
-import { loadMovesets, prepareTeam, type BattleTeam, type TeamChoice } from '@/entities/battle';
+import { loadMovesets, type BattleTeam, type TeamChoice } from '@/entities/battle';
 import { prepareErrorMessage } from './prepareError';
+import { prepareTeams } from './prepareTeams';
 
 type Status = 'idle' | 'loading' | 'error';
 
@@ -18,13 +19,9 @@ export function usePrepareBattle() {
       setError(null);
       try {
         const fetchPokemon = (name: string) => queryClient.fetchQuery(pokemonQuery(name));
-        const data = await loadMovesets();
-        const [r, b] = await Promise.all([
-          prepareTeam(red, 'red', fetchPokemon, data),
-          prepareTeam(blue, 'blue', fetchPokemon, data),
-        ]);
+        const teams = await prepareTeams(red, blue, fetchPokemon, loadMovesets);
         setStatus('idle');
-        return { red: r, blue: b };
+        return teams;
       } catch (e) {
         // The UI shows a friendly line; keep the real cause (503, failed chunk, bug) in the console.
         console.error('[battle] prepare failed', e);

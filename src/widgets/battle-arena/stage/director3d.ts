@@ -165,6 +165,18 @@ export function createStageDirector(stage: BattleStage, opts: StageDirectorOptio
     group.rotation.set(0, pose.rotationY, 0);
   };
 
+  /**
+   * When a move into a slot finishes, snap the card to its role's slot as the stage resolves it
+   * now: a resize while the tween ran (phone rotation) changed the slot after the tween had
+   * captured its target, and the stage only re-places resting cards on the resize itself.
+   */
+  const rehome = (t: Timeline, id: string, at: number) => {
+    t.call(() => {
+      const pose = stage.home(id);
+      if (pose) snapTo(id, pose);
+    }, [], at);
+  };
+
   const tintState = (id: string) => {
     let s = tints.get(id);
     if (!s) tints.set(id, (s = { color: '#ffffff', amount: 0 }));
@@ -439,16 +451,15 @@ export function createStageDirector(stage: BattleStage, opts: StageDirectorOptio
       }, 0.1);
       t.to(group.rotation, { x: -0.18, z: sign(e.side) * -0.05, duration: 0.3, ease: 'power2.out' }, 0);
       t.to(group.rotation, { x: 0, z: 0, duration: 0.45, ease: GSAP_EASE.standard }, 0.33);
-      t.call(() => {
-        stage.setRole(fighterId, 'active');
-        group.rotation.y = home().rotationY;
-      }, [], 0.8);
+      t.call(() => stage.setRole(fighterId, 'active'), [], 0.8);
+      rehome(t, fighterId, 0.8);
       glint(t, fighterId, 1.7, 0.5, 0.4);
     }
     // The rest of the bench shuffles forward into the freed slots.
     bench.forEach((b, j) => {
       t.call(() => stage.setRole(b.id, { bench: j }, true), [], 0);
       poseTo(t, b.id, () => restPose(b.id, { bench: j }, true), { duration: 0.55, ease: GSAP_EASE.standard }, 0.25);
+      rehome(t, b.id, 0.8);
     });
     keyTo(t, color, 0.3, 0.6, 0.3);
     // Back to the wide shot if a previous beat left the camera elsewhere (a no-op when it is there).

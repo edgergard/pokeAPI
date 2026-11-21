@@ -250,6 +250,31 @@ export class BattleStage {
     for (const entry of this.cards.values()) this.place(entry);
   }
 
+  /**
+   * Compiles every shader in the scene up front — including the hidden FX emitters, floor glows
+   * and shard sets, which would otherwise compile on the first effect or KO and stall that beat.
+   * Call it once the director has added its objects (and built its timeline). Hidden objects are
+   * shown only for the synchronous part of the compile, so no frame ever renders them. Never
+   * rejects: a failure just leaves compilation to the first render, as before.
+   */
+  async prewarm(): Promise<void> {
+    if (this.disposed || this.contextLost) return;
+    const hidden: Object3D[] = [];
+    this.scene.traverse((obj) => {
+      if (!obj.visible) hidden.push(obj);
+    });
+    let pending: Promise<unknown>;
+    try {
+      for (const obj of hidden) obj.visible = true;
+      pending = this.renderer.compileAsync(this.scene, this.camera.camera);
+    } catch {
+      return;
+    } finally {
+      for (const obj of hidden) obj.visible = false;
+    }
+    await pending.catch(() => undefined);
+  }
+
   start(): void {
     if (this.running || this.disposed) return;
     this.running = true;

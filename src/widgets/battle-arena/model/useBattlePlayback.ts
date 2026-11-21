@@ -174,6 +174,9 @@ export function useBattlePlayback({ red, blue, seed, canvas, reducedMotion }: Ar
       directorRef.current = director;
       setReady(true);
       play(director, deliveredRef.current);
+      // The timeline is built (shard sets cut, FX emitters in the scene): compile their shaders now,
+      // during the intro, rather than on the first effect / KO. Fire-and-forget; never blocks play.
+      if (stage) void stage.prewarm();
     })();
 
     return () => {

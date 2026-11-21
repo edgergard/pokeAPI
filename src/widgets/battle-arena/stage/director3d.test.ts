@@ -60,10 +60,13 @@ function fakeStage(perSide = 3) {
     if (!c) throw new Error(id);
     return c;
   };
+  /** Mutable like the real canvas: `resize(aspect)` mimics a window resize mid-beat. */
+  let aspect = 16 / 9;
+  const resize = (next: number) => { aspect = next; };
   const slotFor = (id: string, role: SlotRole, faceDown = false) => {
     const { side } = card(id).fighter;
     return {
-      position: slotPosition(side, role, 16 / 9),
+      position: slotPosition(side, role, aspect),
       rotationY: slotYaw(side, role) + (faceDown ? (side === 'red' ? Math.PI : -Math.PI) : 0),
     };
   };
@@ -76,10 +79,14 @@ function fakeStage(perSide = 3) {
     card,
     pivot: (id: string) => card(id).pivot,
     slotFor,
+    home: (id: string) => {
+      const r = roles.get(id);
+      return r?.role ? slotFor(id, r.role, r.faceDown) : null;
+    },
     setRole: (id: string, role: SlotRole | null, faceDown = false) => void roles.set(id, { role, faceDown }),
     setKeyTint: () => {},
   };
-  return { stage: stage as unknown as BattleStage, card, roles, tints, peaks, scene, camera, reload };
+  return { stage: stage as unknown as BattleStage, card, roles, tints, peaks, scene, camera, reload, resize };
 }
 
 const BATTLE: BattleEvent[] = [
@@ -220,6 +227,23 @@ describe('createStageDirector', () => {
     expect((material as ShaderMaterial).uniforms.uFace?.value).toBe(face.uniforms.uMap.value);
     director.dispose();
     expect(fake.scene.children.filter((c) => c.name.endsWith('-shards'))).toHaveLength(0);
+  });
+
+  it('lands a dealt-in card and the shuffling bench on their new slots after a resize mid-beat', () => {
+    const fake = fakeStage();
+    const director = createStageDirector(fake.stage, { reducedMotion: false });
+    step(director.intro());
+    const beat = director.dealIn('red-0').pause(0);
+    for (let t = 0; t <= 0.5; t += 1 / 60) beat.time(t);
+    const portrait = 9 / 16; // e.g. a phone rotated mid-battle
+    fake.resize(portrait);
+    for (let t = 0.5; t <= beat.duration() + 1 / 60; t += 1 / 60) beat.time(Math.min(t, beat.duration()));
+    beat.kill();
+    const at = (id: string) => fake.card(id).group.position;
+    expect(at('red-0').distanceTo(slotPosition('red', 'active', portrait))).toBeLessThan(1e-6);
+    expect(at('red-1').distanceTo(slotPosition('red', { bench: 0 }, portrait))).toBeLessThan(1e-6);
+    expect(at('red-2').distanceTo(slotPosition('red', { bench: 1 }, portrait))).toBeLessThan(1e-6);
+    director.dispose();
   });
 
   it.each([false, true])('never flashes twice within 350 ms of wall-clock time (reduced motion: %s)', (reducedMotion) => {
