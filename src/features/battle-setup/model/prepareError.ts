@@ -1,10 +1,11 @@
 import { HttpError } from '@/shared/api/http';
+import { isChunkLoadError } from '@/shared/lib/chunkError';
 
 /** Messages browsers use when fetch() or a dynamic import() fails at the network level. */
 const NETWORK_FAILURE = /failed to fetch|networkerror|load failed|error loading dynamically imported module/i;
 
 const isNetworkFailure = (error: unknown, online: boolean) =>
-  !online || (error instanceof TypeError && NETWORK_FAILURE.test(error.message));
+  !online || isChunkLoadError(error) || (error instanceof TypeError && NETWORK_FAILURE.test(error.message));
 
 /**
  * A short, human message for a failed team preparation. Only a real fetch / chunk failure (or an

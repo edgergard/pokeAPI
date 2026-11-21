@@ -14,11 +14,17 @@ export function useInView(
   ref: RefObject<Element | null>,
   { rootMargin = '0px 0px -10% 0px', threshold = 0 }: Options = {},
 ): boolean {
-  const [inView, setInView] = useState(() => typeof IntersectionObserver === 'undefined');
+  // Starts false on server and client alike (no hydration mismatch); without IntersectionObserver it
+  // flips to true right after mount.
+  const [inView, setInView] = useState(false);
 
   useEffect(() => {
     const el = ref.current;
     if (!el || inView) return;
+    if (typeof IntersectionObserver === 'undefined') {
+      setInView(true);
+      return;
+    }
 
     const observer = new IntersectionObserver(
       (entries) => {

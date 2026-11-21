@@ -1,4 +1,5 @@
 import { useSyncExternalStore } from 'react';
+import { MOTION_STORAGE_KEY } from './motionKey';
 
 /** JS twins of the CSS motion tokens in app/styles.css — for WAAPI and rAF-driven effects. */
 export const EASE = {
@@ -14,11 +15,11 @@ export const DUR = { xs: 120, sm: 200, md: 320, lg: 500, xl: 700, xxl: 900 } as 
  * Motion preference.
  * 'system' follows the OS reduced-motion setting; 'on' / 'off' override it.
  * The resolved result is mirrored to <html data-motion="full|reduced">, which every CSS motion rule keys off.
- * index.html sets that attribute before first paint with the same logic (keep the key in sync).
+ * app/motionScript.ts sets that attribute before first paint with the same logic.
  */
 export type MotionPreference = 'system' | 'on' | 'off';
 
-export const MOTION_STORAGE_KEY = 'trainer-studio:motion';
+export { MOTION_STORAGE_KEY };
 const REDUCED_QUERY = '(prefers-reduced-motion: reduce)';
 
 const canMatchMedia = () => typeof window !== 'undefined' && typeof window.matchMedia === 'function';
