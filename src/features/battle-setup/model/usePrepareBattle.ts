@@ -2,6 +2,7 @@ import { useCallback, useState } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { pokemonQuery } from '@/entities/pokemon';
 import { loadMovesets, prepareTeam, type BattleTeam, type TeamChoice } from '@/entities/battle';
+import { prepareErrorMessage } from './prepareError';
 
 type Status = 'idle' | 'loading' | 'error';
 
@@ -26,7 +27,7 @@ export function usePrepareBattle() {
         return { red: r, blue: b };
       } catch (e) {
         setStatus('error');
-        setError(e instanceof Error ? e.message : 'Could not load the teams.');
+        setError(prepareErrorMessage(e));
         throw e;
       }
     },

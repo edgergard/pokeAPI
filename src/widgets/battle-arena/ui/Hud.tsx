@@ -135,6 +135,8 @@ function TeamBar({ team, hud }: { team: BattleTeam; hud: HudState }) {
 
 function Pip({ fighter, ko, active }: { fighter: Fighter; ko: boolean; active: boolean }) {
   const name = formatName(fighter.name);
+  // Blocked or missing artwork: show the initial instead of a broken-image icon.
+  const [broken, setBroken] = useState(false);
   return (
     <li
       className={cn(
@@ -144,8 +146,14 @@ function Pip({ fighter, ko, active }: { fighter: Fighter; ko: boolean; active: b
       )}
       title={name}
     >
-      {fighter.artwork ? (
-        <img src={fighter.artwork} alt="" className="size-full object-contain p-0.5" decoding="async" />
+      {fighter.artwork && !broken ? (
+        <img
+          src={fighter.artwork}
+          alt=""
+          className="size-full object-contain p-0.5"
+          decoding="async"
+          onError={() => setBroken(true)}
+        />
       ) : (
         <span className="text-[10px] font-bold text-ink-300" aria-hidden>{name.charAt(0)}</span>
       )}

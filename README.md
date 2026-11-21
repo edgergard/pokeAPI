@@ -1,21 +1,22 @@
 <h1 align="center">Trainer Studio</h1>
 
-<p align="center">Build your Pokémon squad of four — powered by <a href="https://pokeapi.co/">PokeAPI</a>.</p>
+<p align="center">Build your Pokémon squad of four, then watch it battle on a 3D card arena — powered by <a href="https://pokeapi.co/">PokeAPI</a>.</p>
 
 - [Live demo](https://edgergard.github.io/pokeAPI/)
 
 ## Features
 
-- Trainer registration with live validation (any alphabet, hyphens and apostrophes allowed)
+- Trainer roster: register as many trainers as you like (live validation, any alphabet, hyphens and apostrophes allowed), switch between them or remove one; a pre-roster saved trainer is migrated automatically
 - Accessible multi-select autocomplete over the full Pokédex — keyboard navigation, ranked results, sprites
 - Review dialog with types, key stats and combined base stats
 - Team cards coloured by type, with animated stat bars
-- Saved team persists across reloads (localStorage); reorder it by dragging a card's grip or with Alt + arrow keys
+- Saved teams persist across reloads (localStorage); reorder a team by dragging a card's grip or with Alt + arrow keys
+- **Team battle** (`#/battle`): pick two teams — your trainers, preset trainers or a 🎲 random rival — press **Fight** and watch a deterministic relay battle play out on a three.js arena of 3D cards, choreographed with GSAP
 - Responsive from 375px phones to wide desktops; motion follows the OS setting or an in-app Auto / On / Off toggle
 
 ## Stack
 
-React 19 · TypeScript (strict) · Vite 6 · Tailwind CSS v4 · TanStack Query 5 · React Hook Form + Zod · GSAP 3 (+ @gsap/react) · Vitest
+React 19 · TypeScript (strict) · Vite 6 · Tailwind CSS v4 · TanStack Query 5 · React Hook Form + Zod · GSAP 3 (+ @gsap/react) · three.js · Vitest
 
 ## Architecture
 
@@ -23,17 +24,22 @@ Feature-Sliced–style layering; each layer may import only from layers below it
 
 ```
 src/
-├─ app/                 # entry point, providers, global styles & design tokens
-├─ pages/home/          # page composition
+├─ app/                 # entry point, hash router switch, providers, global styles & design tokens
+├─ pages/
+│  ├─ home/             # team builder + roster showcase (#/)
+│  └─ battle/           # setup → arena, lazy-loaded (#/battle)
 ├─ widgets/
-│  └─ team-showcase/    # trainer header + 4 team slots
+│  ├─ team-showcase/    # trainer header, switcher + 4 team slots
+│  └─ battle-arena/     # choreographer, three.js stage + director, HUD, log, result screen
 ├─ features/
 │  ├─ team-builder/     # form, combobox, confirm dialog, zod schema
+│  ├─ battle-setup/     # team pickers, presets, random rival, Fight
 │  └─ motion-toggle/    # Auto / On / Off animation switch
 ├─ entities/
 │  ├─ pokemon/          # API, query hooks, DTO → domain mappers, search, cards
-│  └─ trainer/          # trainer model, pure swapSlots(), persisted storage hook
-└─ shared/              # http client, UI kit, motion + GSAP setup (lib/gsap.ts), utils
+│  ├─ trainer/          # roster model + storage, presets, random rival, pure swapSlots()
+│  └─ battle/           # seeded RNG, type chart, level-50 stats, damage, simulateBattle(), movesets
+└─ shared/              # http client, hash router, UI kit, motion + GSAP setup (lib/gsap.ts), utils
 ```
 
 Key decisions:
@@ -53,6 +59,31 @@ Key decisions:
   - slot reordering — drag a card by its **grip handle** (only the handle captures touch, so the page still scrolls on phones) onto another slot, or focus a slot and press **Alt + arrow keys**; Flip glides the cards and an `aria-live` region announces the move;
   - the cursor spotlight on the form card (`gsap.quickTo` on CSS variables, fine pointers only).
 - Every GSAP effect lives in `useGSAP` with the reduced flag as a dependency (`revertOnUpdate`), so flipping the toggle reverts it to the static end state and re-arms it when switched back. Reordering still works with motion off — just without the glide.
+
+## Battle
+
+Open **Battle** from the nav (or **Battle with this team →** under a saved team). Red and Blue each pick a trainer — your own, one of the presets, or 🎲 **Random rival** (a fresh random team on every click) — and **Fight** starts the battle. On a first visit both corners are pre-filled with presets, so a battle is one click away.
+
+```
+ teams + seed ──► simulateBattle()  ──► BattleEvent[]  ──► choreograph()  ──► GSAP master timeline ──► StageDirector
+                  entities/battle        enter · move ·      widgets/battle-arena   one beat per event,     ├─ director3d → BattleStage (three.js)
+                  pure, deterministic    hit · miss · ko ·   /model                 compressed to ≤ 90 s    └─ nullDirector (no WebGL: log only)
+                                         end                                         │
+                                                                                     └─ onEvent ──► HUD state + battle log (DOM, aria-live)
+```
+
+- **Simulation** (`entities/battle`) — a pure, seeded relay 1v1: level 50, real PokeAPI base stats, types and up to four damaging moves per Pokémon; the classic damage formula with STAB, type effectiveness, crits and a random roll. Same teams + seed → same events, so **Replay** is exact and the rules are unit-tested.
+- **Choreographer** (`widgets/battle-arena/model/choreograph.ts`) — knows every event up front and turns them into one paused GSAP timeline: deal-in → anticipation → lunge + type FX → impact → shatter. Ordinary hits use a short tier; first attacks, super-effective hits and crits get the full beat. If the battle would run past ~90 s at 1× it compresses short beats first (never below 0.35 s). Each event reaches the HUD exactly once, at the moment its beat lands.
+- **Stage** (`widgets/battle-arena/stage`) — a framework-free `BattleStage` class: renderer (DPR ≤ 2, paused while the tab is hidden), camera rig, lights, 3D cards with a holo shader and canvas-drawn faces, fractured-card shatter. `director3d` tweens those objects directly. Everything is disposed on unmount. three.js and the stage live in lazy chunks, so the home page never downloads them.
+- **Fallbacks** — no WebGL, a failed chunk or a lost context → a notice, and the battle keeps going through the log; blocked artwork → placeholder card faces.
+
+**Controls:** **×2** (double speed), **Replay** (the identical battle from the start), **New battle** (back to setup, picks kept). The result screen lists each fighter's KOs and damage. Everything is keyboard-reachable; the log announces turns. With motion **Off** (or the OS "reduce motion" setting on **Auto**) camera moves become cuts and beats become quick fades — same events, same winner.
+
+**Movesets** come from a build-time file, `src/entities/battle/data/movesets.json` (up to four damaging moves per Pokémon, picked by `selectMoves()`), so a battle needs no extra API calls. To regenerate it from PokeAPI (rarely needed — ~2,000 requests):
+
+```bash
+npm run movesets
+```
 
 ## Scripts
 

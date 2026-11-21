@@ -18,6 +18,7 @@ export default function BattlePage() {
   const [picks, setPicks] = useState<Picks>({ red: null, blue: null });
   const headingRef = useRef<HTMLHeadingElement>(null);
   const backFromBattle = useRef(false);
+  const battleRef = useRef<HTMLElement>(null);
 
   // "New battle" unmounts the arena (and the control that held focus): land on the page heading,
   // right above the setup, instead of <body>.
@@ -28,13 +29,19 @@ export default function BattlePage() {
     headingRef.current?.scrollIntoView({ block: 'nearest' });
   }, [state.phase]);
 
+  // Fight unmounts the setup (and the button that held focus): move focus to the battle region,
+  // so keyboard users continue from the arena controls instead of the top of <body>.
+  useEffect(() => {
+    if (state.phase === 'battle') battleRef.current?.focus({ preventScroll: true });
+  }, [state.phase]);
+
   return (
     <main className="relative mx-auto flex min-h-dvh max-w-5xl flex-col gap-6 px-4 py-8 sm:py-12">
       <header className="flex flex-col gap-3">
         <div className="flex items-center justify-between gap-3">
           <a
             href={href('/')}
-            className="-ml-3 w-fit rounded-lg px-3 py-2 text-sm text-ink-300 transition-colors hover:bg-white/5 hover:text-white focus-visible:outline-2 focus-visible:outline-accent"
+            className="tap-target -ml-3 w-fit rounded-lg px-3 py-2 text-sm text-ink-300 transition-colors hover:bg-white/5 hover:text-white focus-visible:outline-2 focus-visible:outline-accent"
           >
             ← Back to Trainer Studio
           </a>
@@ -52,7 +59,7 @@ export default function BattlePage() {
           onReady={(red, blue) => setState({ phase: 'battle', red, blue, seed: Math.floor(Math.random() * 2 ** 31) })}
         />
       ) : (
-        <section aria-label="Battle">
+        <section ref={battleRef} tabIndex={-1} aria-label="Battle" className="focus:outline-none">
           <Suspense
             fallback={
               <div className="grid aspect-[4/5] place-items-center rounded-3xl border border-white/10 bg-ink-950 min-[480px]:aspect-[4/3] md:aspect-video">

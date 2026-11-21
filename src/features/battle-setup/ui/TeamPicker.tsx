@@ -108,7 +108,16 @@ export function TeamPicker({ side, trainer, own, onChange, onRandom, randomReady
               className="flex min-w-0 flex-col items-center gap-1.5 rounded-2xl border border-white/8 bg-ink-850/80 p-2"
             >
               {p ? (
-                <img src={spriteUrl(p.id)} alt="" width={64} height={64} loading="lazy" className="size-16 object-contain" />
+                <img
+                  src={spriteUrl(p.id)}
+                  alt=""
+                  width={64}
+                  height={64}
+                  loading="lazy"
+                  className="size-16 object-contain"
+                  // Blocked sprite host: keep the empty slot instead of a broken-image icon.
+                  onError={(e) => { e.currentTarget.style.visibility = 'hidden'; }}
+                />
               ) : (
                 <span className="size-16 animate-pulse rounded-full bg-white/5" aria-hidden />
               )}

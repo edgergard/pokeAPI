@@ -74,6 +74,21 @@
   color: transparent;
 }
 
+/* Grows a small control's hit area to at least 44 × 44 px without changing its layout (crowded phone nav).
+   Host must not clip overflow; it becomes the positioning context. */
+@utility tap-target {
+  position: relative;
+  &::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: max(100%, 44px);
+    height: max(100%, 44px);
+    transform: translate(-50%, -50%);
+  }
+}
+
 /* The colour lives in .aurora-blob children so each glow can drift on its own. */
 @utility aurora {
   overflow: hidden;

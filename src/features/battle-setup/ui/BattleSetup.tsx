@@ -77,7 +77,7 @@ export function BattleSetup({ onReady, picks = { red: null, blue: null }, onPick
               <button
                 type="button"
                 onClick={fight}
-                className="rounded font-semibold underline underline-offset-2 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
+                className="tap-target rounded font-semibold underline underline-offset-2 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
               >
                 Retry
               </button>

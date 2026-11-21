@@ -197,7 +197,7 @@ export function TeamShowcase({ trainers, selectedId, onSelect, onRemove, onSwap,
                 <select
                   value={trainer.id}
                   onChange={(e) => onSelect(e.target.value)}
-                  className="h-10 max-w-[12rem] cursor-pointer appearance-none rounded-xl border border-white/12 bg-ink-900/70 py-0 pr-9 pl-3.5 text-sm font-semibold text-ink-100 transition-colors hover:border-white/25 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
+                  className="h-10 max-sm:h-11 max-w-[12rem] cursor-pointer appearance-none rounded-xl border border-white/12 bg-ink-900/70 py-0 pr-9 pl-3.5 text-sm font-semibold text-ink-100 transition-colors hover:border-white/25 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
                 >
                   {trainers.map((t) => (
                     <option key={t.id} value={t.id}>
