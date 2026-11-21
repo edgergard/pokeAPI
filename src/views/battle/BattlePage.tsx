@@ -1,8 +1,13 @@
-import { lazy, Suspense, useEffect, useRef, useState } from 'react';
+'use client';
+
+import { lazy, Suspense, useEffect, useRef, useState, type ComponentProps } from 'react';
+import Link from 'next/link';
+import { useSearchParams } from 'next/navigation';
 import { BattleSetup, type Picks } from '@/features/battle-setup';
 import { MotionToggle } from '@/features/motion-toggle/MotionToggle';
 import type { BattleTeam } from '@/entities/battle';
-import { currentHashParam, href } from '@/shared/lib/router';
+import { href } from '@/shared/lib/router';
+import { useHydrated } from '@/shared/lib/useHydrated';
 import { ErrorBoundary } from '@/shared/ui/ErrorBoundary';
 import { Spinner } from '@/shared/ui/Spinner';
 import { BattleAmbient } from './BattleAmbient';
@@ -18,8 +23,11 @@ type State =
 export default function BattlePage() {
   const [state, setState] = useState<State>({ phase: 'setup' });
   const [picks, setPicks] = useState<Picks>({ red: null, blue: null });
-  /** "Battle with this team" on home links here with `?red=<trainer id>`: that team starts in Red. */
-  const [preferredRedId] = useState(() => currentHashParam('red'));
+  /**
+   * The picks depend on the roster (localStorage) and `?red=`, neither of which exists in the prerendered HTML:
+   * until hydration a same-size placeholder stands in, so no wrong trainers flash and swap.
+   */
+  const hydrated = useHydrated();
   const headingRef = useRef<HTMLHeadingElement>(null);
   const backFromBattle = useRef(false);
   const battleRef = useRef<HTMLElement>(null);
@@ -44,12 +52,12 @@ export default function BattlePage() {
       <BattleAmbient paused={state.phase === 'battle'} />
       <header className="flex flex-col gap-3">
         <div className="flex items-center justify-between gap-3">
-          <a
+          <Link
             href={href('/')}
             className="tap-target -ml-3 w-fit rounded-lg px-3 py-2 text-sm text-ink-300 transition-colors hover:bg-white/5 hover:text-white focus-visible:outline-2 focus-visible:outline-accent"
           >
             ← Back to Trainer Studio
-          </a>
+          </Link>
           <MotionToggle />
         </div>
         <h1 ref={headingRef} tabIndex={-1} className="font-display text-3xl font-extrabold tracking-tight focus:outline-none sm:text-4xl">
@@ -58,12 +66,15 @@ export default function BattlePage() {
       </header>
 
       {state.phase === 'setup' ? (
-        <BattleSetup
-          picks={picks}
-          preferredRedId={preferredRedId}
-          onPicksChange={setPicks}
-          onReady={(red, blue) => setState({ phase: 'battle', red, blue, seed: Math.floor(Math.random() * 2 ** 31) })}
-        />
+        hydrated ? (
+          <SetupWithQuery
+            picks={picks}
+            onPicksChange={setPicks}
+            onReady={(red, blue) => setState({ phase: 'battle', red, blue, seed: Math.floor(Math.random() * 2 ** 31) })}
+          />
+        ) : (
+          <SetupPlaceholder />
+        )
       ) : (
         <section ref={battleRef} tabIndex={-1} aria-label="Battle" className="focus:outline-none">
           <ErrorBoundary key={state.seed} title="The battle arena couldn’t load">
@@ -88,5 +99,30 @@ export default function BattlePage() {
         </section>
       )}
     </main>
+  );
+}
+
+type SetupProps = Omit<ComponentProps<typeof BattleSetup>, 'preferredRedId'>;
+
+/**
+ * Reads `?red=<trainer id>` ("Battle with this team" on home): that team starts in Red.
+ * Rendered only after hydration, so useSearchParams never runs during prerender (where it would turn the
+ * whole page into a client-rendered shell) and has the new URL on client-side navigation.
+ */
+function SetupWithQuery(props: SetupProps) {
+  return <BattleSetup {...props} preferredRedId={useSearchParams().get('red')} />;
+}
+
+/** Same footprint as the two corners + Fight button, so hydration doesn't shift the page. */
+function SetupPlaceholder() {
+  return (
+    <div className="flex flex-col gap-6" aria-busy="true" aria-label="Loading teams">
+      <div className="grid gap-4 md:grid-cols-2 md:gap-6">
+        {(['border-(--color-side-red)/30', 'border-(--color-side-blue)/30'] as const).map((border) => (
+          <div key={border} className={`h-[496px] rounded-3xl md:h-[331px] border ${border} bg-ink-900/85`} />
+        ))}
+      </div>
+      <div className="mx-auto h-12 w-full rounded-xl bg-white/5 sm:w-64" />
+    </div>
   );
 }

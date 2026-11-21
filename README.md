@@ -11,23 +11,27 @@
 - Review dialog with types, key stats and combined base stats
 - Team cards coloured by type, with animated stat bars
 - Saved teams persist across reloads (localStorage); reorder a team by dragging a card's grip or with Alt + arrow keys
-- **Team battle** (`#/battle`): pick two teams — your trainers, preset trainers or a 🎲 random rival — press **Fight** and watch a deterministic relay battle play out on a three.js arena of 3D cards, choreographed with GSAP
+- **Team battle** (`/battle`): pick two teams — your trainers, preset trainers or a 🎲 random rival — press **Fight** and watch a deterministic relay battle play out on a three.js arena of 3D cards, choreographed with GSAP
 - Responsive from 375px phones to wide desktops; motion follows the OS setting or an in-app Auto / On / Off toggle
 
 ## Stack
 
-React 19 · TypeScript (strict) · Vite 6 · Tailwind CSS v4 · TanStack Query 5 · React Hook Form + Zod · GSAP 3 (+ @gsap/react) · three.js · Vitest
+Next.js 16 (App Router, static export) · React 19 · TypeScript (strict) · Tailwind CSS v4 · TanStack Query 5 · React Hook Form + Zod · GSAP 3 (+ @gsap/react) · three.js · Vitest
 
 ## Architecture
 
-Feature-Sliced–style layering; each layer may import only from layers below it.
+Next.js routes live in the root `app/`; everything else keeps Feature-Sliced–style layering, where each layer may import only from layers below it. (The FSD *pages* layer is called `views/`, because Next reserves `src/pages/` for its Pages Router.)
 
 ```
+app/                    # Next.js App Router: root layout (fonts, metadata, pre-paint motion script), routes
+├─ page.tsx             # / — prerendered home
+├─ battle/page.tsx      # /battle/ — prerendered battle page
+└─ not-found.tsx        # 404
 src/
-├─ app/                 # entry point, hash router switch, providers, global styles & design tokens
-├─ pages/
-│  ├─ home/             # team builder + roster showcase (#/)
-│  └─ battle/           # setup → arena, lazy-loaded (#/battle)
+├─ app/                 # providers (TanStack Query), legacy #/ link redirect, global styles & design tokens
+├─ views/
+│  ├─ home/             # team builder + roster showcase (/)
+│  └─ battle/           # setup → arena, three.js loaded only when a battle starts (/battle/)
 ├─ widgets/
 │  ├─ team-showcase/    # trainer header, switcher + 4 team slots
 │  └─ battle-arena/     # choreographer, three.js stage + director, HUD, log, result screen
@@ -39,10 +43,15 @@ src/
 │  ├─ pokemon/          # API, query hooks, DTO → domain mappers, search, cards
 │  ├─ trainer/          # roster model + storage, presets, random rival, pure swapSlots()
 │  └─ battle/           # seeded RNG, type chart, level-50 stats, damage, simulateBattle(), movesets
-└─ shared/              # http client, hash router, UI kit, motion + GSAP setup (lib/gsap.ts), utils
+└─ shared/              # http client, route hrefs, storage store, UI kit, motion + GSAP setup (lib/gsap.ts), utils
 ```
 
 Key decisions:
+
+- **Static export, prerendered HTML.** `next build` (`output: 'export'`) renders both routes to plain HTML at build time, so the page arrives with its content and styles instead of an empty `<div id="root">`; GitHub Pages serves it as static files under `basePath: '/pokeAPI'` with `trailingSlash` so `/battle/` maps to `battle/index.html`.
+- **Hydration-safe browser storage.** The roster, the selected trainer and the motion preference are read through `useSyncExternalStore` stores (`shared/lib/storageStore.ts`): prerendered HTML and the hydrating render agree, and the stored values swap in before paint — no hydration mismatch. The roster also stays in sync across tabs.
+- **Self-hosted fonts** via `next/font` — no render-blocking Google Fonts stylesheet, size-adjusted fallbacks against layout shift.
+- **Real URLs.** `/battle/?red=<trainer id>` replaced hash routing; client-side navigation goes through `next/link` (prefetched), and old `#/battle?red=…` links are redirected on load.
 
 - **Server state lives in TanStack Query** — the Pokédex index is fetched once and cached forever; each Pokémon is cached by name, so the review dialog and the team cards share requests.
 - **DTOs are mapped to a small domain model** (`toPokemon`) — the UI never touches raw API shapes; stats are matched by name instead of array position.
@@ -50,7 +59,7 @@ Key decisions:
 
 ## Motion
 
-- **One switch for everything.** `shared/lib/motion.ts` resolves the OS `prefers-reduced-motion` setting together with the in-app **Auto / On / Off** toggle and mirrors the result to `<html data-motion="full|reduced">` (set before first paint in `index.html`). CSS keys off that attribute, never the media query; JS reads `usePrefersReducedMotion()`.
+- **One switch for everything.** `shared/lib/motion.ts` resolves the OS `prefers-reduced-motion` setting together with the in-app **Auto / On / Off** toggle and mirrors the result to `<html data-motion="full|reduced">` (set before first paint by an inline script from `src/app/motionScript.ts`). CSS keys off that attribute, never the media query; JS reads `usePrefersReducedMotion()`.
 - **CSS / WAAPI** handle the curtain-up load-in, card internals (stat bars, holo tilt, glints), placeholders and the lock-in burst.
 - **GSAP** (`shared/lib/gsap.ts` registers ScrollTrigger and SplitText for first paint; Draggable, Flip and ScrambleText live in `shared/lib/gsap-interactive.ts`, loaded on demand via `useGsapInteractive()` once a team exists, so they stay off the critical path) handles:
   - the hero heading — SplitText chars rise out of a mask, screen readers get the original text, re-split after web fonts load;
@@ -62,7 +71,7 @@ Key decisions:
 
 ## Battle
 
-Open **Battle** from the nav (or **Battle with this team →** under a saved team, which puts that team in the Red corner via `#/battle?red=<trainer id>`). Red and Blue each pick a trainer — your own, one of the presets, or 🎲 **Random rival** (a fresh random team on every click) — and **Fight** starts the battle. On a first visit both corners are pre-filled with presets, so a battle is one click away.
+Open **Battle** from the nav (or **Battle with this team →** under a saved team, which puts that team in the Red corner via `/battle/?red=<trainer id>`). Red and Blue each pick a trainer — your own, one of the presets, or 🎲 **Random rival** (a fresh random team on every click) — and **Fight** starts the battle. On a first visit both corners are pre-filled with presets, so a battle is one click away.
 
 ```
  teams + seed ──► simulateBattle()  ──► BattleEvent[]  ──► choreograph()  ──► GSAP master timeline ──► StageDirector
@@ -89,9 +98,10 @@ npm run movesets
 
 ```bash
 npm install
-npm run dev        # start dev server
-npm test           # unit tests
-npm run build      # typecheck + production build
-npm run deploy     # publish dist/ to GitHub Pages
+npm run dev        # Next.js dev server at http://localhost:3000
+npm test           # unit tests (Vitest)
+npm run typecheck  # route types + tsc
+npm run build      # typecheck + static export to out/
+npm run deploy     # publish out/ to GitHub Pages (with .nojekyll, so _next/ is served)
 npm run movesets   # regenerate src/entities/battle/data/movesets.json from PokeAPI (rarely needed, ~2,000 requests)
 ```

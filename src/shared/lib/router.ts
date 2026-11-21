@@ -1,48 +1,30 @@
-import { useSyncExternalStore } from 'react';
-
 export type Route = '/' | '/battle';
 
-export type HashParams = Record<string, string>;
+export type RouteParams = Record<string, string>;
 
-/** The route and the `?query` that follows it, e.g. `#/battle?red=<id>`. Anything unknown is home. */
-export function parseLocation(hash: string): { route: Route; params: URLSearchParams } {
-  const q = hash.indexOf('?');
-  const path = q === -1 ? hash : hash.slice(0, q);
-  const query = q === -1 ? '' : hash.slice(q + 1);
-  return { route: path === '#/battle' ? '/battle' : '/', params: new URLSearchParams(query) };
-}
-
-/** Anything but a known `#/route` is home. */
-export function parseHash(hash: string): Route {
-  return parseLocation(hash).route;
-}
-
-/** The `href` for a plain `<a>` pointing at a route (optionally with query params). */
-export const href = (route: Route, params?: HashParams): string => {
+/**
+ * The `href` for a route (optionally with query params), e.g. `/battle/?red=<id>`.
+ * Pass it to next/link, which prefixes the deploy basePath. Trailing slashes match `trailingSlash: true`,
+ * so links hit the exported `battle/index.html` directly instead of a redirect.
+ */
+export const href = (route: Route, params?: RouteParams): string => {
   const query = params ? new URLSearchParams(params).toString() : '';
-  return `#${route}${query ? `?${query}` : ''}`;
+  const path = route === '/' ? '/' : `${route}/`;
+  return `${path}${query ? `?${query}` : ''}`;
 };
 
-export function navigate(route: Route, params?: HashParams): void {
-  window.location.hash = href(route, params);
-}
-
-/** One query param of the current hash (`null` outside the browser or when absent). */
-export function currentHashParam(name: string): string | null {
-  if (typeof window === 'undefined') return null;
-  return parseLocation(window.location.hash).params.get(name);
-}
-
-function subscribe(onChange: () => void) {
-  window.addEventListener('hashchange', onChange);
-  return () => window.removeEventListener('hashchange', onChange);
-}
-
-/** The current route, re-rendering on `hashchange` (back/forward included). */
-export function useHashRoute(): Route {
-  return useSyncExternalStore(
-    subscribe,
-    () => parseHash(window.location.hash),
-    () => '/',
-  );
+/**
+ * Old builds used hash routing (`#/battle?red=<id>`), and those links live on in bookmarks and posts.
+ * Returns the path-based `href` a legacy hash points at, or `null` when it isn't a legacy route link.
+ */
+export function legacyHashTarget(hash: string): string | null {
+  if (!hash.startsWith('#/')) return null;
+  const q = hash.indexOf('?');
+  const path = q === -1 ? hash.slice(1) : hash.slice(1, q);
+  const params = new URLSearchParams(q === -1 ? '' : hash.slice(q + 1));
+  if (path === '/battle' || path === '/battle/') {
+    const entries = Object.fromEntries(params);
+    return href('/battle', Object.keys(entries).length ? entries : undefined);
+  }
+  return path === '/' ? href('/') : null;
 }

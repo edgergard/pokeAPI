@@ -1,4 +1,7 @@
+'use client';
+
 import { useRef, useState, type CSSProperties } from 'react';
+import Link from 'next/link';
 import { Pokeball } from '@/entities/pokemon';
 import { useRoster } from '@/entities/trainer';
 import { MotionToggle } from '@/features/motion-toggle/MotionToggle';
@@ -6,6 +9,7 @@ import { TeamBuilderForm } from '@/features/team-builder';
 import { gsap, useGSAP } from '@/shared/lib/gsap';
 import { usePrefersReducedMotion } from '@/shared/lib/motion';
 import { href } from '@/shared/lib/router';
+import { createStorageStore } from '@/shared/lib/storageStore';
 import { useScrollTriggerRefresh } from '@/shared/lib/useScrollTriggerRefresh';
 import { Spotlight } from '@/shared/ui/Spotlight';
 import { TeamShowcase } from '@/widgets/team-showcase/TeamShowcase';
@@ -21,30 +25,29 @@ const AURORA_LAYERS = [
 /** The showcased trainer survives Home → Battle → back within the tab (not across sessions). */
 const SELECTED_KEY = 'trainer-studio:selected:v1';
 
-function readSelected(): string | null {
-  try {
-    return window.sessionStorage.getItem(SELECTED_KEY);
-  } catch {
-    return null;
-  }
-}
-
-function writeSelected(id: string | null) {
-  try {
-    if (id) window.sessionStorage.setItem(SELECTED_KEY, id);
-    else window.sessionStorage.removeItem(SELECTED_KEY);
-  } catch {
-    /* storage blocked: the selection just isn't remembered */
-  }
-}
+const selectedStore = createStorageStore<string | null>({
+  read: () => {
+    try {
+      return window.sessionStorage.getItem(SELECTED_KEY);
+    } catch {
+      return null;
+    }
+  },
+  write: (id) => {
+    try {
+      if (id) window.sessionStorage.setItem(SELECTED_KEY, id);
+      else window.sessionStorage.removeItem(SELECTED_KEY);
+    } catch {
+      /* storage blocked: the selection just isn't remembered */
+    }
+  },
+  serverValue: null,
+});
 
 export function HomePage() {
   const { trainers, add, remove, swap } = useRoster();
-  const [selectedId, setSelectedIdState] = useState<string | null>(readSelected);
-  const setSelectedId = (id: string | null) => {
-    setSelectedIdState(id);
-    writeSelected(id);
-  };
+  const selectedId = selectedStore.useValue();
+  const setSelectedId = selectedStore.set;
   /** Counts saves made in this session — drives the showcase lock-in sequence (never on reload). */
   const [celebration, setCelebration] = useState(0);
   /** The trainer the lock-in belongs to; picking another trainer ends it, so switching never replays it. */
@@ -100,18 +103,18 @@ export function HomePage() {
 
       <div ref={contentRef} className="relative mx-auto flex max-w-7xl flex-col gap-16 px-4 pb-20 sm:px-6 lg:px-8">
         <nav className="reveal-down flex h-20 items-center justify-between" style={stagger(0)}>
-          <a href="#" className="flex items-center gap-2.5 font-display text-lg font-bold tracking-tight">
+          <Link href={href('/')} className="flex items-center gap-2.5 font-display text-lg font-bold tracking-tight">
             <Pokeball className="size-7 text-accent" />
             Trainer Studio
-          </a>
+          </Link>
           <div className="flex items-center gap-2">
             <MotionToggle />
-            <a
+            <Link
               href={href('/battle')}
               className="tap-target flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-semibold text-ink-100 transition-colors hover:bg-white/5 hover:text-white focus-visible:outline-2 focus-visible:outline-accent"
             >
               Battle
-            </a>
+            </Link>
             <a
               href="https://github.com/edgergard/pokeAPI"
               target="_blank"

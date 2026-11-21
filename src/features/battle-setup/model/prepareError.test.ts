@@ -16,6 +16,12 @@ describe('prepareErrorMessage', () => {
     expect(prepareErrorMessage(new TypeError(message), true)).toBe(OFFLINE);
   });
 
+  it('labels a Next.js lazy-chunk failure as a network problem', () => {
+    const error = new Error('Failed to load chunk /_next/static/chunks/abc.js from module 42');
+    error.name = 'ChunkLoadError';
+    expect(prepareErrorMessage(error, true)).toBe(OFFLINE);
+  });
+
   it('treats any failure while the browser is offline as a network problem', () => {
     expect(prepareErrorMessage(new Error('boom'), false)).toBe(OFFLINE);
   });
