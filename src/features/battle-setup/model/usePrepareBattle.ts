@@ -26,6 +26,8 @@ export function usePrepareBattle() {
         setStatus('idle');
         return { red: r, blue: b };
       } catch (e) {
+        // The UI shows a friendly line; keep the real cause (503, failed chunk, bug) in the console.
+        console.error('[battle] prepare failed', e);
         setStatus('error');
         setError(prepareErrorMessage(e));
         throw e;
