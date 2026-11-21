@@ -1595,6 +1595,138 @@
   }
 }
 
+/* ---------- 17. Battle ambient backdrop ---------- */
+
+@keyframes amb-drift-red {
+  from {
+    transform: translate(0, 0) scale(1);
+    opacity: 0.85;
+  }
+  to {
+    transform: translate(6vw, 8vh) scale(1.12);
+    opacity: 1;
+  }
+}
+
+@keyframes amb-drift-blue {
+  from {
+    transform: translate(0, 0) scale(1.08);
+    opacity: 1;
+  }
+  to {
+    transform: translate(-6vw, -6vh) scale(0.95);
+    opacity: 0.8;
+  }
+}
+
+@keyframes amb-rise {
+  0% {
+    transform: translate3d(0, 0, 0);
+    opacity: 0;
+  }
+  12%,
+  80% {
+    opacity: var(--o, 0.4);
+  }
+  100% {
+    transform: translate3d(var(--sway, 0), -105vh, 0);
+    opacity: 0;
+  }
+}
+
+@keyframes amb-float {
+  from {
+    transform: translateY(0);
+  }
+  to {
+    transform: translateY(-24px);
+  }
+}
+
+@keyframes amb-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.amb-glow {
+  position: absolute;
+  width: 72vmax;
+  height: 72vmax;
+  border-radius: 9999px;
+}
+
+.amb-glow-red {
+  left: -40vmax;
+  top: -14vmax;
+  background: radial-gradient(closest-side, rgb(255 122 102 / 0.15), transparent 72%);
+}
+
+.amb-glow-blue {
+  right: -40vmax;
+  bottom: -22vmax;
+  background: radial-gradient(closest-side, rgb(94 176 255 / 0.15), transparent 72%);
+}
+
+/* Static perspective floor: painted once, never animated. */
+.amb-floor {
+  position: absolute;
+  left: -50%;
+  right: -50%;
+  bottom: 0;
+  height: 42vh;
+  background-image:
+    linear-gradient(rgb(255 255 255 / 0.05) 1px, transparent 1px),
+    linear-gradient(90deg, rgb(255 255 255 / 0.05) 1px, transparent 1px);
+  background-size: 56px 56px;
+  background-position: center bottom;
+  transform: perspective(420px) rotateX(64deg);
+  transform-origin: 50% 100%;
+  mask-image: linear-gradient(to top, black 10%, transparent 80%);
+}
+
+.amb-ball {
+  position: absolute;
+  color: white;
+  opacity: 0.045;
+}
+
+.amb-particle {
+  position: absolute;
+  bottom: -8px;
+  border-radius: 9999px;
+  opacity: 0;
+}
+
+:root[data-motion='full'] {
+  .amb-glow-red {
+    animation: amb-drift-red 22s var(--ease-ambient) infinite alternate;
+  }
+
+  .amb-glow-blue {
+    animation: amb-drift-blue 26s var(--ease-ambient) infinite alternate;
+  }
+
+  .amb-ball {
+    animation: amb-float var(--float, 12s) var(--ease-ambient) infinite alternate;
+    animation-delay: calc(var(--i, 0) * -3s);
+  }
+
+  .amb-ball-spin {
+    animation: amb-spin var(--spin, 80s) linear infinite;
+    animation-direction: var(--dir, normal);
+  }
+
+  .amb-particle {
+    animation: amb-rise var(--d, 20s) linear var(--delay, 0s) infinite;
+  }
+}
+
+/* Reduced motion: only the two glows stay, still. */
+:root[data-motion='reduced'] :is(.amb-floor, .amb-ball, .amb-particle) {
+  display: none;
+}
+
 /* ---------- Reduced motion kill switch ---------- */
 
 :root[data-motion='reduced'] {

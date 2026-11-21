@@ -5,6 +5,7 @@ import type { BattleTeam } from '@/entities/battle';
 import { currentHashParam, href } from '@/shared/lib/router';
 import { ErrorBoundary } from '@/shared/ui/ErrorBoundary';
 import { Spinner } from '@/shared/ui/Spinner';
+import { BattleAmbient } from './BattleAmbient';
 
 // The arena (and, inside it, three.js) loads only once a battle starts.
 const BattleArena = lazy(() => import('@/widgets/battle-arena').then((m) => ({ default: m.BattleArena })));
@@ -39,7 +40,8 @@ export default function BattlePage() {
   }, [state.phase]);
 
   return (
-    <main className="relative mx-auto flex min-h-dvh max-w-5xl flex-col gap-6 px-4 py-8 sm:py-12">
+    <main className="relative isolate mx-auto flex min-h-dvh max-w-5xl flex-col gap-6 px-4 py-8 sm:py-12">
+      <BattleAmbient />
       <header className="flex flex-col gap-3">
         <div className="flex items-center justify-between gap-3">
           <a
