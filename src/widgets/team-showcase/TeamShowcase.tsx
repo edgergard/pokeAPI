@@ -1,15 +1,15 @@
 import { useEffect, useRef, useState, type CSSProperties } from 'react';
-import { ChevronDown, GripHorizontal, Swords, Trash2 } from 'lucide-react';
+import { ChevronDown, GripHorizontal, Trash2 } from 'lucide-react';
 import { PokemonCard, PokemonCardPlaceholder, typeColor, usePokemonList, type Pokemon } from '@/entities/pokemon';
 import { TEAM_SIZE, trainerOptionLabels, type Trainer } from '@/entities/trainer';
 import { cn } from '@/shared/lib/cn';
 import { formatName } from '@/shared/lib/format';
 import { GSAP_EASE, gsap, useGSAP } from '@/shared/lib/gsap';
 import { prefersReducedMotion, usePrefersReducedMotion } from '@/shared/lib/motion';
-import { href } from '@/shared/lib/router';
 import { useGsapInteractive } from '@/shared/lib/useGsapInteractive';
 import { useInView } from '@/shared/lib/useInView';
 import { Button } from '@/shared/ui/Button';
+import { BattleBanner } from './BattleBanner';
 import { LockInBurst } from './LockInBurst';
 import { useSlotReorder } from './useSlotReorder';
 
@@ -282,17 +282,7 @@ export function TeamShowcase({ trainers, selectedId, onSelect, onRemove, onSwap,
         </div>
       </div>
 
-      {trainer && (
-        <a
-          // The battle page starts with this team in the Red corner.
-          href={href('/battle', { red: trainer.id })}
-          className="group flex w-fit items-center gap-2 rounded-xl bg-accent px-5 py-3 text-[15px] font-semibold text-ink-950 shadow-glow transition-all duration-150 hover:bg-accent-strong focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent active:scale-[0.98]"
-        >
-          <Swords className="size-4" aria-hidden />
-          Battle with this team
-          <span aria-hidden className="transition-transform group-hover:translate-x-0.5">→</span>
-        </a>
-      )}
+      {trainer && <BattleBanner trainerId={trainer.id} fullName={fullName} team={data} />}
 
       {/* Keyed per save: a fresh node is an addition, so saving again under the same name is announced too. */}
       <p className="sr-only" aria-live="polite">

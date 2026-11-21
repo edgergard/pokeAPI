@@ -1292,6 +1292,136 @@
   }
 }
 
+/* ---------- 15. Battle banner (home) ---------- */
+
+@keyframes banner-sweep {
+  0% {
+    transform: translateX(-120%);
+  }
+  55%,
+  100% {
+    transform: translateX(400%);
+  }
+}
+
+@keyframes cta-shine {
+  0% {
+    transform: translateX(-150%) skewX(-20deg);
+  }
+  28%,
+  100% {
+    transform: translateX(380%) skewX(-20deg);
+  }
+}
+
+/* A small hop, then a rest: up, land with a squash, settle. */
+@keyframes banner-hop {
+  0%,
+  46%,
+  100% {
+    transform: none;
+  }
+  18% {
+    transform: translateY(-9px);
+  }
+  34% {
+    transform: translateY(0) scale(1.06, 0.94);
+  }
+}
+
+@keyframes banner-hop-shadow {
+  0%,
+  46%,
+  100% {
+    transform: none;
+    opacity: 1;
+  }
+  18% {
+    transform: scaleX(0.6);
+    opacity: 0.45;
+  }
+}
+
+.battle-banner {
+  box-shadow:
+    0 40px 80px -40px rgb(0 0 0 / 0.9),
+    -48px 0 100px -56px var(--color-side-red),
+    48px 0 100px -56px var(--color-side-blue);
+}
+
+.battle-banner-border {
+  background: linear-gradient(100deg, var(--color-side-red), rgb(255 255 255 / 0.14) 50%, var(--color-side-blue));
+}
+
+/* The sweeping light along the border (off-card at rest). */
+.battle-banner-border::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  width: 30%;
+  background: linear-gradient(90deg, transparent, rgb(255 236 170 / 0.95), transparent);
+  transform: translateX(-120%);
+}
+
+.battle-banner-glows {
+  background:
+    radial-gradient(30rem 18rem at 0% 50%, rgb(255 122 102 / 0.14), transparent 70%),
+    radial-gradient(30rem 18rem at 100% 50%, rgb(94 176 255 / 0.14), transparent 70%),
+    radial-gradient(24rem 12rem at 50% 110%, rgb(255 210 63 / 0.08), transparent 70%);
+}
+
+.banner-vs {
+  box-shadow:
+    0 0 0 6px rgb(255 255 255 / 0.03),
+    0 0 32px -6px rgb(255 210 63 / 0.45);
+}
+
+.battle-cta::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  width: 30%;
+  background: linear-gradient(100deg, transparent, rgb(255 255 255 / 0.6), transparent);
+  transform: translateX(-150%) skewX(-20deg);
+  pointer-events: none;
+}
+
+.banner-reveal {
+  animation: reveal-up var(--dur-xl) var(--ease-out-expo) backwards;
+  animation-delay: calc(var(--i, 0) * 120ms);
+}
+
+:root[data-motion='full'] {
+  /* Holds its first frame until the banner itself is reached. */
+  .battle-banner:not([data-inview]) .banner-reveal {
+    animation-play-state: paused;
+  }
+
+  .battle-banner-border::after {
+    animation: banner-sweep 7s var(--ease-standard) infinite;
+  }
+
+  .battle-cta::after {
+    animation: cta-shine 5s var(--ease-standard) 1.4s infinite;
+  }
+
+  .banner-hop-body {
+    transform-origin: 50% 100%;
+    animation: banner-hop 2600ms var(--ease-ambient) infinite;
+    animation-delay: calc(var(--i, 0) * 160ms);
+  }
+
+  /* Animates `transform`; the centring uses the `translate` property, so both hold. */
+  .banner-hop-shadow {
+    animation: banner-hop-shadow 2600ms var(--ease-ambient) infinite;
+    animation-delay: calc(var(--i, 0) * 160ms);
+  }
+}
+
 /* ---------- Reduced motion kill switch ---------- */
 
 :root[data-motion='reduced'] {
