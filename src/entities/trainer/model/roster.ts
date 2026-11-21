@@ -69,14 +69,15 @@ export function loadRoster(storage: Pick<Storage, 'getItem'>): Trainer[] {
 
 /**
  * Writes the roster, then (only if that succeeded) removes the legacy key it may have absorbed.
- * Storage failures are swallowed: the legacy key stays, so nothing is lost on reload.
+ * Storage failures are swallowed (returns false): the legacy key stays, so nothing is lost on reload.
  */
-export function persistRoster(storage: Pick<Storage, 'setItem' | 'removeItem'>, trainers: readonly Trainer[]): void {
+export function persistRoster(storage: Pick<Storage, 'setItem' | 'removeItem'>, trainers: readonly Trainer[]): boolean {
   try {
     storage.setItem(ROSTER_KEY, JSON.stringify(trainers));
     storage.removeItem(LEGACY_TRAINER_KEY);
+    return true;
   } catch {
-    /* storage unavailable — keep in-memory value */
+    return false; // storage unavailable — keep in-memory value
   }
 }
 
@@ -104,7 +105,7 @@ const rosterStore = createStorageStore<Trainer[]>({
   },
   write: (trainers) => {
     const store = storage();
-    if (store) persistRoster(store, trainers);
+    return store ? persistRoster(store, trainers) : false;
   },
   serverValue: EMPTY_ROSTER,
   syncKey: ROSTER_KEY,

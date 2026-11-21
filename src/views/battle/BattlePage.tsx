@@ -116,7 +116,7 @@ function SetupWithQuery(props: SetupProps) {
 /** Same footprint as the two corners + Fight button, so hydration doesn't shift the page. */
 function SetupPlaceholder() {
   return (
-    <div className="flex flex-col gap-6" aria-busy="true" aria-label="Loading teams">
+    <div className="flex flex-col gap-6" role="status" aria-busy="true" aria-label="Loading teams">
       <div className="grid gap-4 md:grid-cols-2 md:gap-6">
         {(['border-(--color-side-red)/30', 'border-(--color-side-blue)/30'] as const).map((border) => (
           <div key={border} className={`h-[496px] rounded-3xl md:h-[331px] border ${border} bg-ink-900/85`} />

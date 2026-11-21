@@ -37,8 +37,9 @@ const selectedStore = createStorageStore<string | null>({
     try {
       if (id) window.sessionStorage.setItem(SELECTED_KEY, id);
       else window.sessionStorage.removeItem(SELECTED_KEY);
+      return true;
     } catch {
-      /* storage blocked: the selection just isn't remembered */
+      return false; // storage blocked: the selection lives in memory only
     }
   },
   serverValue: null,

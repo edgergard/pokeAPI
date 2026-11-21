@@ -3,8 +3,8 @@ import { useSyncExternalStore } from 'react';
 type Options<T> = {
   /** Reads the value from browser storage. Called lazily, once, on the client. Must not throw. */
   read: () => T;
-  /** Persists a new value. Must not throw (storage can be full or blocked). */
-  write: (value: T) => void;
+  /** Persists a new value; returns false when storage refused it (full or blocked). Must not throw. */
+  write: (value: T) => boolean;
   /** What prerendered HTML (and the hydrating render) shows. Must be a stable reference. */
   serverValue: T;
   /** Storage key to watch for changes made in other tabs (`storage` event). */
@@ -27,6 +27,8 @@ export type StorageStore<T> = {
 export function createStorageStore<T>({ read, write, serverValue, syncKey }: Options<T>): StorageStore<T> {
   let value: T | undefined;
   let loaded = false;
+  /** The last write never reached storage: memory is the only copy, so storage must not be re-read over it. */
+  let dirty = false;
   const listeners = new Set<() => void>();
 
   const get = (): T => {
@@ -42,6 +44,7 @@ export function createStorageStore<T>({ read, write, serverValue, syncKey }: Opt
 
   const onStorage = (event: StorageEvent) => {
     if (event.key !== syncKey && event.key !== null) return;
+    if (dirty) return; // keep the in-memory value storage never got
     value = read();
     emit();
   };
@@ -51,7 +54,7 @@ export function createStorageStore<T>({ read, write, serverValue, syncKey }: Opt
       // Nobody was listening, so storage events (other tabs) may have been missed: refresh the cache before
       // a remounted component can build a write on stale data. useSyncExternalStore re-checks the snapshot
       // after subscribing, so the fresh value renders.
-      if (loaded) value = read();
+      if (loaded && !dirty) value = read();
       if (syncKey) window.addEventListener('storage', onStorage);
     }
     listeners.add(onChange);
@@ -68,7 +71,7 @@ export function createStorageStore<T>({ read, write, serverValue, syncKey }: Opt
     const next = typeof update === 'function' ? (update as (current: T) => T)(current) : update;
     if (Object.is(next, current)) return;
     value = next;
-    write(next);
+    dirty = !write(next);
     emit();
   };
 
