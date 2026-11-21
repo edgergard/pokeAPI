@@ -1,3 +1,6 @@
+'use client';
+
+import Link from 'next/link';
 import { Component, createRef, type ErrorInfo, type ReactNode } from 'react';
 import { isChunkLoadError } from '@/shared/lib/chunkError';
 import { cn } from '@/shared/lib/cn';
@@ -63,12 +66,12 @@ export class ErrorBoundary extends Component<Props, State> {
         </p>
         <div className="flex flex-wrap justify-center gap-2">
           <Button onClick={this.retry}>Retry</Button>
-          <a
+          <Link
             href={href('/')}
             className="inline-flex h-10 items-center rounded-xl border border-white/12 px-4 text-sm font-semibold text-ink-100 transition-colors hover:border-white/25 hover:bg-white/5 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent max-sm:h-11"
           >
             Back to Trainer Studio
-          </a>
+          </Link>
         </div>
       </div>
     );

@@ -1,9 +1,13 @@
 @import 'tailwindcss';
 
+/* Self-hosted by next/font (app/layout.tsx); `inline` so utilities read the runtime font variables. */
+@theme inline {
+  --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+  --font-display: var(--font-bricolage), var(--font-inter), ui-sans-serif, sans-serif;
+  --font-mono: var(--font-jetbrains), ui-monospace, monospace;
+}
+
 @theme {
-  --font-sans: 'Inter', ui-sans-serif, system-ui, sans-serif;
-  --font-display: 'Bricolage Grotesque', 'Inter', ui-sans-serif, sans-serif;
-  --font-mono: 'JetBrains Mono', ui-monospace, monospace;
 
   --color-ink-950: #07080b;
   --color-ink-900: #0f1117;

@@ -1,5 +1,6 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useMemo } from 'react';
 import { z } from 'zod';
+import { createStorageStore } from '@/shared/lib/storageStore';
 import { swapSlots } from './swapSlots';
 
 export const TEAM_SIZE = 4;
@@ -68,38 +69,57 @@ export function loadRoster(storage: Pick<Storage, 'getItem'>): Trainer[] {
 
 /**
  * Writes the roster, then (only if that succeeded) removes the legacy key it may have absorbed.
- * Storage failures are swallowed: the legacy key stays, so nothing is lost on reload.
+ * Storage failures are swallowed (returns false): the legacy key stays, so nothing is lost on reload.
  */
-export function persistRoster(storage: Pick<Storage, 'setItem' | 'removeItem'>, trainers: readonly Trainer[]): void {
+export function persistRoster(storage: Pick<Storage, 'setItem' | 'removeItem'>, trainers: readonly Trainer[]): boolean {
   try {
     storage.setItem(ROSTER_KEY, JSON.stringify(trainers));
     storage.removeItem(LEGACY_TRAINER_KEY);
+    return true;
   } catch {
-    /* storage unavailable — keep in-memory value */
+    return false; // storage unavailable — keep in-memory value
   }
 }
 
-function initialRoster(): Trainer[] {
+const EMPTY_ROSTER: Trainer[] = [];
+
+function storage(): Storage | null {
   try {
-    return loadRoster(window.localStorage);
+    return window.localStorage;
   } catch {
-    return [];
+    return null; // blocked (e.g. some privacy modes): the roster lives in memory only
   }
 }
+
+/**
+ * The roster, shared by every page. The first read also persists, which retires a migrated legacy
+ * key right away (as the pre-store hook did on mount).
+ */
+const rosterStore = createStorageStore<Trainer[]>({
+  read: () => {
+    const store = storage();
+    if (!store) return EMPTY_ROSTER;
+    const roster = loadRoster(store);
+    persistRoster(store, roster);
+    return roster;
+  },
+  write: (trainers) => {
+    const store = storage();
+    return store ? persistRoster(store, trainers) : false;
+  },
+  serverValue: EMPTY_ROSTER,
+  syncKey: ROSTER_KEY,
+});
 
 const byNewest = (a: Trainer, b: Trainer) => (a.savedAt < b.savedAt ? 1 : a.savedAt > b.savedAt ? -1 : 0);
 
-/** The visitor's trainers, persisted across reloads. Storage failures degrade to in-memory state. */
+/**
+ * The visitor's trainers, persisted across reloads and kept in sync across tabs.
+ * Prerendered HTML has no roster; the stored one appears on hydration. Storage failures degrade to memory.
+ */
 export function useRoster() {
-  const [stored, setStored] = useState<Trainer[]>(initialRoster);
-
-  useEffect(() => {
-    try {
-      persistRoster(window.localStorage, stored);
-    } catch {
-      /* localStorage inaccessible — keep in-memory value */
-    }
-  }, [stored]);
+  const stored = rosterStore.useValue();
+  const setStored = rosterStore.set;
 
   const trainers = useMemo(() => [...stored].sort(byNewest), [stored]);
 

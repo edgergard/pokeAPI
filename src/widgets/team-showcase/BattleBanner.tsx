@@ -1,4 +1,5 @@
 import { useRef, type CSSProperties } from 'react';
+import Link from 'next/link';
 import { Swords } from 'lucide-react';
 import { PokemonSprite, type Pokemon } from '@/entities/pokemon';
 import { TEAM_SIZE } from '@/entities/trainer';
@@ -74,7 +75,7 @@ export function BattleBanner({ trainerId, fullName, team }: Props) {
           <p className="max-w-md text-base text-ink-300 sm:text-lg">Take {fullName}’s team into the arena.</p>
         </div>
 
-        <a
+        <Link
           // The battle page starts with this team in the Red corner.
           href={href('/battle', { red: trainerId })}
           className="banner-reveal battle-cta group relative flex h-14 w-full items-center justify-center gap-3 overflow-hidden rounded-2xl bg-accent px-8 text-lg font-bold text-ink-950 shadow-glow transition-[background-color,scale] duration-150 hover:bg-accent-strong focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-accent active:scale-[0.98] sm:h-16 sm:w-auto sm:px-10 sm:text-xl"
@@ -85,7 +86,7 @@ export function BattleBanner({ trainerId, fullName, team }: Props) {
           <span aria-hidden className="transition-transform group-hover:translate-x-1">
             →
           </span>
-        </a>
+        </Link>
       </div>
     </div>
   );
