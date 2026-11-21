@@ -138,6 +138,28 @@
   }
 }
 
+/* Battle damage number: pops in at the target card, then drifts up (removed by the HUD). */
+@keyframes battle-popup {
+  0% {
+    opacity: 0;
+    transform: translateY(10px) scale(0.8);
+  }
+  18% {
+    opacity: 1;
+    transform: translateY(0) scale(1.08);
+  }
+  32% {
+    transform: translateY(-2px) scale(1);
+  }
+  80% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(-22px) scale(1);
+  }
+}
+
 @keyframes fade-out {
   to {
     opacity: 0;
@@ -1234,6 +1256,15 @@
   background: radial-gradient(closest-side, rgb(255 226 122 / 0.11), rgb(255 255 255 / 0.035) 50%, transparent);
   transform: translate3d(calc(var(--spot-x) * 1px), calc(var(--spot-y) * 1px), 0);
   opacity: var(--spot-o);
+}
+
+.battle-popup {
+  animation: battle-popup 1100ms var(--ease-out-expo) both;
+}
+
+/* Reduced motion: the number simply appears and is removed (a cut) — never ends invisible. */
+:root[data-motion='reduced'] .battle-popup {
+  animation: none !important;
 }
 
 :root[data-motion='reduced'] .spotlight {

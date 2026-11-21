@@ -75,6 +75,8 @@ export class BattleStage {
   readonly lights: StageLights;
   /** Called when the browser drops the WebGL context (GPU reset, too many contexts, …). */
   onContextLost?: () => void;
+  /** Called when the browser gives the WebGL context back; rendering has already resumed. */
+  onContextRestored?: () => void;
 
   private readonly renderer: WebGLRenderer;
   private readonly canvas: HTMLCanvasElement;
@@ -283,6 +285,7 @@ export class BattleStage {
     // "context lost" handler is already detached and nothing is logged.)
     this.renderer.forceContextLoss();
     this.onContextLost = undefined;
+    this.onContextRestored = undefined;
   }
 
   // ------------------------------------------------------------------------------------------
@@ -470,6 +473,7 @@ export class BattleStage {
     // three re-initialises its GL state; textures re-upload from their canvases on next use.
     this.contextLost = false;
     this.syncLoop();
+    this.onContextRestored?.();
   };
 }
 

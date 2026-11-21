@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type { BattleEvent, Effectiveness, Move } from '@/entities/battle';
-import { choreograph, tierFor } from './choreograph';
+import { choreograph, eventLabel, resumeTime, tierFor } from './choreograph';
 import { createNullDirector } from './nullDirector';
 
 const move: Move = { name: 'tackle', type: 'normal', power: 40, accuracy: 100, damageClass: 'physical' };
@@ -106,5 +106,17 @@ describe('choreograph', () => {
     timeline.time(seconds * 0.2);
     timeline.progress(1);
     expect(seen).toEqual(afterForward);
+  });
+});
+
+describe('resume labels', () => {
+  it('labels each beat by the first event it reports, so a rebuilt timeline can restart there', () => {
+    const { timeline } = choreograph(shortEvents, createNullDirector(), { onEvent: () => undefined });
+    expect(resumeTime(timeline, -1)).toBe(0);
+    expect(resumeTime(timeline, 0)).toBeCloseTo(2); // after the 2 s intro
+    // The move (3) and its hit (4) share one beat: resuming at the hit replays the whole exchange.
+    expect(timeline.labels[eventLabel(4)]).toBeUndefined();
+    expect(resumeTime(timeline, 4)).toBe(timeline.labels[eventLabel(3)]);
+    expect(resumeTime(timeline, 8)).toBeGreaterThan(resumeTime(timeline, 4));
   });
 });

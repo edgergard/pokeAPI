@@ -22,7 +22,24 @@ export function tierFor(event: ResultEvent, isFirstAttack: boolean): Tier {
 /** Which beats may be sped up: short exchanges first, full exchanges only as a last resort. */
 type Compress = 'short' | 'full' | 'never';
 
-type Unit = { sub: Timeline; duration: number; compress: Compress };
+/** `first` = index of the first event the unit reports (-1 for the intro). */
+type Unit = { sub: Timeline; duration: number; compress: Compress; first: number };
+
+/** Label placed at the start of the beat that reports event `index`. */
+export const eventLabel = (index: number) => `event-${index}`;
+
+/**
+ * Time at which to restart a rebuilt timeline so the beat that reported event `index` plays
+ * again (0 = from the intro). Seeking there re-runs the earlier beats instantly; their events
+ * are not re-delivered beyond the choreographer's own once-only rule, so callers filter by index.
+ */
+export function resumeTime(timeline: Timeline, index: number): number {
+  for (let i = index; i >= 0; i -= 1) {
+    const t = timeline.labels[eventLabel(i)];
+    if (t !== undefined) return t;
+  }
+  return 0;
+}
 
 const isResult = (e: BattleEvent | undefined): e is ResultEvent =>
   e !== undefined && (e.kind === 'hit' || e.kind === 'miss' || e.kind === 'noEffect');
@@ -68,18 +85,18 @@ export function choreograph(
     opts.onEvent(event);
   };
 
-  const addUnit = (compress: Compress, build: (sub: Timeline) => void) => {
+  const addUnit = (compress: Compress, first: number, build: (sub: Timeline) => void) => {
     const sub = gsap.timeline();
     build(sub);
-    units.push({ sub, duration: sub.duration(), compress });
+    units.push({ sub, duration: sub.duration(), compress, first });
   };
   // Each beat reports its event the moment it starts, except a move's result, which lands at impact.
-  const simple = (index: number, event: BattleEvent, beat?: () => Timeline) => addUnit('never', (sub) => {
+  const simple = (index: number, event: BattleEvent, beat?: () => Timeline) => addUnit('never', index, (sub) => {
     sub.call(() => deliver(index, event), [], 0);
     if (beat) sub.add(beat(), 0);
   });
 
-  addUnit('never', (sub) => { sub.add(director.intro(), 0); });
+  addUnit('never', -1, (sub) => { sub.add(director.intro(), 0); });
 
   for (let i = 0; i < events.length; i += 1) {
     const event = events[i];
@@ -93,7 +110,7 @@ export function choreograph(
         const first = !seenAttackers.has(event.attackerId);
         seenAttackers.add(event.attackerId);
         const tier: Tier = result ? tierFor(result, first) : 'full';
-        addUnit(tier === 'short' ? 'short' : 'full', (sub) => {
+        addUnit(tier === 'short' ? 'short' : 'full', moveIndex, (sub) => {
           sub.call(() => deliver(moveIndex, event), [], 0);
           let t = 0;
           if (tier === 'full') {
@@ -136,6 +153,7 @@ export function choreograph(
   for (const unit of units) {
     const speed = speedFor(unit, shortScale, fullScale, minSeconds);
     unit.sub.timeScale(speed);
+    if (unit.first >= 0) timeline.addLabel(eventLabel(unit.first), cursor);
     timeline.add(unit.sub, cursor);
     cursor += unit.duration / speed;
   }
