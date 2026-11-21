@@ -1292,6 +1292,454 @@
   }
 }
 
+/* ---------- 15. Battle banner (home) ---------- */
+
+@keyframes banner-sweep {
+  0% {
+    transform: translateX(-120%);
+  }
+  55%,
+  100% {
+    transform: translateX(400%);
+  }
+}
+
+@keyframes cta-shine {
+  0% {
+    transform: translateX(-150%) skewX(-20deg);
+  }
+  28%,
+  100% {
+    transform: translateX(380%) skewX(-20deg);
+  }
+}
+
+/* A small hop, then a rest: up, land with a squash, settle. */
+@keyframes banner-hop {
+  0%,
+  46%,
+  100% {
+    transform: none;
+  }
+  18% {
+    transform: translateY(-9px);
+  }
+  34% {
+    transform: translateY(0) scale(1.06, 0.94);
+  }
+}
+
+@keyframes banner-hop-shadow {
+  0%,
+  46%,
+  100% {
+    transform: none;
+    opacity: 1;
+  }
+  18% {
+    transform: scaleX(0.6);
+    opacity: 0.45;
+  }
+}
+
+.battle-banner {
+  box-shadow:
+    0 40px 80px -40px rgb(0 0 0 / 0.9),
+    -48px 0 100px -56px var(--color-side-red),
+    48px 0 100px -56px var(--color-side-blue);
+}
+
+.battle-banner-border {
+  background: linear-gradient(100deg, var(--color-side-red), rgb(255 255 255 / 0.14) 50%, var(--color-side-blue));
+}
+
+/* The sweeping light along the border (off-card at rest). */
+.battle-banner-border::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  width: 30%;
+  background: linear-gradient(90deg, transparent, rgb(255 236 170 / 0.95), transparent);
+  transform: translateX(-120%);
+}
+
+.battle-banner-glows {
+  background:
+    radial-gradient(30rem 18rem at 0% 50%, rgb(255 122 102 / 0.14), transparent 70%),
+    radial-gradient(30rem 18rem at 100% 50%, rgb(94 176 255 / 0.14), transparent 70%),
+    radial-gradient(24rem 12rem at 50% 110%, rgb(255 210 63 / 0.08), transparent 70%);
+}
+
+.banner-vs {
+  box-shadow:
+    0 0 0 6px rgb(255 255 255 / 0.03),
+    0 0 32px -6px rgb(255 210 63 / 0.45);
+}
+
+.battle-cta {
+  isolation: isolate;
+}
+
+/* z-index -1 inside the CTA's own stacking context: above the yellow fill, below the label and icon. */
+.battle-cta::after {
+  content: '';
+  position: absolute;
+  z-index: -1;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  width: 30%;
+  background: linear-gradient(100deg, transparent, rgb(255 255 255 / 0.6), transparent);
+  transform: translateX(-150%) skewX(-20deg);
+  pointer-events: none;
+}
+
+.banner-reveal {
+  animation: reveal-up var(--dur-xl) var(--ease-out-expo) backwards;
+  animation-delay: calc(var(--i, 0) * 120ms);
+}
+
+:root[data-motion='full'] {
+  /* Holds its first frame until the banner itself is reached. */
+  .battle-banner:not([data-inview]) .banner-reveal {
+    animation-play-state: paused;
+  }
+
+  .battle-banner-border::after {
+    animation: banner-sweep 7s var(--ease-standard) infinite;
+  }
+
+  .battle-cta::after {
+    animation: cta-shine 5s var(--ease-standard) 1.4s infinite;
+  }
+
+  .banner-hop-body {
+    transform-origin: 50% 100%;
+    animation: banner-hop 2600ms var(--ease-ambient) infinite;
+    animation-delay: calc(var(--i, 0) * 160ms);
+  }
+
+  /* Animates `transform`; the centring uses the `translate` property, so both hold. */
+  .banner-hop-shadow {
+    animation: banner-hop-shadow 2600ms var(--ease-ambient) infinite;
+    animation-delay: calc(var(--i, 0) * 160ms);
+  }
+}
+
+/* ---------- 16. Battle setup ---------- */
+
+@keyframes fighter-hop {
+  from {
+    transform: none;
+  }
+  to {
+    transform: translateY(-6px);
+  }
+}
+
+@keyframes fighter-shadow {
+  from {
+    transform: none;
+    opacity: 1;
+  }
+  to {
+    transform: scaleX(0.7);
+    opacity: 0.5;
+  }
+}
+
+@keyframes fighter-bounce {
+  0%,
+  100% {
+    transform: none;
+  }
+  35% {
+    transform: translateY(-10px) scale(1.06);
+  }
+  65% {
+    transform: translateY(1px) scale(1.02, 0.97);
+  }
+}
+
+@keyframes vs-pulse {
+  from {
+    transform: scale(1);
+  }
+  to {
+    transform: scale(1.07);
+  }
+}
+
+@keyframes vs-glow {
+  from {
+    opacity: 0.35;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes fight-glow {
+  from {
+    opacity: 0.25;
+  }
+  to {
+    opacity: 0.9;
+  }
+}
+
+/* Grows the ring by its inset, so stroke width and corners stay even at any button width. */
+@keyframes fight-ring {
+  0% {
+    opacity: 0.7;
+    inset: 0;
+  }
+  70%,
+  100% {
+    opacity: 0;
+    inset: -7px;
+  }
+}
+
+/* Hover glow in the Pokémon's primary type colour (--type), painted once, faded by opacity. */
+.fighter-card {
+  position: relative;
+  isolation: isolate;
+  transition: border-color var(--dur-sm) ease-out;
+}
+
+.fighter-card::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  border-radius: inherit;
+  background: radial-gradient(closest-side at 50% 32%, color-mix(in oklab, var(--type) 38%, transparent), transparent);
+  opacity: 0;
+  transition: opacity var(--dur-md) ease-out;
+  pointer-events: none;
+}
+
+.fighter-card:hover {
+  border-color: color-mix(in oklab, var(--type) 50%, transparent);
+}
+
+.fighter-card:hover::before {
+  opacity: 1;
+}
+
+.vs-badge {
+  box-shadow: 0 0 0 6px rgb(7 8 11 / 0.9);
+}
+
+.vs-badge::after {
+  content: '';
+  position: absolute;
+  inset: -1px;
+  border-radius: inherit;
+  box-shadow:
+    -10px 0 24px -8px var(--color-side-red),
+    10px 0 24px -8px var(--color-side-blue);
+  opacity: 0.6;
+}
+
+.fight-ready::before,
+.fight-ready::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.fight-ready::before {
+  box-shadow: 0 0 28px 2px rgb(255 210 63 / 0.5);
+}
+
+.fight-ready::after {
+  border: 2px solid rgb(255 210 63 / 0.65);
+}
+
+:root[data-motion='full'] {
+  .fighter-hop {
+    animation: fighter-hop 2200ms var(--ease-ambient) infinite alternate;
+    animation-delay: calc(var(--i, 0) * -550ms);
+  }
+
+  .fighter-shadow {
+    animation: fighter-shadow 2200ms var(--ease-ambient) infinite alternate;
+    animation-delay: calc(var(--i, 0) * -550ms);
+  }
+
+  /* Set on mouse enter, cleared on animationend: the bounce always finishes, even if the pointer leaves. */
+  .fighter-bounce[data-bounce] {
+    animation: fighter-bounce 520ms var(--ease-spring);
+  }
+
+  .vs-badge {
+    animation: vs-pulse 2800ms var(--ease-ambient) infinite alternate;
+  }
+
+  .vs-badge::after {
+    animation: vs-glow 2800ms var(--ease-ambient) infinite alternate;
+  }
+
+  .fight-ready::before {
+    animation: fight-glow 2600ms var(--ease-ambient) infinite alternate;
+  }
+
+  .fight-ready::after {
+    animation: fight-ring 2600ms var(--ease-out-expo) infinite;
+  }
+
+  /* The gold ring would sweep through the gold focus outline. */
+  .fight-ready:focus-visible::after {
+    animation: none;
+  }
+}
+
+/* ---------- 17. Battle ambient backdrop ---------- */
+
+/* Translate and opacity only: a scale step would make the browser re-raster these large layers. */
+@keyframes amb-drift-red {
+  from {
+    translate: 0 0;
+    opacity: 0.85;
+  }
+  to {
+    translate: 6vw 8vh;
+    opacity: 1;
+  }
+}
+
+@keyframes amb-drift-blue {
+  from {
+    translate: 0 0;
+    opacity: 1;
+  }
+  to {
+    translate: -6vw -6vh;
+    opacity: 0.8;
+  }
+}
+
+@keyframes amb-rise {
+  0% {
+    transform: translate3d(0, 0, 0);
+    opacity: 0;
+  }
+  12%,
+  80% {
+    opacity: var(--o, 0.4);
+  }
+  100% {
+    transform: translate3d(var(--sway, 0), -105vh, 0);
+    opacity: 0;
+  }
+}
+
+@keyframes amb-float {
+  from {
+    transform: translateY(0);
+  }
+  to {
+    transform: translateY(-24px);
+  }
+}
+
+@keyframes amb-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Each box ends where its gradient does (no transparent margin), keeping the composited layers small. */
+.amb-glow {
+  position: absolute;
+  width: 52vmax;
+  height: 52vmax;
+  border-radius: 9999px;
+}
+
+.amb-glow-red {
+  left: -30vmax;
+  top: -4vmax;
+  background: radial-gradient(closest-side, rgb(255 122 102 / 0.15), transparent);
+}
+
+.amb-glow-blue {
+  right: -30vmax;
+  bottom: -12vmax;
+  background: radial-gradient(closest-side, rgb(94 176 255 / 0.15), transparent);
+}
+
+/* Static perspective floor: painted once, never animated. */
+.amb-floor {
+  position: absolute;
+  left: -50%;
+  right: -50%;
+  bottom: 0;
+  height: 42vh;
+  background-image:
+    linear-gradient(rgb(255 255 255 / 0.05) 1px, transparent 1px),
+    linear-gradient(90deg, rgb(255 255 255 / 0.05) 1px, transparent 1px);
+  background-size: 56px 56px;
+  background-position: center bottom;
+  transform: perspective(420px) rotateX(64deg);
+  transform-origin: 50% 100%;
+  mask-image: linear-gradient(to top, black 10%, transparent 80%);
+}
+
+.amb-ball {
+  position: absolute;
+  color: white;
+  opacity: 0.045;
+}
+
+.amb-particle {
+  position: absolute;
+  bottom: -8px;
+  border-radius: 9999px;
+  opacity: 0;
+}
+
+:root[data-motion='full'] {
+  .amb-glow-red {
+    animation: amb-drift-red 22s var(--ease-ambient) infinite alternate;
+  }
+
+  .amb-glow-blue {
+    animation: amb-drift-blue 26s var(--ease-ambient) infinite alternate;
+  }
+
+  .amb-ball {
+    animation: amb-float var(--float, 12s) var(--ease-ambient) infinite alternate;
+    animation-delay: calc(var(--i, 0) * -3s);
+  }
+
+  .amb-ball-spin {
+    animation: amb-spin var(--spin, 80s) linear infinite;
+    animation-direction: var(--dir, normal);
+  }
+
+  .amb-particle {
+    animation: amb-rise var(--d, 20s) linear var(--delay, 0s) infinite;
+  }
+
+  /* During a battle the backdrop holds still: the WebGL arena gets the GPU. */
+  .battle-ambient[data-paused] :is(.amb-glow, .amb-ball, .amb-ball-spin, .amb-particle) {
+    animation-play-state: paused;
+  }
+}
+
+/* Reduced motion: only the two glows stay, still. */
+:root[data-motion='reduced'] :is(.amb-floor, .amb-ball, .amb-particle) {
+  display: none;
+}
+
 /* ---------- Reduced motion kill switch ---------- */
 
 :root[data-motion='reduced'] {
