@@ -1422,6 +1422,179 @@
   }
 }
 
+/* ---------- 16. Battle setup ---------- */
+
+@keyframes fighter-hop {
+  from {
+    transform: none;
+  }
+  to {
+    transform: translateY(-6px);
+  }
+}
+
+@keyframes fighter-shadow {
+  from {
+    transform: none;
+    opacity: 1;
+  }
+  to {
+    transform: scaleX(0.7);
+    opacity: 0.5;
+  }
+}
+
+@keyframes fighter-bounce {
+  0%,
+  100% {
+    transform: none;
+  }
+  35% {
+    transform: translateY(-10px) scale(1.06);
+  }
+  65% {
+    transform: translateY(1px) scale(1.02, 0.97);
+  }
+}
+
+@keyframes vs-pulse {
+  from {
+    transform: scale(1);
+  }
+  to {
+    transform: scale(1.07);
+  }
+}
+
+@keyframes vs-glow {
+  from {
+    opacity: 0.35;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes fight-glow {
+  from {
+    opacity: 0.25;
+  }
+  to {
+    opacity: 0.9;
+  }
+}
+
+@keyframes fight-ring {
+  0% {
+    opacity: 0.7;
+    transform: scale(1);
+  }
+  70%,
+  100% {
+    opacity: 0;
+    transform: scale(1.08, 1.35);
+  }
+}
+
+/* Hover / focus glow in the Pokémon's primary type colour (--type), painted once, faded by opacity. */
+.fighter-card {
+  position: relative;
+  isolation: isolate;
+  transition: border-color var(--dur-sm) ease-out;
+}
+
+.fighter-card::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  border-radius: inherit;
+  background: radial-gradient(closest-side at 50% 32%, color-mix(in oklab, var(--type) 38%, transparent), transparent);
+  opacity: 0;
+  transition: opacity var(--dur-md) ease-out;
+  pointer-events: none;
+}
+
+.fighter-card:is(:hover, :focus-within) {
+  border-color: color-mix(in oklab, var(--type) 50%, transparent);
+}
+
+.fighter-card:is(:hover, :focus-within)::before {
+  opacity: 1;
+}
+
+.vs-badge {
+  box-shadow: 0 0 0 6px rgb(7 8 11 / 0.9);
+}
+
+.vs-badge::after {
+  content: '';
+  position: absolute;
+  inset: -1px;
+  border-radius: inherit;
+  box-shadow:
+    -10px 0 24px -8px var(--color-side-red),
+    10px 0 24px -8px var(--color-side-blue);
+  opacity: 0.6;
+}
+
+.fight-ready::before,
+.fight-ready::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.fight-ready::before {
+  box-shadow: 0 0 28px 2px rgb(255 210 63 / 0.5);
+}
+
+.fight-ready::after {
+  border: 2px solid rgb(255 210 63 / 0.65);
+}
+
+:root[data-motion='full'] {
+  .fighter-hop {
+    animation: fighter-hop 2200ms var(--ease-ambient) infinite alternate;
+    animation-delay: calc(var(--i, 0) * -550ms);
+  }
+
+  .fighter-shadow {
+    animation: fighter-shadow 2200ms var(--ease-ambient) infinite alternate;
+    animation-delay: calc(var(--i, 0) * -550ms);
+  }
+
+  .fighter-card:focus-within .fighter-bounce {
+    animation: fighter-bounce 520ms var(--ease-spring);
+  }
+
+  .vs-badge {
+    animation: vs-pulse 2800ms var(--ease-ambient) infinite alternate;
+  }
+
+  .vs-badge::after {
+    animation: vs-glow 2800ms var(--ease-ambient) infinite alternate;
+  }
+
+  .fight-ready::before {
+    animation: fight-glow 2600ms var(--ease-ambient) infinite alternate;
+  }
+
+  .fight-ready::after {
+    animation: fight-ring 2600ms var(--ease-out-expo) infinite;
+  }
+}
+
+/* Fine pointers only: a tap's sticky :hover must not replay the bounce. */
+@media (hover: hover) and (pointer: fine) {
+  :root[data-motion='full'] .fighter-card:hover .fighter-bounce {
+    animation: fighter-bounce 520ms var(--ease-spring);
+  }
+}
+
 /* ---------- Reduced motion kill switch ---------- */
 
 :root[data-motion='reduced'] {
