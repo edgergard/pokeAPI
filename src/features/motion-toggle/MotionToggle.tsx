@@ -26,7 +26,7 @@ export function MotionToggle() {
             key={option.value}
             title={option.title}
             className={cn(
-              'relative cursor-pointer rounded-[10px] px-2.5 py-1 text-xs font-semibold transition-colors',
+              'tap-target cursor-pointer rounded-[10px] px-2.5 py-1 text-xs font-semibold transition-colors',
               'has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-accent',
               preference === option.value ? 'bg-white/10 text-white' : 'text-ink-400 hover:text-ink-200',
             )}

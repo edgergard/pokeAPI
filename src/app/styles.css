@@ -19,6 +19,8 @@
   --color-accent: #ffd23f;
   --color-accent-strong: #ffe27a;
   --color-danger: #ff6b6b;
+  --color-side-red: #ff7a66; /* Red corner: warm coral */
+  --color-side-blue: #5eb0ff; /* Blue corner: cool azure */
 
   --shadow-glow: inset 0 0 0 1px rgb(255 255 255 / 0.15), 0 10px 30px -10px rgb(255 210 63 / 0.6);
 }
@@ -70,6 +72,21 @@
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;
+}
+
+/* Grows a small control's hit area to at least 44 × 44 px without changing its layout (crowded phone nav).
+   Host must not clip overflow; it becomes the positioning context. */
+@utility tap-target {
+  position: relative;
+  &::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: max(100%, 44px);
+    height: max(100%, 44px);
+    transform: translate(-50%, -50%);
+  }
 }
 
 /* The colour lives in .aurora-blob children so each glow can drift on its own. */
@@ -133,6 +150,28 @@
 @keyframes fade-in {
   from {
     opacity: 0;
+  }
+}
+
+/* Battle damage number: pops in at the target card, then drifts up (removed by the HUD). */
+@keyframes battle-popup {
+  0% {
+    opacity: 0;
+    transform: translateY(10px) scale(0.8);
+  }
+  18% {
+    opacity: 1;
+    transform: translateY(0) scale(1.08);
+  }
+  32% {
+    transform: translateY(-2px) scale(1);
+  }
+  80% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(-22px) scale(1);
   }
 }
 
@@ -1232,6 +1271,15 @@
   background: radial-gradient(closest-side, rgb(255 226 122 / 0.11), rgb(255 255 255 / 0.035) 50%, transparent);
   transform: translate3d(calc(var(--spot-x) * 1px), calc(var(--spot-y) * 1px), 0);
   opacity: var(--spot-o);
+}
+
+.battle-popup {
+  animation: battle-popup 1100ms var(--ease-out-expo) both;
+}
+
+/* Reduced motion: the number simply appears and is removed (a cut) — never ends invisible. */
+:root[data-motion='reduced'] .battle-popup {
+  animation: none !important;
 }
 
 :root[data-motion='reduced'] .spotlight {
