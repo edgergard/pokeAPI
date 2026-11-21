@@ -2,7 +2,7 @@ import { lazy, Suspense, useEffect, useRef, useState } from 'react';
 import { BattleSetup, type Picks } from '@/features/battle-setup';
 import { MotionToggle } from '@/features/motion-toggle/MotionToggle';
 import type { BattleTeam } from '@/entities/battle';
-import { href } from '@/shared/lib/router';
+import { currentHashParam, href } from '@/shared/lib/router';
 import { ErrorBoundary } from '@/shared/ui/ErrorBoundary';
 import { Spinner } from '@/shared/ui/Spinner';
 
@@ -17,6 +17,8 @@ type State =
 export default function BattlePage() {
   const [state, setState] = useState<State>({ phase: 'setup' });
   const [picks, setPicks] = useState<Picks>({ red: null, blue: null });
+  /** "Battle with this team" on home links here with `?red=<trainer id>`: that team starts in Red. */
+  const [preferredRedId] = useState(() => currentHashParam('red'));
   const headingRef = useRef<HTMLHeadingElement>(null);
   const backFromBattle = useRef(false);
   const battleRef = useRef<HTMLElement>(null);
@@ -56,6 +58,7 @@ export default function BattlePage() {
       {state.phase === 'setup' ? (
         <BattleSetup
           picks={picks}
+          preferredRedId={preferredRedId}
           onPicksChange={setPicks}
           onReady={(red, blue) => setState({ phase: 'battle', red, blue, seed: Math.floor(Math.random() * 2 ** 31) })}
         />

@@ -14,15 +14,17 @@ type Props = {
   onReady: (red: BattleTeam, blue: BattleTeam) => void;
   /** Picks kept by the parent so "New battle" returns to the same choices. */
   picks?: Picks;
+  /** Trainer to start in Red (e.g. the team shown on home); ignored when unknown. */
+  preferredRedId?: string | null;
   onPicksChange?: (picks: Picks) => void;
 };
 
-export function BattleSetup({ onReady, picks = { red: null, blue: null }, onPicksChange }: Props) {
+export function BattleSetup({ onReady, picks = { red: null, blue: null }, preferredRedId, onPicksChange }: Props) {
   const { trainers } = useRoster();
   const index = usePokemonIndex();
   const { prepare, status, error } = usePrepareBattle();
 
-  const defaults = defaultPicks(trainers[0]);
+  const defaults = defaultPicks(trainers, preferredRedId);
   const red = picks.red ?? defaults.red;
   const blue = picks.blue ?? defaults.blue;
   const loading = status === 'loading';

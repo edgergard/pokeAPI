@@ -62,7 +62,7 @@ Key decisions:
 
 ## Battle
 
-Open **Battle** from the nav (or **Battle with this team →** under a saved team). Red and Blue each pick a trainer — your own, one of the presets, or 🎲 **Random rival** (a fresh random team on every click) — and **Fight** starts the battle. On a first visit both corners are pre-filled with presets, so a battle is one click away.
+Open **Battle** from the nav (or **Battle with this team →** under a saved team, which puts that team in the Red corner via `#/battle?red=<trainer id>`). Red and Blue each pick a trainer — your own, one of the presets, or 🎲 **Random rival** (a fresh random team on every click) — and **Fight** starts the battle. On a first visit both corners are pre-filled with presets, so a battle is one click away.
 
 ```
  teams + seed ──► simulateBattle()  ──► BattleEvent[]  ──► choreograph()  ──► GSAP master timeline ──► StageDirector

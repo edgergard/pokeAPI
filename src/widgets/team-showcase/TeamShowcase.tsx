@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState, type CSSProperties } from 'react';
 import { ChevronDown, GripHorizontal, Swords, Trash2 } from 'lucide-react';
 import { PokemonCard, PokemonCardPlaceholder, typeColor, usePokemonList, type Pokemon } from '@/entities/pokemon';
-import { TEAM_SIZE, type Trainer } from '@/entities/trainer';
+import { TEAM_SIZE, trainerOptionLabels, type Trainer } from '@/entities/trainer';
 import { cn } from '@/shared/lib/cn';
 import { formatName } from '@/shared/lib/format';
 import { GSAP_EASE, gsap, useGSAP } from '@/shared/lib/gsap';
@@ -63,6 +63,8 @@ export function TeamShowcase({ trainers, selectedId, onSelect, onRemove, onSwap,
   // GSAP owns the section-level reveal (below), so cards skip their own rise; their inner cascade stays CSS.
   const entrance = fresh ? 'swap' : 'none';
   const fullName = trainer ? `${trainer.firstName} ${trainer.lastName}` : '';
+  /** Same-name trainers get a hint (their lead Pokémon) in the switcher. */
+  const optionLabels = trainerOptionLabels(trainers);
   const burstColors = [
     ...data.filter((p): p is Pokemon => Boolean(p)).map((p) => typeColor(p.types[0])),
     '#ffd23f',
@@ -201,7 +203,7 @@ export function TeamShowcase({ trainers, selectedId, onSelect, onRemove, onSwap,
                 >
                   {trainers.map((t) => (
                     <option key={t.id} value={t.id}>
-                      {t.firstName} {t.lastName}
+                      {optionLabels.get(t.id) ?? `${t.firstName} ${t.lastName}`}
                     </option>
                   ))}
                 </select>
@@ -282,7 +284,8 @@ export function TeamShowcase({ trainers, selectedId, onSelect, onRemove, onSwap,
 
       {trainer && (
         <a
-          href={href('/battle')}
+          // The battle page starts with this team in the Red corner.
+          href={href('/battle', { red: trainer.id })}
           className="group flex w-fit items-center gap-2 rounded-xl bg-accent px-5 py-3 text-[15px] font-semibold text-ink-950 shadow-glow transition-all duration-150 hover:bg-accent-strong focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent active:scale-[0.98]"
         >
           <Swords className="size-4" aria-hidden />
