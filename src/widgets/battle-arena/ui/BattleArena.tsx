@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import type { BattleTeam } from '@/entities/battle';
 import { cn } from '@/shared/lib/cn';
 import { usePrefersReducedMotion } from '@/shared/lib/motion';
@@ -27,10 +27,32 @@ export function BattleArena({ red, blue, seed, onNewBattle }: BattleArenaProps) 
   const [canvas, setCanvas] = useState<HTMLCanvasElement | null>(null);
   const playback = useBattlePlayback({ red, blue, seed, canvas, reducedMotion });
   const { hud, log, webgl, ready, notice } = playback;
+  const showResult = hud.result !== null && playback.finished;
+
+  // The result screen's Replay unmounts the screen while it holds focus: hand focus to the HUD's
+  // Replay control (or the arena itself while the stage rebuilds) instead of dropping it to <body>.
+  const arenaRef = useRef<HTMLDivElement>(null);
+  const hudReplayRef = useRef<HTMLButtonElement>(null);
+  const refocus = useRef(false);
+  const replayFromResult = () => {
+    refocus.current = true;
+    playback.replay();
+  };
+  useEffect(() => {
+    if (showResult || !refocus.current) return;
+    refocus.current = false;
+    const button = hudReplayRef.current;
+    (button && !button.disabled ? button : arenaRef.current)?.focus({ preventScroll: true });
+  }, [showResult]);
 
   return (
     <div className="flex flex-col gap-3">
-      <div className="relative isolate aspect-[4/5] w-full overflow-hidden rounded-3xl border border-white/10 bg-ink-950 min-[480px]:aspect-[4/3] md:aspect-video">
+      <div
+        ref={arenaRef}
+        tabIndex={-1}
+        aria-label="Arena"
+        className="relative isolate aspect-[4/5] w-full overflow-hidden rounded-3xl border border-white/10 bg-ink-950 focus:outline-none min-[480px]:aspect-[4/3] md:aspect-video"
+      >
         {/* A disposed stage force-loses its context, so every stage gets a new canvas (Motion flips rebuild). */}
         <canvas
           key={`${seed}:${reducedMotion ? 'reduced' : 'full'}`}
@@ -60,6 +82,8 @@ export function BattleArena({ red, blue, seed, onNewBattle }: BattleArenaProps) 
           onReplay={playback.replay}
           onNewBattle={onNewBattle}
           project={playback.project}
+          inert={showResult}
+          replayRef={hudReplayRef}
         />
 
         {notice && (
@@ -71,8 +95,8 @@ export function BattleArena({ red, blue, seed, onNewBattle }: BattleArenaProps) 
           </p>
         )}
 
-        {hud.result && playback.finished && (
-          <ResultOverlay result={hud.result} red={red} blue={blue} onReplay={playback.replay} onNewBattle={onNewBattle} />
+        {showResult && hud.result && (
+          <ResultOverlay result={hud.result} red={red} blue={blue} onReplay={replayFromResult} onNewBattle={onNewBattle} />
         )}
       </div>
 

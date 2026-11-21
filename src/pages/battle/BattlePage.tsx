@@ -1,4 +1,4 @@
-import { lazy, Suspense, useState } from 'react';
+import { lazy, Suspense, useEffect, useRef, useState } from 'react';
 import { BattleSetup, type Picks } from '@/features/battle-setup';
 import { MotionToggle } from '@/features/motion-toggle/MotionToggle';
 import type { BattleTeam } from '@/entities/battle';
@@ -16,6 +16,17 @@ type State =
 export default function BattlePage() {
   const [state, setState] = useState<State>({ phase: 'setup' });
   const [picks, setPicks] = useState<Picks>({ red: null, blue: null });
+  const headingRef = useRef<HTMLHeadingElement>(null);
+  const backFromBattle = useRef(false);
+
+  // "New battle" unmounts the arena (and the control that held focus): land on the page heading,
+  // right above the setup, instead of <body>.
+  useEffect(() => {
+    if (state.phase !== 'setup' || !backFromBattle.current) return;
+    backFromBattle.current = false;
+    headingRef.current?.focus({ preventScroll: true });
+    headingRef.current?.scrollIntoView({ block: 'nearest' });
+  }, [state.phase]);
 
   return (
     <main className="relative mx-auto flex min-h-dvh max-w-5xl flex-col gap-6 px-4 py-8 sm:py-12">
@@ -29,7 +40,9 @@ export default function BattlePage() {
           </a>
           <MotionToggle />
         </div>
-        <h1 className="font-display text-3xl font-extrabold tracking-tight sm:text-4xl">Battle arena</h1>
+        <h1 ref={headingRef} tabIndex={-1} className="font-display text-3xl font-extrabold tracking-tight focus:outline-none sm:text-4xl">
+          Battle arena
+        </h1>
       </header>
 
       {state.phase === 'setup' ? (
@@ -52,7 +65,10 @@ export default function BattlePage() {
               red={state.red}
               blue={state.blue}
               seed={state.seed}
-              onNewBattle={() => setState({ phase: 'setup' })}
+              onNewBattle={() => {
+                backFromBattle.current = true;
+                setState({ phase: 'setup' });
+              }}
             />
           </Suspense>
         </section>

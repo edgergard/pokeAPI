@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, type Ref } from 'react';
 import { RotateCcw, Swords } from 'lucide-react';
 import type { BattleTeam, Fighter, Side } from '@/entities/battle';
 import { cn } from '@/shared/lib/cn';
@@ -17,6 +17,10 @@ type Props = {
   onReplay(): void;
   onNewBattle(): void;
   project(fighterId: string): Projection | null;
+  /** True while the result screen covers the HUD: nothing underneath is focusable or read out. */
+  inert?: boolean;
+  /** The Replay control, so focus can return to it after the result screen's Replay. */
+  replayRef?: Ref<HTMLButtonElement>;
 };
 
 const SIDE_TEXT: Record<Side, string> = { red: 'text-side-red', blue: 'text-side-blue' };
@@ -24,11 +28,11 @@ const SIDE_BG: Record<Side, string> = { red: 'bg-side-red', blue: 'bg-side-blue'
 const SIDE_RING: Record<Side, string> = { red: 'ring-side-red', blue: 'ring-side-blue' };
 
 /** The DOM layer over the canvas: real, readable text for everything the stage shows. */
-export function Hud({ red, blue, hud, ready, speed, onSpeed, onReplay, onNewBattle, project }: Props) {
+export function Hud({ red, blue, hud, ready, speed, onSpeed, onReplay, onNewBattle, project, inert = false, replayRef }: Props) {
   const fighters = [...red.fighters, ...blue.fighters];
   const started = hud.active.red !== null || hud.active.blue !== null;
   return (
-    <div className="pointer-events-none absolute inset-0 flex flex-col justify-between p-2 sm:p-4">
+    <div className="pointer-events-none absolute inset-0 flex flex-col justify-between p-2 sm:p-4" inert={inert}>
       <div className="grid grid-cols-2 gap-2 sm:gap-4">
         <TeamBar team={red} hud={hud} />
         <TeamBar team={blue} hud={hud} />
@@ -55,7 +59,7 @@ export function Hud({ red, blue, hud, ready, speed, onSpeed, onReplay, onNewBatt
           <span aria-hidden>×2</span>
           <span className="sr-only">Double speed</span>
         </Button>
-        <Button variant="outline" onClick={onReplay} disabled={!ready} className="bg-ink-950/75">
+        <Button ref={replayRef} variant="outline" onClick={onReplay} disabled={!ready} className="bg-ink-950/75">
           <RotateCcw className="size-4" aria-hidden />
           Replay
         </Button>

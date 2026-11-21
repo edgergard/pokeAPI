@@ -6,12 +6,12 @@ import { choreograph, resumeTime } from './choreograph';
 import type { StageDirector } from './director';
 import { describeEvent, initialHud, reduceHud, type HudState } from './hudState';
 import { createNullDirector } from './nullDirector';
+import { fallbackNotice, resumePlan, type StageNotice } from './session';
 
 type Timeline = ReturnType<typeof gsap.timeline>;
 type Speed = 1 | 2;
 
-/** Why the arena is showing the log instead of (or on top of) the 3D stage. */
-export type StageNotice = 'unsupported' | 'error' | 'lost' | null;
+export type { StageNotice } from './session';
 
 /** Canvas position on a fighter's card face, as fractions of the canvas (0..1, y down). */
 export type Projection = { x: number; y: number };
@@ -100,11 +100,19 @@ export function useBattlePlayback({ red, blue, seed, canvas, reducedMotion }: Ar
     const { timeline } = choreograph(events, director, { onEvent });
     timeline.timeScale(speedRef.current);
     timeline.eventCallback('onComplete', () => setFinished(true));
+    timelineRef.current = timeline;
+    const plan = resumePlan(from, events.length);
+    if (plan.kind === 'finished') {
+      // Rebuilt after the battle ended (motion flip): land on the end state without replaying
+      // the victory beat, and leave the result screen where it is.
+      timeline.progress(1, false);
+      setFinished(true);
+      return;
+    }
     setFinished(false);
     // Re-run the earlier beats instantly (scene state catches up), then play from the beat that
     // reported the last shown event.
-    if (from > 0) timeline.seek(resumeTime(timeline, from - 1), false);
-    timelineRef.current = timeline;
+    if (plan.kind === 'resume') timeline.seek(resumeTime(timeline, plan.from - 1), false);
     if (!document.hidden) timeline.play();
   }, [events, onEvent]);
 
@@ -159,7 +167,7 @@ export function useBattlePlayback({ red, blue, seed, canvas, reducedMotion }: Ar
         }
       } else {
         setWebgl(false);
-        setNotice('unsupported');
+        setNotice(fallbackNotice({ chunkLoaded: mods !== null, supported: false }));
       }
 
       director ??= createNullDirector();
@@ -198,13 +206,14 @@ export function useBattlePlayback({ red, blue, seed, canvas, reducedMotion }: Ar
     timelineRef.current?.timeScale(s);
   }, []);
 
+  /** Never a no-op: mid-rebuild (no director yet) the reset stands and the new session starts from the intro. */
   const replay = useCallback(() => {
-    const director = directorRef.current;
-    if (!director) return;
     deliveredRef.current = 0;
     setHud(initialHud(red, blue));
     setLog([]);
-    play(director, 0); // same events (same seed): the intro beat resets the scene
+    setFinished(false);
+    const director = directorRef.current;
+    if (director) play(director, 0); // same events (same seed): the intro beat resets the scene
   }, [red, blue, play]);
 
   const project = useCallback((fighterId: string): Projection | null => {

@@ -1,10 +1,10 @@
-import type { ButtonHTMLAttributes } from 'react';
+import type { ComponentProps } from 'react';
 import { cn } from '@/shared/lib/cn';
 
 type Variant = 'primary' | 'ghost' | 'outline';
 type Size = 'md' | 'lg' | 'icon';
 
-type Props = ButtonHTMLAttributes<HTMLButtonElement> & {
+type Props = ComponentProps<'button'> & {
   variant?: Variant;
   size?: Size;
 };
