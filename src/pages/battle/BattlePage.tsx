@@ -3,6 +3,7 @@ import { BattleSetup, type Picks } from '@/features/battle-setup';
 import { MotionToggle } from '@/features/motion-toggle/MotionToggle';
 import type { BattleTeam } from '@/entities/battle';
 import { href } from '@/shared/lib/router';
+import { ErrorBoundary } from '@/shared/ui/ErrorBoundary';
 import { Spinner } from '@/shared/ui/Spinner';
 
 // The arena (and, inside it, three.js) loads only once a battle starts.
@@ -60,24 +61,25 @@ export default function BattlePage() {
         />
       ) : (
         <section ref={battleRef} tabIndex={-1} aria-label="Battle" className="focus:outline-none">
-          <Suspense
-            fallback={
-              <div className="grid aspect-[4/5] place-items-center rounded-3xl border border-white/10 bg-ink-950 min-[480px]:aspect-[4/3] md:aspect-video">
-                <Spinner className="size-7" label="Loading the arena" />
-              </div>
-            }
-          >
-            <BattleArena
-              key={state.seed}
-              red={state.red}
-              blue={state.blue}
-              seed={state.seed}
-              onNewBattle={() => {
-                backFromBattle.current = true;
-                setState({ phase: 'setup' });
-              }}
-            />
-          </Suspense>
+          <ErrorBoundary key={state.seed} title="The battle arena couldn’t load">
+            <Suspense
+              fallback={
+                <div className="grid aspect-[4/5] place-items-center rounded-3xl border border-white/10 bg-ink-950 min-[480px]:aspect-[4/3] md:aspect-video">
+                  <Spinner className="size-7" label="Loading the arena" />
+                </div>
+              }
+            >
+              <BattleArena
+                red={state.red}
+                blue={state.blue}
+                seed={state.seed}
+                onNewBattle={() => {
+                  backFromBattle.current = true;
+                  setState({ phase: 'setup' });
+                }}
+              />
+            </Suspense>
+          </ErrorBoundary>
         </section>
       )}
     </main>
