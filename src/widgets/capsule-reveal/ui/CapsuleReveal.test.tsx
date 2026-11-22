@@ -3,6 +3,7 @@
 import '@testing-library/jest-dom/vitest';
 import { act, fireEvent, render, screen, within } from '@testing-library/react';
 import { afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
+import { RARITY_FRAME } from '@/entities/capsule';
 import { setMotionPreference } from '@/shared/lib/motion';
 import { REVEAL_MS } from '../model/reveal';
 import { capsuleResult, craftResult } from '../model/testResults';
@@ -80,7 +81,11 @@ describe('CapsuleReveal', () => {
     expect(onClose).not.toHaveBeenCalled();
     expect(screen.getByText('New! Pikachu joined your collection.')).toBeInTheDocument();
     expect(status()).toHaveTextContent(/: Pikachu, new$/);
-    expect(screen.getByRole('article')).toHaveAccessibleName(/Pikachu, New, level 1, 1 stars/);
+    const card = screen.getByRole('article');
+    expect(card).toHaveAccessibleName(/Pikachu, New, level 1, 1 stars/);
+    // Rarity frame shape on the big card (non-colour cue).
+    const rarity = card.getAttribute('data-rarity') as keyof typeof RARITY_FRAME;
+    expect(card).toHaveClass(...RARITY_FRAME[rarity].split(' '));
   });
 
   it('Esc skips the animation first and closes only once the reveal is done', () => {
@@ -136,6 +141,10 @@ describe('CapsuleReveal', () => {
       expect.stringMatching(/Bulbasaur.*Epic.*★ up/),
     ]);
     expect(status()).toHaveTextContent('3 capsules opened: 1 new, 1 star up, +5 dust.');
+    // Each summary tile carries its rarity's frame shape: common tiles differ from the epic one.
+    const tiles = items.map((li) => li.querySelector('[data-rarity]'));
+    expect(tiles[0]).toHaveClass(...RARITY_FRAME.common.split(' '));
+    expect(tiles[2]).toHaveClass(...RARITY_FRAME.epic.split(' '));
   });
 
   it('shows the pity footer: ticking, or reset with the numbers from the results', () => {
@@ -185,6 +194,32 @@ describe('CapsuleReveal', () => {
     step(3);
     expect(phaseOf(container)).toBe('done');
     expect(screen.getByText('New! Eevee joined your collection.')).toBeInTheDocument();
+  });
+
+  it('starts "Open next" face-down on a fresh stage, never flipping back over the new card', () => {
+    const { rerender, onClose, onPrimary } = setup();
+    fireEvent.click(screen.getByRole('button', { name: /skip/i }));
+    const before = document.querySelector('[data-flipper]');
+    expect(before).toHaveStyle({ transform: 'rotateY(0deg)' });
+
+    rerender(
+      <CapsuleReveal
+        results={[capsuleResult(133)]}
+        open
+        onClose={onClose}
+        primaryLabel="Done"
+        onPrimary={onPrimary}
+      />,
+    );
+    const after = document.querySelector('[data-flipper]');
+    // Same index (0) as the previous single reveal, yet a new element: the stage remounted.
+    expect(after).not.toBe(before);
+    expect(before?.isConnected).toBe(false);
+    expect(after).toHaveStyle({ transform: 'rotateY(180deg)' });
+    // No flip transition while charging, so nothing animates from face-up.
+    expect(after?.className).not.toMatch(/transition-transform/);
+    // The new card stays hidden from assistive tech until it flips.
+    expect(screen.queryByRole('article')).not.toBeInTheDocument();
   });
 
   it('reveals a crafted Pokémon as a single new card', () => {

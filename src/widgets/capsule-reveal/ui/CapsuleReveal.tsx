@@ -80,10 +80,15 @@ export function CapsuleReveal({
   const startStage = count > 0 ? FIRST_STAGE : DONE_STAGE;
 
   const [stage, setStage] = useState<RevealStage>(startStage);
+  /** Bumped on every restart: the stage remounts face-down instead of flipping back over the new card. */
+  const [run, setRun] = useState(0);
   // New results (e.g. "Open next") or a reopen restart the ritual — derived during render, not in an effect.
   const [shown, setShown] = useState({ results, open });
   if (shown.results !== results || shown.open !== open) {
-    if (open && (shown.results !== results || !shown.open)) setStage(startStage);
+    if (open && (shown.results !== results || !shown.open)) {
+      setStage(startStage);
+      setRun((r) => r + 1);
+    }
     setShown({ results, open });
   }
 
@@ -180,7 +185,12 @@ export function CapsuleReveal({
         ) : (
           focus && (
             <div className="flex flex-col items-center gap-6 py-4 sm:flex-row sm:gap-10 sm:pl-4">
-              <RevealStageView key={index} result={focus} phase={phase} reduced={reduced} />
+              <RevealStageView
+                key={`${run}-${index}`}
+                result={focus}
+                phase={phase}
+                reduced={reduced}
+              />
               <RevealPanel result={focus} revealed={phase === 'card'} index={index} count={count} />
             </div>
           )
@@ -245,9 +255,13 @@ function RevealStageView({
         }}
       />
       <div
+        data-flipper
         className={cn(
           'relative w-full transform-3d',
-          !reduced && 'transition-transform duration-500 ease-[cubic-bezier(0.34,1.56,0.64,1)]',
+          // Only the turn face-up animates; while charging the card must already sit face-down.
+          !reduced &&
+            phase !== 'charge' &&
+            'transition-transform duration-500 ease-[cubic-bezier(0.34,1.56,0.64,1)]',
         )}
         style={{ transform: flipped ? 'rotateY(0deg)' : 'rotateY(180deg)' }}
       >
