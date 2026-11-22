@@ -172,13 +172,14 @@ export function CapsuleReveal({
       <div
         data-reveal-phase={done ? 'done' : phase}
         data-reveal-index={index}
-        className="flex flex-col gap-6 overflow-x-clip"
+        // Bleeds to the dialog edges so glows fade out there instead of being cut at the padding.
+        className="-mx-6 flex flex-col gap-6 overflow-x-clip px-6"
       >
         {done && !single ? (
           <RevealSummary order={order} />
         ) : (
           focus && (
-            <div className="flex flex-col items-center gap-6 sm:flex-row sm:gap-10">
+            <div className="flex flex-col items-center gap-6 py-4 sm:flex-row sm:gap-10 sm:pl-4">
               <RevealStageView key={index} result={focus} phase={phase} reduced={reduced} />
               <RevealPanel result={focus} revealed={phase === 'card'} index={index} count={count} />
             </div>
@@ -346,6 +347,7 @@ function RevealFooter({ results }: { results: readonly RevealResult[] }) {
           opens={pity.opens}
           count={pity.count}
           text={pityFooterText(pity)}
+          surface="card"
         />
       ))}
       {note && <p className="text-xs text-muted-foreground">{note}</p>}

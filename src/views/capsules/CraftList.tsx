@@ -154,7 +154,8 @@ function CraftRow({
         <span className="font-mono text-sm text-foreground">{price} dust</span>
         <div className="flex flex-col items-end gap-0.5">
           <Button
-            variant={affordable ? 'primary' : 'outline'}
+            variant="outline"
+            size="lg"
             onClick={() => {
               if (affordable) onCraft(species.id);
             }}
@@ -162,10 +163,8 @@ function CraftRow({
             aria-describedby={affordable ? undefined : reasonId}
             aria-label={`Craft with dust: ${species.name}`}
             className={cn(
-              'h-11 justify-center',
-              affordable
-                ? 'cursor-pointer'
-                : 'cursor-not-allowed opacity-60 shadow-none hover:border-white/12 hover:bg-transparent',
+              'justify-center',
+              affordable ? 'cursor-pointer' : 'cursor-not-allowed opacity-60',
             )}
           >
             Craft with dust

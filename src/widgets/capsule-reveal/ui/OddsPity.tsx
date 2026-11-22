@@ -32,13 +32,29 @@ type PityMeterProps = {
   count: number;
   /** Visible + spoken value, e.g. "Rare guaranteed within 9 opens". */
   text: string;
+  /** Panel surface: 'muted' on page panels, 'card' inside the dialog (which is muted itself). */
+  surface?: 'muted' | 'card';
   className?: string;
 };
 
 /** One tier's pity: a text line and a `role="progressbar"` meter of opens since the last drop. */
-export function PityMeter({ tier, rarity, opens, count, text, className }: PityMeterProps) {
+export function PityMeter({
+  tier,
+  rarity,
+  opens,
+  count,
+  text,
+  surface = 'muted',
+  className,
+}: PityMeterProps) {
   return (
-    <div className={cn('flex flex-col gap-2 rounded-2xl bg-muted px-4 py-3.5', className)}>
+    <div
+      className={cn(
+        'flex flex-col gap-2 rounded-2xl px-4 py-3.5',
+        surface === 'card' ? 'bg-card' : 'bg-muted',
+        className,
+      )}
+    >
       <div className="flex items-baseline justify-between gap-3">
         <span className="text-sm font-semibold text-foreground">
           <span className="text-muted-foreground">{TIER_LABEL[tier]} · </span>
