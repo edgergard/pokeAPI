@@ -1,20 +1,13 @@
-import type { LoadResult, SavePersistence } from '../model/store';
-import type { Save } from '../model/schema';
-
-/**
- * Foundation placeholder: keeps the save in memory only (lost on reload).
- * TODO(stream 1-save): replace with the IndexedDB adapter (+ migrations, backup slot, persist()).
- */
-export function createDefaultPersistence(): SavePersistence {
-  let stored: Save | null = null;
-  return {
-    durable: false,
-    async load(): Promise<LoadResult> {
-      return stored ? { kind: 'loaded', save: stored } : { kind: 'empty' };
-    },
-    async write(save: Save) {
-      stored = save;
-      return true;
-    },
-  };
-}
+// Public face of save persistence: IndexedDB adapter, migrations, backup slot, persistent storage.
+// Other layers reach these through `@/entities/save` only.
+export {
+  createDefaultPersistence,
+  LOAD_ERROR_DAMAGED,
+  LOAD_ERROR_NEWER,
+  type IdbPersistence,
+  type PersistenceOptions,
+} from './adapter';
+export { migrateSave, detectVersion } from './migrate';
+export type { MigrateResult, MigrationContext } from './migrations';
+export { readBackup, writeBackup, type SaveBackup } from './backup';
+export { requestPersist, readPersistState, usePersistState, type PersistState } from './persist';
