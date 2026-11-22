@@ -74,18 +74,18 @@ No keys are needed: streams and CI run with no `.env`.
 
 ### Wave 2
 
-| Stream       | Branch              | Owns (only these paths)                                                                                                                                                                                 | Port | Provider/profile · mode       | Agent ID | Workspace ID         | Status  | PR  |
-| ------------ | ------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---- | ----------------------------- | -------- | -------------------- | ------- | --- |
-| 2-collection | stream/2-collection | `src/views/collection/**`, `src/views/creature/**`, `src/views/trainer/**`, `src/widgets/talent-tree/**`, `src/features/pokemon-search/**`                                                              | 3201 | claude/claude-opus-5-5 · auto | 77686b22 | wks_6b48f5dcfc40670d | running |     |
-| 2-play       | stream/2-play       | `src/views/battle/**`, `src/views/ladder/**`, `src/entities/ladder/**`, `src/widgets/team-dialog/**`, `src/widgets/level-up/**`, `src/features/battle-setup/**` (delete)                                | 3202 | claude/claude-opus-5-5 · auto | 66df01da | wks_8a3b437e09b1144f | running |     |
-| 2-home       | stream/2-home       | `src/views/home/**`, `src/widgets/app-nav/**`, `src/widgets/quest-list/**`, `src/widgets/team-showcase/**`, `src/features/team-builder/**` (delete), `src/entities/trainer/**` (v1 roster code retired) | 3203 | claude/claude-opus-5-5 · auto | 8b1fceab | wks_686a3715d3caf059 | running |     |
+| Stream       | Branch              | Owns (only these paths)                                                                                                                                                                                 | Port | Provider/profile · mode       | Agent ID | Workspace ID         | Status  | PR                                                         |
+| ------------ | ------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---- | ----------------------------- | -------- | -------------------- | ------- | ---------------------------------------------------------- |
+| 2-collection | stream/2-collection | `src/views/collection/**`, `src/views/creature/**`, `src/views/trainer/**`, `src/widgets/talent-tree/**`, `src/features/pokemon-search/**`                                                              | 3201 | claude/claude-opus-5-5 · auto | 77686b22 | wks_6b48f5dcfc40670d | running |                                                            |
+| 2-play       | stream/2-play       | `src/views/battle/**`, `src/views/ladder/**`, `src/entities/ladder/**`, `src/widgets/team-dialog/**`, `src/widgets/level-up/**`, `src/features/battle-setup/**` (delete)                                | 3202 | claude/claude-opus-5-5 · auto | 66df01da | wks_8a3b437e09b1144f | running |                                                            |
+| 2-home       | stream/2-home       | `src/views/home/**`, `src/widgets/app-nav/**`, `src/widgets/quest-list/**`, `src/widgets/team-showcase/**`, `src/features/team-builder/**` (delete), `src/entities/trainer/**` (v1 roster code retired) | 3203 | claude/claude-opus-5-5 · auto | 8b1fceab | wks_686a3715d3caf059 | merged  | [#11](https://github.com/edgergard/trainer-studio/pull/11) |
 
 Status values: pending · running · permission · escalation · done (report in) · in review · fixing · merged · failed
 
 ## Metrics
 
 Gate A approved: 2026-11-22 · Gate A rounds: 1
-Retries: 0 · Failed streams: 0 · Escalations: 1 · Red dev fixes: 0 · Review findings fixed: 9 · User corrections: 0
+Retries: 0 · Failed streams: 0 · Escalations: 1 · Red dev fixes: 0 · Review findings fixed: 12 · User corrections: 0
 
 ## Log
 
@@ -101,3 +101,5 @@ Retries: 0 · Failed streams: 0 · Escalations: 1 · Red dev fixes: 0 · Review 
 - 2026-11-22 wave 1 complete; dev 6a618cb green (577 tests)
 - 2026-11-22 dev a9aa972: wave 2 briefs, economy.battle.rivalTeamSize/rivalRarities, deflaked settings v1-import test
 - 2026-11-22 wave 2 launched (3 streams) from dev a9aa972
+- 2026-11-23 dev 75514ea: test timeouts for parallel load, mobile bottom padding above the tab bar
+- 2026-11-23 2-home merged (PR #11, da4fdd3); review: fixed 3 (quest claim live region hidden, double deal announcement, tab height 56→44px)
