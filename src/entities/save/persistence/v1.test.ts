@@ -19,6 +19,13 @@ const misty = {
   team: ['squirtle', 'not-a-pokemon', 'gengar', 'pikachu'],
   savedAt: '2024-02-01T00:00:00.000Z',
 };
+/** Ash as the pre-roster single-trainer key stored him (no id). */
+const legacy = {
+  firstName: ash.firstName,
+  lastName: ash.lastName,
+  team: ash.team,
+  savedAt: ash.savedAt,
+};
 
 /** A read-only localStorage stand-in: any write or removal fails the test. */
 function storage(entries: Record<string, string>) {
@@ -53,7 +60,6 @@ describe('readV1Doc', () => {
   });
 
   it('reads the older single-trainer key', () => {
-    const { id: _id, ...legacy } = ash;
     const doc = readV1Doc(storage({ [V1_TRAINER_KEY]: JSON.stringify(legacy) }));
     expect(parseV1Trainers(doc)).toEqual([
       { firstName: 'Ash', lastName: 'Ketchum', team: ash.team },
@@ -61,7 +67,6 @@ describe('readV1Doc', () => {
   });
 
   it('appends the legacy trainer after the roster unless the roster already absorbed it', () => {
-    const { id: _id, ...legacy } = ash;
     const both = storage({
       [V1_ROSTER_KEY]: JSON.stringify([misty]),
       [V1_TRAINER_KEY]: JSON.stringify(legacy),
