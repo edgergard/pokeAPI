@@ -4,6 +4,7 @@ export type {
   BattleTeam,
   Effectiveness,
   Fighter,
+  FighterBadges,
   Move,
   MoveType,
   Side,
@@ -11,9 +12,33 @@ export type {
 export { createRng } from './model/rng';
 export { effectiveness } from './model/typeChart';
 export { BATTLE_LEVEL, statsAtLevel } from './model/stats';
-export type { BattleEvent, FighterSummary } from './model/events';
-export { calcDamage, chooseMove, FALLBACK_MOVE } from './model/damage';
-export { simulateBattle } from './model/simulate';
+export type { BattleEndReason, BattleEvent, BattleResult, FighterSummary } from './model/events';
+export {
+  BASE_CRIT_CHANCE,
+  calcDamage,
+  chooseMove,
+  critChance,
+  FALLBACK_MOVE,
+} from './model/damage';
+export {
+  assertTeamSizes,
+  MAX_TEAM_SIZE,
+  MIN_TEAM_SIZE,
+  simulateBattle,
+  TeamSizeError,
+} from './model/simulate';
+export {
+  buildFighter,
+  buildTeam,
+  type FighterSpec,
+  type TeamMemberSpec,
+} from './model/buildFighter';
+export {
+  findIntroSeed,
+  INTRO_SEED_SEARCH_LIMIT,
+  INTRO_TARGET_TURNS,
+  IntroSeedError,
+} from './model/intro';
 export { selectMoves } from './model/selectMoves';
 export { movesFor, prepareTeam, toFighter } from './model/prepare';
 export type { MovesetData, TeamChoice } from './model/prepare';

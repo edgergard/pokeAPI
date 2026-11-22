@@ -8,6 +8,7 @@
     "dev": "next dev",
     "build": "next build",
     "postbuild": "node scripts/flatten-rsc-segments.mjs out",
+    "preview": "node scripts/serve-out.mjs",
     "lint": "eslint",
     "lint:fix": "eslint --fix",
     "typecheck": "next typegen && tsc --noEmit",

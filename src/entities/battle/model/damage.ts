@@ -1,4 +1,3 @@
-import { BATTLE_LEVEL } from './stats';
 import { effectiveness } from './typeChart';
 import type { Effectiveness, Fighter, Move } from './types';
 
@@ -10,13 +9,23 @@ export const FALLBACK_MOVE: Move = {
   damageClass: 'physical',
 };
 
-const CRIT_CHANCE = 1 / 24;
+/** Base critical-hit chance (1 in 24), before a fighter's `critChanceBonus`. */
+export const BASE_CRIT_CHANCE = 1 / 24;
+
+/** The attacker's critical-hit chance in [0, 1]: the base plus its talent bonus (percentage points). */
+export function critChance(attacker: Fighter): number {
+  const chance = BASE_CRIT_CHANCE + (attacker.critChanceBonus ?? 0) / 100;
+  return Math.min(1, Math.max(0, chance));
+}
 
 function stab(attacker: Fighter, move: Move): number {
   return move.type !== 'typeless' && attacker.types.includes(move.type) ? 1.5 : 1;
 }
 
-/** Rolls crit first, then the random factor; immunity consumes no rng. */
+/**
+ * The main-series damage formula at the attacker's level (IV/nature/talents are already in the stats).
+ * Rolls crit first, then the random factor; immunity consumes no rng.
+ */
 export function calcDamage(
   attacker: Fighter,
   defender: Fighter,
@@ -29,10 +38,10 @@ export function calcDamage(
   const physical = move.damageClass === 'physical';
   const a = physical ? attacker.stats.attack : attacker.stats.specialAttack;
   const d = physical ? defender.stats.defense : defender.stats.specialDefense;
-  const levelTerm = Math.floor((2 * BATTLE_LEVEL) / 5 + 2);
+  const levelTerm = Math.floor((2 * attacker.level) / 5 + 2);
   const base = Math.floor(Math.floor((levelTerm * move.power * a) / d) / 50) + 2;
 
-  const critical = rng() < CRIT_CHANCE;
+  const critical = rng() < critChance(attacker);
   const random = 0.85 + 0.15 * rng();
   const raw = base * stab(attacker, move) * eff * (critical ? 1.5 : 1) * random;
   return { damage: Math.max(1, Math.floor(raw)), effectiveness: eff, critical };

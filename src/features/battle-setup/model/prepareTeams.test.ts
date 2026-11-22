@@ -40,7 +40,7 @@ describe('prepareTeams', () => {
     resolveMovesets(EMPTY);
     const { red, blue } = await done;
     expect(red.trainerName).toBe('Ash');
-    expect(red.fighters.map((f) => f.name)).toEqual(['pikachu', 'eevee']);
+    expect(red.fighters.map((f) => f.name)).toEqual(['Pikachu', 'Eevee']);
     expect(blue.fighters.map((f) => f.id)).toEqual(['blue-0', 'blue-1']);
   });
 

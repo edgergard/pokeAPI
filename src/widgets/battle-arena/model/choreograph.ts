@@ -11,10 +11,15 @@ export type ChoreographOptions = {
   targetSeconds?: number;
   /** A compressed exchange is never shorter than this (default 0.35 s). */
   minShortSeconds?: number;
+  /**
+   * Every exchange plays its full beat (anticipation, lunge, impact), never the short one: the
+   * onboarding battle is short in turns, so it is paced as a showcase (default false).
+   */
+  fullExchanges?: boolean;
 };
 
-export function tierFor(event: ResultEvent, isFirstAttack: boolean): Tier {
-  if (isFirstAttack) return 'full';
+export function tierFor(event: ResultEvent, isFirstAttack: boolean, fullExchanges = false): Tier {
+  if (isFirstAttack || fullExchanges) return 'full';
   if (event.kind !== 'hit') return 'short';
   return event.effectiveness > 1 || event.critical ? 'full' : 'short';
 }
@@ -118,7 +123,7 @@ export function choreograph(
         if (result) i += 1;
         const first = !seenAttackers.has(event.attackerId);
         seenAttackers.add(event.attackerId);
-        const tier: Tier = result ? tierFor(result, first) : 'full';
+        const tier: Tier = result ? tierFor(result, first, opts.fullExchanges) : 'full';
         addUnit(tier === 'short' ? 'short' : 'full', moveIndex, (sub) => {
           sub.call(() => deliver(moveIndex, event), [], 0);
           let t = 0;
