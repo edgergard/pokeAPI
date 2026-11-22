@@ -1,4 +1,4 @@
-# Trainer Studio — build plan
+77fabe65 | wks_c5dc5cbdc19f155c | running | a27d07aa | wks_46d2a12c006dfbcf | running | e0cefd9e | wks_a4b3d44d18c0dd00 | running | 46bec808 | wks_e9fc7590143bc6f3 | running |# Trainer Studio — build plan
 
 Status: wave-1 running
 Orchestrator launch mode: CLI
@@ -65,20 +65,20 @@ No keys are needed: streams and CI run with no `.env`.
 
 ### Wave 1
 
-| Stream        | Branch               | Owns (only these paths)                                                                                             | Port | Provider/profile · mode | Agent ID | Workspace ID | Status  | PR  |
-| ------------- | -------------------- | ------------------------------------------------------------------------------------------------------------------- | ---- | ----------------------- | -------- | ------------ | ------- | --- |
-| 1-save        | stream/1-save        | `src/entities/save/persistence/**`, `src/features/save-transfer/**`, `src/views/settings/**` (+ tests beside)       | 3101 | claude · auto           |          |              | pending |     |
-| 1-engine      | stream/1-engine      | `src/entities/battle/**` (except `rng.ts`), `src/widgets/battle-arena/**`                                           | 3102 | claude · auto           |          |              | pending |     |
-| 1-capsules    | stream/1-capsules    | `src/entities/capsule/**`, `src/features/open-capsule/**`, `src/widgets/capsule-reveal/**`, `src/views/capsules/**` | 3103 | claude · auto           |          |              | pending |     |
-| 1-progression | stream/1-progression | `src/entities/progression/**`, `src/entities/quest/**`                                                              | 3104 | claude · auto           |          |              | pending |     |
+| Stream        | Branch               | Owns (only these paths)                                                                                             | Port | Provider/profile · mode       | Agent ID | Workspace ID | Status  | PR  |
+| ------------- | -------------------- | ------------------------------------------------------------------------------------------------------------------- | ---- | ----------------------------- | -------- | ------------ | ------- | --- |
+| 1-save        | stream/1-save        | `src/entities/save/persistence/**`, `src/features/save-transfer/**`, `src/views/settings/**` (+ tests beside)       | 3101 | claude/claude-opus-5-5 · auto |          |              | pending |     |
+| 1-engine      | stream/1-engine      | `src/entities/battle/**` (except `rng.ts`), `src/widgets/battle-arena/**`                                           | 3102 | claude/claude-opus-5-5 · auto |          |              | pending |     |
+| 1-capsules    | stream/1-capsules    | `src/entities/capsule/**`, `src/features/open-capsule/**`, `src/widgets/capsule-reveal/**`, `src/views/capsules/**` | 3103 | claude/claude-opus-5-5 · auto |          |              | pending |     |
+| 1-progression | stream/1-progression | `src/entities/progression/**`, `src/entities/quest/**`                                                              | 3104 | claude/claude-opus-5-5 · auto |          |              | pending |     |
 
 ### Wave 2
 
-| Stream       | Branch              | Owns (only these paths)                                                                                                                                                                                 | Port | Provider/profile · mode | Agent ID | Workspace ID | Status  | PR  |
-| ------------ | ------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---- | ----------------------- | -------- | ------------ | ------- | --- |
-| 2-collection | stream/2-collection | `src/views/collection/**`, `src/views/creature/**`, `src/views/trainer/**`, `src/widgets/talent-tree/**`, `src/features/pokemon-search/**`                                                              | 3201 | claude · auto           |          |              | pending |     |
-| 2-play       | stream/2-play       | `src/views/battle/**`, `src/views/ladder/**`, `src/entities/ladder/**`, `src/widgets/team-dialog/**`, `src/widgets/level-up/**`, `src/features/battle-setup/**` (delete)                                | 3202 | claude · auto           |          |              | pending |     |
-| 2-home       | stream/2-home       | `src/views/home/**`, `src/widgets/app-nav/**`, `src/widgets/quest-list/**`, `src/widgets/team-showcase/**`, `src/features/team-builder/**` (delete), `src/entities/trainer/**` (v1 roster code retired) | 3203 | claude · auto           |          |              | pending |     |
+| Stream       | Branch              | Owns (only these paths)                                                                                                                                                                                 | Port | Provider/profile · mode       | Agent ID | Workspace ID | Status  | PR  |
+| ------------ | ------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---- | ----------------------------- | -------- | ------------ | ------- | --- |
+| 2-collection | stream/2-collection | `src/views/collection/**`, `src/views/creature/**`, `src/views/trainer/**`, `src/widgets/talent-tree/**`, `src/features/pokemon-search/**`                                                              | 3201 | claude/claude-opus-5-5 · auto |          |              | pending |     |
+| 2-play       | stream/2-play       | `src/views/battle/**`, `src/views/ladder/**`, `src/entities/ladder/**`, `src/widgets/team-dialog/**`, `src/widgets/level-up/**`, `src/features/battle-setup/**` (delete)                                | 3202 | claude/claude-opus-5-5 · auto |          |              | pending |     |
+| 2-home       | stream/2-home       | `src/views/home/**`, `src/widgets/app-nav/**`, `src/widgets/quest-list/**`, `src/widgets/team-showcase/**`, `src/features/team-builder/**` (delete), `src/entities/trainer/**` (v1 roster code retired) | 3203 | claude/claude-opus-5-5 · auto |          |              | pending |     |
 
 Status values: pending · running · permission · escalation · done (report in) · in review · fixing · merged · failed
 
@@ -91,3 +91,4 @@ Retries: 0 · Failed streams: 0 · Escalations: 0 · Red dev fixes: 0 · Review 
 
 - 2026-11-22 plan drafted
 - 2026-11-22 foundation committed on main at c2cd6c5 (template config 4818d5b); repo renamed to edgergard/trainer-studio; dev CI green; fresh worktree check green
+- 2026-11-22 wave 1 launched (4 streams) from dev ce97573
