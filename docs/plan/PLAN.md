@@ -1,4 +1,4 @@
-77fabe65 | wks_c5dc5cbdc19f155c | running | a27d07aa | wks_46d2a12c006dfbcf | running | e0cefd9e | wks_a4b3d44d18c0dd00 | running | 46bec808 | wks_e9fc7590143bc6f3 | running |# Trainer Studio — build plan
+8b1fceab | wks_686a3715d3caf059 | running | 66df01da | wks_8a3b437e09b1144f | running | 77686b22 | wks_6b48f5dcfc40670d | running |77fabe65 | wks_c5dc5cbdc19f155c | running | a27d07aa | wks_46d2a12c006dfbcf | running | e0cefd9e | wks_a4b3d44d18c0dd00 | running | 46bec808 | wks_e9fc7590143bc6f3 | running |# Trainer Studio — build plan
 
 Status: wave-2 running
 Orchestrator launch mode: CLI
@@ -74,11 +74,11 @@ No keys are needed: streams and CI run with no `.env`.
 
 ### Wave 2
 
-| Stream       | Branch              | Owns (only these paths)                                                                                                                                                                                 | Port | Provider/profile · mode       | Agent ID | Workspace ID | Status  | PR  |
-| ------------ | ------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---- | ----------------------------- | -------- | ------------ | ------- | --- |
-| 2-collection | stream/2-collection | `src/views/collection/**`, `src/views/creature/**`, `src/views/trainer/**`, `src/widgets/talent-tree/**`, `src/features/pokemon-search/**`                                                              | 3201 | claude/claude-opus-5-5 · auto |          |              | pending |     |
-| 2-play       | stream/2-play       | `src/views/battle/**`, `src/views/ladder/**`, `src/entities/ladder/**`, `src/widgets/team-dialog/**`, `src/widgets/level-up/**`, `src/features/battle-setup/**` (delete)                                | 3202 | claude/claude-opus-5-5 · auto |          |              | pending |     |
-| 2-home       | stream/2-home       | `src/views/home/**`, `src/widgets/app-nav/**`, `src/widgets/quest-list/**`, `src/widgets/team-showcase/**`, `src/features/team-builder/**` (delete), `src/entities/trainer/**` (v1 roster code retired) | 3203 | claude/claude-opus-5-5 · auto |          |              | pending |     |
+| Stream       | Branch              | Owns (only these paths)                                                                                                                                                                                 | Port | Provider/profile · mode       | Agent ID | Workspace ID         | Status  | PR  |
+| ------------ | ------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---- | ----------------------------- | -------- | -------------------- | ------- | --- |
+| 2-collection | stream/2-collection | `src/views/collection/**`, `src/views/creature/**`, `src/views/trainer/**`, `src/widgets/talent-tree/**`, `src/features/pokemon-search/**`                                                              | 3201 | claude/claude-opus-5-5 · auto | 77686b22 | wks_6b48f5dcfc40670d | running |     |
+| 2-play       | stream/2-play       | `src/views/battle/**`, `src/views/ladder/**`, `src/entities/ladder/**`, `src/widgets/team-dialog/**`, `src/widgets/level-up/**`, `src/features/battle-setup/**` (delete)                                | 3202 | claude/claude-opus-5-5 · auto | 66df01da | wks_8a3b437e09b1144f | running |     |
+| 2-home       | stream/2-home       | `src/views/home/**`, `src/widgets/app-nav/**`, `src/widgets/quest-list/**`, `src/widgets/team-showcase/**`, `src/features/team-builder/**` (delete), `src/entities/trainer/**` (v1 roster code retired) | 3203 | claude/claude-opus-5-5 · auto | 8b1fceab | wks_686a3715d3caf059 | running |     |
 
 Status values: pending · running · permission · escalation · done (report in) · in review · fixing · merged · failed
 
@@ -99,3 +99,5 @@ Retries: 0 · Failed streams: 0 · Escalations: 1 · Red dev fixes: 0 · Review 
 - 2026-11-22 1-capsules merged (PR #8, 25d382a); review: fixed 3 (Open-next reveal spoiler, endless pity shimmer on load error, rarity frame shape)
 - 2026-11-22 1-save merged (PR #9, 6a618cb); review: fixed 6 (v1 import lost on chunk-load failure, non-atomic backup+save writes, cross-tab overwrite guard, load-error import/reset without backup, focus loss, cancel during import)
 - 2026-11-22 wave 1 complete; dev 6a618cb green (577 tests)
+- 2026-11-22 dev a9aa972: wave 2 briefs, economy.battle.rivalTeamSize/rivalRarities, deflaked settings v1-import test
+- 2026-11-22 wave 2 launched (3 streams) from dev a9aa972
