@@ -45,9 +45,9 @@ export function IntroResult({
   const loaner = loanerId === null || loanerId === undefined ? undefined : getSpecies(loanerId);
   const fresh = newSpeciesId === null ? undefined : getSpecies(newSpeciesId);
 
+  // Focus without scrolling, so "Victory" and the reward at the top of the overlay stay in view.
   useEffect(() => {
     primaryRef.current?.focus({ preventScroll: true });
-    primaryRef.current?.scrollIntoView?.({ block: 'nearest' });
   }, []);
 
   const need = trainer ? xpToNextTrainerLevel(trainer.level) : 0;

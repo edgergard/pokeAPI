@@ -2,6 +2,7 @@ import { useEffect, useRef, type KeyboardEvent } from 'react';
 import { Check, Lock } from 'lucide-react';
 import type { StageInfo, StageStatus } from '@/entities/ladder';
 import { cn } from '@/shared/lib/cn';
+import { centeredScrollTop } from '../model/scroll';
 
 type Props = {
   stages: readonly StageInfo[];
@@ -31,12 +32,22 @@ export function LadderPath({ stages, statusOf, selected, onSelect, onLocked }: P
   const listRef = useRef<HTMLOListElement>(null);
   const nodes = useRef<(HTMLButtonElement | null)[]>([]);
 
-  // Start with the selected node in view inside the scrolling path (without scrolling the page).
+  // Start with the selected node centred inside the scrolling path (without scrolling the page).
+  // Measured with getBoundingClientRect: offsetTop would be relative to the node's `relative` <li>.
   useEffect(() => {
     const list = listRef.current;
     const node = nodes.current[selected - 1];
     if (!list || !node) return;
-    list.scrollTop = node.offsetTop - list.clientHeight / 2 + node.offsetHeight / 2;
+    const listRect = list.getBoundingClientRect();
+    const nodeRect = node.getBoundingClientRect();
+    list.scrollTop = centeredScrollTop({
+      listTop: listRect.top + list.clientTop,
+      nodeTop: nodeRect.top,
+      nodeHeight: nodeRect.height,
+      scrollTop: list.scrollTop,
+      clientHeight: list.clientHeight,
+      scrollHeight: list.scrollHeight,
+    });
     // Only on mount: later selections come from the player, who is already looking at the node.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);

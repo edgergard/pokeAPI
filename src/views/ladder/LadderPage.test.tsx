@@ -57,6 +57,55 @@ describe('LadderPage', () => {
     expect(screen.getByTestId('ladder-skeleton')).toBeInTheDocument();
   });
 
+  it('opens with the current stage centred in the scrolling path', async () => {
+    // jsdom has no layout: give the path 60px rows in a 384px scroll area at y = 200, and record
+    // what the path sets its scrollTop to. Each node sits in a `relative` <li>, so only measured
+    // positions (not offsetTop) find it.
+    const ROW = 60;
+    let scrolled = 0;
+    const rect = (top: number, height: number) =>
+      ({
+        top,
+        height,
+        bottom: top + height,
+        left: 0,
+        right: 300,
+        width: 300,
+        x: 0,
+        y: top,
+      }) as DOMRect;
+    const restore = [
+      vi.spyOn(Element.prototype, 'getBoundingClientRect').mockImplementation(function (
+        this: Element,
+      ) {
+        if (this.tagName === 'OL') return rect(200, 384);
+        const li = this.closest('li');
+        const index = li ? [...(li.parentElement?.children ?? [])].indexOf(li) : 0;
+        return rect(200 + index * ROW - scrolled, 56);
+      }),
+      vi.spyOn(Element.prototype, 'clientHeight', 'get').mockImplementation(function (
+        this: Element,
+      ) {
+        return this.tagName === 'OL' ? 384 : 0;
+      }),
+      vi.spyOn(Element.prototype, 'scrollHeight', 'get').mockImplementation(function (
+        this: Element,
+      ) {
+        return this.tagName === 'OL' ? STAGES * ROW : 0;
+      }),
+      vi.spyOn(Element.prototype, 'scrollTop', 'set').mockImplementation(function (value: number) {
+        scrolled = value;
+      }),
+    ];
+    try {
+      await open(makeSave({ owned: [makeOwned(PIKACHU)], ladder: { cleared: 11 } }));
+      // Stage 12 (index 11): 660px down the list, centred = 660 - (384 - 56) / 2.
+      expect(scrolled).toBe(11 * ROW - (384 - 56) / 2);
+    } finally {
+      restore.forEach((spy) => spy.mockRestore());
+    }
+  });
+
   it('shows cleared, current and locked nodes', async () => {
     await open(makeSave({ owned: [makeOwned(PIKACHU)], ladder: { cleared: 6 } }));
     expect(screen.getByText(`Stage 6 / ${STAGES} cleared`)).toBeInTheDocument();

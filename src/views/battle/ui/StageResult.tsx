@@ -63,10 +63,10 @@ export function StageResult({
   const unopened = useSave((s) => CAPSULE_TIERS.reduce((n, tier) => n + s.capsules[tier], 0));
   const suggestion = useSave((s) => (won ? null : lossSuggestion(s)));
 
+  // Focus without scrolling: on a phone the overlay scrolls, and the outcome and rewards at its
+  // top must stay in view (the primary button may sit below them).
   useEffect(() => {
-    const primary = primaryRef.current;
-    primary?.focus({ preventScroll: true });
-    primary?.scrollIntoView?.({ block: 'nearest' });
+    primaryRef.current?.focus({ preventScroll: true });
   }, []);
 
   const last = stage >= economy.battle.ladderStages;

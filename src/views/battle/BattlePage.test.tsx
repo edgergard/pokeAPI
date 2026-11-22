@@ -205,6 +205,25 @@ describe('BattlePage stage battle', () => {
     expect(screen.getByRole('button', { name: 'Fight' })).toHaveFocus();
   });
 
+  it('focuses the result’s primary without scrolling the overlay away from the outcome', async () => {
+    await open('stage=1', makeSave({ owned: [makeOwned(PIKACHU, { level: 5 })] }));
+    await fight();
+    const scroll = vi.spyOn(Element.prototype, 'scrollIntoView');
+    const focus = vi.spyOn(HTMLElement.prototype, 'focus');
+    try {
+      fireEvent.click(screen.getByRole('button', { name: 'Finish: Blue wins' }));
+      const retry = screen.getByRole('button', { name: 'Retry' });
+      expect(retry).toHaveFocus();
+      expect(focus.mock.contexts).toContain(retry);
+      const call = focus.mock.contexts.indexOf(retry);
+      expect(focus.mock.calls[call]).toEqual([{ preventScroll: true }]);
+      expect(scroll).not.toHaveBeenCalled();
+    } finally {
+      scroll.mockRestore();
+      focus.mockRestore();
+    }
+  });
+
   it('opens the level-up dialog when the trainer levels, and Fill slot opens the team', async () => {
     const level = economy.trainer.teamSlots.find((e) => e.slots === 2)?.level ?? 3;
     await open(
@@ -253,7 +272,12 @@ describe('BattlePage intro', () => {
     expect(arena.dataset.red).toBe(`Pikachu:${economy.onboarding.loanerLevel}`);
     expect(arena.dataset.blue).toBe(`Rattata:${economy.onboarding.rivalLevel}`);
 
+    const scroll = vi.spyOn(Element.prototype, 'scrollIntoView');
     fireEvent.click(screen.getByRole('button', { name: 'Finish: Red wins' }));
+    // The result focuses "Open capsule" without scrolling "Victory" out of view.
+    expect(within(arena).getByRole('button', { name: 'Open capsule' })).toHaveFocus();
+    expect(scroll).not.toHaveBeenCalled();
+    scroll.mockRestore();
     expect(getSave()?.onboarding.step).toBe('fought');
     expect(getSave()?.capsules.basic).toBe(economy.onboarding.introReward.capsules.basic);
     expect(screen.getByRole('heading', { name: 'Victory' })).toBeInTheDocument();
