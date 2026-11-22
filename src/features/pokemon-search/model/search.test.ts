@@ -1,7 +1,13 @@
 import { describe, expect, it } from 'vitest';
 import { allSpecies, getSpecies, type Species } from '@/entities/pokemon';
 import { createNewSave, type OwnedPokemon, type Save } from '@/entities/save';
-import { inSearchMode, matchesSpeciesQuery, normalizeQuery, searchSpecies } from './search';
+import {
+  inSearchMode,
+  matchesSpeciesQuery,
+  normalizeQuery,
+  ownedSpeciesCount,
+  searchSpecies,
+} from './search';
 
 function owned(speciesId: number): OwnedPokemon {
   return {
@@ -62,6 +68,14 @@ describe('inSearchMode', () => {
     expect(inSearchMode(collection, 1, 'owned')).toBe(false);
     expect(inSearchMode(collection, 1, 'unowned')).toBe(true);
     expect(inSearchMode(collection, 1, 'all')).toBe(true);
+  });
+});
+
+describe('ownedSpeciesCount', () => {
+  it('counts owned baked species only, never above SPECIES_COUNT', () => {
+    expect(ownedSpeciesCount(collectionOf(1, 4, 25))).toBe(3);
+    expect(ownedSpeciesCount({ ...collectionOf(1, 4), '99999': owned(99999) })).toBe(2);
+    expect(ownedSpeciesCount({})).toBe(0);
   });
 });
 

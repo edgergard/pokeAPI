@@ -51,6 +51,15 @@ export function inSearchMode(
   return mode === 'owned' ? owned : !owned;
 }
 
+/**
+ * Owned species that exist in the baked data ("Collection N / 1025"). Keys outside the species list
+ * (e.g. from an older data bake) don't count, so N never exceeds SPECIES_COUNT. Shared by every screen
+ * that shows the collection count.
+ */
+export function ownedSpeciesCount(collection: Save['collection']): number {
+  return allSpecies.reduce((n, s) => n + (isOwned({ collection }, s.id) ? 1 : 0), 0);
+}
+
 type SearchOptions = {
   mode: SearchMode;
   collection: Save['collection'];

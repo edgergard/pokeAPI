@@ -1,10 +1,12 @@
 'use client';
 
 import {
+  useCallback,
   useDeferredValue,
   useId,
   useLayoutEffect,
   useMemo,
+  useRef,
   useState,
   type KeyboardEvent,
   type Ref,
@@ -21,6 +23,12 @@ import { inSearchMode, searchSpecies, type SearchMode } from '../model/search';
 const MAX_OPTIONS = 8;
 
 const EMPTY_COLLECTION: Save['collection'] = {};
+
+/** Writes an element into a caller's ref, callback or object. */
+function assignRef<T>(ref: Ref<T> | undefined, value: T | null): void {
+  if (typeof ref === 'function') ref(value);
+  else if (ref) ref.current = value;
+}
 
 const popupClass =
   'absolute inset-x-0 top-full z-30 mt-2 max-h-80 overflow-y-auto rounded-2xl border border-border bg-popover p-1.5 shadow-2xl';
@@ -78,6 +86,15 @@ export function PokemonSearch(props: PokemonSearchProps) {
 
   const [open, setOpen] = useState(false);
   const [activeIndex, setActiveIndex] = useState(-1);
+  // Our own handle on the input (focus after "Clear search"), shared with the caller's ref.
+  const ownInputRef = useRef<HTMLInputElement | null>(null);
+  const setInputRef = useCallback(
+    (element: HTMLInputElement | null) => {
+      ownInputRef.current = element;
+      assignRef(inputRef, element);
+    },
+    [inputRef],
+  );
   const deferredQuery = useDeferredValue(query);
 
   const matches = useMemo(
@@ -145,13 +162,19 @@ export function PokemonSearch(props: PokemonSearchProps) {
     }
   };
 
+  // Filter mode: the caller's list owns the real result count (it applies more filters than the
+  // search does), so the combobox only talks about its own suggestions.
   const status = !showList
     ? ''
-    : matches.length === 0
-      ? 'No Pokémon found'
-      : matches.length > options.length
-        ? `${matches.length} Pokémon found, showing the first ${options.length}`
-        : `${matches.length} Pokémon found`;
+    : props.variant === 'filter'
+      ? options.length === 0
+        ? ''
+        : `${options.length} ${options.length === 1 ? 'suggestion' : 'suggestions'}`
+      : matches.length === 0
+        ? 'No Pokémon found'
+        : matches.length > options.length
+          ? `${matches.length} Pokémon found, showing the first ${options.length}`
+          : `${matches.length} Pokémon found`;
 
   return (
     <div className={className}>
@@ -160,7 +183,7 @@ export function PokemonSearch(props: PokemonSearchProps) {
           <div className={cn(controlClass(false), 'h-12 border-input')}>
             <Search aria-hidden className="size-4 shrink-0 text-muted-foreground" />
             <input
-              ref={inputRef}
+              ref={setInputRef}
               id={inputId}
               type="text"
               role="combobox"
@@ -193,6 +216,8 @@ export function PokemonSearch(props: PokemonSearchProps) {
                 onClick={() => {
                   setQuery('');
                   setActiveIndex(-1);
+                  // The button unmounts with the text: keep focus in the field instead of <body>.
+                  ownInputRef.current?.focus();
                 }}
                 aria-label="Clear search"
                 className="tap-target grid size-8 shrink-0 cursor-pointer place-items-center rounded-lg text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"

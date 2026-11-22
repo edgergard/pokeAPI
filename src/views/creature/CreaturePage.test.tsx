@@ -290,6 +290,15 @@ describe('CreaturePage', () => {
     expect(next).toHaveAttribute('href', '/creature/?id=27');
   });
 
+  it('counts the collection like the Collection screen (baked species only)', async () => {
+    const save = testSave();
+    await show('25', { ...save, collection: { ...save.collection, '99999': owned(99999) } });
+    expect(screen.getByRole('link', { name: `Collection 2 / ${SPECIES_COUNT}` })).toHaveAttribute(
+      'href',
+      '/collection/',
+    );
+  });
+
   it('wraps from #001 back to the last species', async () => {
     await show('1');
     expect(

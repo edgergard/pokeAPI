@@ -8,7 +8,6 @@ import {
   SPECIES_TYPES,
   filterSpecies,
   hasActiveFilters,
-  ownedCount,
   searchModeFor,
   sortSpecies,
 } from './filters';
@@ -105,9 +104,7 @@ describe('collection filters', () => {
     }
   });
 
-  it('counts owned species and maps ownership to a search mode', () => {
-    expect(ownedCount(collection)).toBe(3);
-    expect(ownedCount({ ...collection, '99999': owned(99999) })).toBe(3);
+  it('maps ownership to a search mode', () => {
     expect(searchModeFor('missing')).toBe('unowned');
     expect(searchModeFor('owned')).toBe('owned');
     expect(searchModeFor('all')).toBe('all');

@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 import '@testing-library/jest-dom/vitest';
-import { useState } from 'react';
+import { createRef, useState } from 'react';
 import { act, render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
@@ -54,7 +54,7 @@ function FilterHarness({ onSelect }: { onSelect?: (id: number) => void }) {
         onQueryChange={setQuery}
         onSelect={onSelect}
       />
-      <output data-testid="query">{query}</output>
+      <span data-testid="query">{query}</span>
     </>
   );
 }
@@ -158,6 +158,57 @@ describe('PokemonSearch', () => {
     await user.keyboard('{ArrowDown}{Enter}');
     expect(onSelect).toHaveBeenCalledWith(4);
     expect(screen.getByTestId('query')).toHaveTextContent('Charmander');
+  });
+
+  it('"Clear search" empties the field and keeps focus in it (pick mode)', async () => {
+    const user = userEvent.setup();
+    render(<PokemonSearch variant="pick" mode="all" label="Find" onSelect={() => {}} />);
+    const box = screen.getByRole('combobox');
+    await user.type(box, 'pika');
+    await user.click(screen.getByRole('button', { name: 'Clear search' }));
+    expect(box).toHaveValue('');
+    expect(box).toHaveFocus();
+    expect(screen.queryByRole('button', { name: 'Clear search' })).not.toBeInTheDocument();
+  });
+
+  it('"Clear search" keeps focus in the field in filter mode and still fills the caller ref', async () => {
+    const user = userEvent.setup();
+    const ref = createRef<HTMLInputElement>();
+    function Harness() {
+      const [query, setQuery] = useState('char');
+      return (
+        <PokemonSearch
+          variant="filter"
+          mode="all"
+          label="Search"
+          query={query}
+          onQueryChange={setQuery}
+          inputRef={ref}
+        />
+      );
+    }
+    render(<Harness />);
+    const box = screen.getByRole('combobox', { name: 'Search' });
+    expect(ref.current).toBe(box);
+    await user.click(screen.getByRole('button', { name: 'Clear search' }));
+    expect(box).toHaveValue('');
+    expect(box).toHaveFocus();
+  });
+
+  it('filter mode only counts its own suggestions; pick mode counts matches', async () => {
+    const user = userEvent.setup();
+    const { unmount } = render(<FilterHarness />);
+    await user.type(screen.getByRole('combobox', { name: 'Search' }), 'pikach');
+    expect(screen.getByRole('status')).toHaveTextContent(/^1 suggestion$/);
+    await user.clear(screen.getByRole('combobox', { name: 'Search' }));
+    await user.type(screen.getByRole('combobox', { name: 'Search' }), 'zzzz');
+    // Nothing to suggest: the caller's own result summary speaks for the empty list.
+    expect(screen.getByRole('status')).toHaveTextContent(/^$/);
+    unmount();
+
+    render(<PokemonSearch variant="pick" mode="all" label="Find" onSelect={() => {}} />);
+    await user.type(screen.getByRole('combobox'), 'pikach');
+    expect(screen.getByRole('status')).toHaveTextContent('1 Pokémon found');
   });
 
   it('picks with the mouse too', async () => {

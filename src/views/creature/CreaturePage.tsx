@@ -15,6 +15,7 @@ import type { RevealResult } from '@/entities/capsule';
 import { SPECIES_COUNT, type Species } from '@/entities/pokemon';
 import { getSave, updateSave, useSave, useSaveStatus, type OwnedPokemon } from '@/entities/save';
 import { useCraft } from '@/features/open-capsule';
+import { ownedSpeciesCount } from '@/features/pokemon-search';
 import { formatDexNumber } from '@/shared/lib/format';
 import { useHydrated } from '@/shared/lib/useHydrated';
 import { CapsuleReveal } from '@/widgets/capsule-reveal';
@@ -74,7 +75,8 @@ function CreatureContent({ species, saveFailed }: { species: Species; saveFailed
   const owned = useSave((s) => s.collection[key]);
   const dust = useSave((s) => s.dust);
   const team = useSave((s) => teamStatus(s, species.id));
-  const ownedTotal = useSave((s) => Object.keys(s.collection).length);
+  // Same count as the Collection screen: baked species only, never above SPECIES_COUNT.
+  const ownedTotal = useSave((s) => ownedSpeciesCount(s.collection));
   const { craft } = useCraft();
 
   const headingRef = useRef<HTMLHeadingElement>(null);

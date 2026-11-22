@@ -176,6 +176,26 @@ describe('CollectionPage', () => {
     ]);
   });
 
+  it('announces the real result count from the summary, not from the search box', async () => {
+    const user = userEvent.setup();
+    render(<CollectionPage />);
+    await load(testSave());
+    const summary = screen.getByTestId('collection-summary');
+    expect(summary).toHaveAttribute('role', 'status');
+    expect(summary).toHaveAttribute('aria-live', 'polite');
+    expect(summary).toHaveAttribute('tabindex', '-1');
+
+    await user.selectOptions(screen.getByRole('combobox', { name: 'Type' }), 'water');
+    expect(summary).toHaveTextContent(/^Showing [0-9]+ of [0-9]+ Pokémon$/);
+    await user.type(screen.getByRole('combobox', { name: 'Search' }), 'char');
+    // Charmander & co. match the search but not the type: the grid is empty and the summary says so,
+    // while the search box only mentions its suggestions.
+    expect(summary).toHaveTextContent('No Pokémon shown');
+    const statuses = screen.getAllByRole('status').map((s) => s.textContent ?? '');
+    expect(statuses.some((t) => /found/.test(t))).toBe(false);
+    expect(statuses.some((t) => /suggestions?$/.test(t))).toBe(true);
+  });
+
   it('shows the empty state and "Clear filters" resets every filter', async () => {
     const user = userEvent.setup();
     render(<CollectionPage />);

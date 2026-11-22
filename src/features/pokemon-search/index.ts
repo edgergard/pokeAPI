@@ -4,6 +4,7 @@ export {
   inSearchMode,
   matchesSpeciesQuery,
   normalizeQuery,
+  ownedSpeciesCount,
   searchSpecies,
   type SearchMode,
 } from './model/search';

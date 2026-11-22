@@ -103,8 +103,3 @@ export function sortSpecies(
   const stars = (s: Species) => collection[String(s.id)]?.stars ?? 0;
   return [...species].sort((a, b) => level(b) - level(a) || stars(b) - stars(a) || byDex(a, b));
 }
-
-/** Owned species that exist in the baked data ("Collection N / 1025"). */
-export function ownedCount(collection: Save['collection']): number {
-  return allSpecies.reduce((n, s) => n + (isOwned({ collection }, s.id) ? 1 : 0), 0);
-}

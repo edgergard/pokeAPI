@@ -5,12 +5,12 @@ import Link from 'next/link';
 import { Sparkles } from 'lucide-react';
 import { allSpecies, SPECIES_COUNT } from '@/entities/pokemon';
 import { useSave, useSaveStatus } from '@/entities/save';
+import { ownedSpeciesCount } from '@/features/pokemon-search';
 import { Button } from '@/shared/ui/Button';
 import {
   DEFAULT_FILTERS,
   filterSpecies,
   hasActiveFilters,
-  ownedCount,
   sortSpecies,
   type CollectionFilters as Filters,
   type SortKey,
@@ -62,7 +62,7 @@ function CollectionContent() {
         : [],
     [collection, deferredFilters, sort],
   );
-  const owned = useMemo(() => (collection ? ownedCount(collection) : 0), [collection]);
+  const owned = useMemo(() => (collection ? ownedSpeciesCount(collection) : 0), [collection]);
 
   useEffect(() => {
     const index = focusTile.current;
@@ -107,9 +107,13 @@ function CollectionContent() {
           <h2 id="collection-grid-heading" className="sr-only">
             Pokémon
           </h2>
+          {/* Live: filter, sort and search changes (down to zero) are announced; also the focus target
+              after "Clear filters". */}
           <p
             ref={summaryRef}
             tabIndex={-1}
+            role="status"
+            aria-live="polite"
             className="text-sm text-muted-foreground outline-none"
             data-testid="collection-summary"
           >
