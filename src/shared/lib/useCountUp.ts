@@ -33,7 +33,10 @@ function removeTick(tick: Tick) {
  * the element behind `ref`, so counting never re-renders. Attach `ref` to an element whose only
  * child is `{display}`. Under reduced motion `display` is always the target.
  */
-export function useCountUp<T extends HTMLElement = HTMLSpanElement>(target: number, duration: number = DUR.xxl) {
+export function useCountUp<T extends HTMLElement = HTMLSpanElement>(
+  target: number,
+  duration: number = DUR.xxl,
+) {
   const reduced = usePrefersReducedMotion();
   const [phase, setPhase] = useState<Phase>('idle');
   const ref = useRef<T>(null);

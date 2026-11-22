@@ -5,10 +5,25 @@ import { FX_SECONDS, FxPool, fxFamily } from './fx';
 
 describe('fxFamily', () => {
   it.each([
-    ['fire', 'fire'], ['dragon', 'fire'], ['water', 'water'], ['ice', 'water'], ['electric', 'electric'],
-    ['grass', 'nature'], ['bug', 'nature'], ['psychic', 'mystic'], ['fairy', 'mystic'], ['ghost', 'mystic'],
-    ['fighting', 'impact'], ['normal', 'impact'], ['rock', 'impact'], ['ground', 'impact'], ['steel', 'impact'],
-    ['typeless', 'impact'], ['poison', 'toxic'], ['dark', 'toxic'], ['flying', 'air'],
+    ['fire', 'fire'],
+    ['dragon', 'fire'],
+    ['water', 'water'],
+    ['ice', 'water'],
+    ['electric', 'electric'],
+    ['grass', 'nature'],
+    ['bug', 'nature'],
+    ['psychic', 'mystic'],
+    ['fairy', 'mystic'],
+    ['ghost', 'mystic'],
+    ['fighting', 'impact'],
+    ['normal', 'impact'],
+    ['rock', 'impact'],
+    ['ground', 'impact'],
+    ['steel', 'impact'],
+    ['typeless', 'impact'],
+    ['poison', 'toxic'],
+    ['dark', 'toxic'],
+    ['flying', 'air'],
   ])('fxFamily(%s) = %s', (t, f) => expect(fxFamily(t as MoveType)).toBe(f));
 });
 
@@ -32,7 +47,9 @@ describe('FxPool', () => {
     const scene = new Scene();
     const pool = new FxPool(scene);
     const before = scene.children.length;
-    const shots = Array.from({ length: 5 }, () => pool.shot('water', new Vector3(), new Vector3(1, 0, 0), '#4a90e2', 'short'));
+    const shots = Array.from({ length: 5 }, () =>
+      pool.shot('water', new Vector3(), new Vector3(1, 0, 0), '#4a90e2', 'short'),
+    );
     for (const s of shots) s.progress = 0.5;
     expect(scene.children.length).toBe(before);
     expect(points(scene).filter((p) => p.visible).length).toBeLessThanOrEqual(before);

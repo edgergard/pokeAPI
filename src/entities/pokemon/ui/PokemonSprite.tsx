@@ -21,16 +21,29 @@ export function PokemonSprite(props: Props) {
   return <SpriteImage key={props.id} {...props} />;
 }
 
-function SpriteImage({ id, animated = true, mirrored = false, size = 64, alt = '', className }: Props) {
+function SpriteImage({
+  id,
+  animated = true,
+  mirrored = false,
+  size = 64,
+  alt = '',
+  className,
+}: Props) {
   const reduced = usePrefersReducedMotion();
   const [gifFailed, setGifFailed] = useState(false);
   const [staticFailed, setStaticFailed] = useState(false);
 
-  const source = pickSpriteSource({ animated, motion: reduced ? 'reduced' : 'full', gifFailed, staticFailed });
+  const source = pickSpriteSource({
+    animated,
+    motion: reduced ? 'reduced' : 'full',
+    gifFailed,
+    staticFailed,
+  });
   const src = spriteSrc(id, source);
 
   // Width/height attributes are presentational hints: a size class from the caller overrides them.
-  if (!src) return <svg aria-hidden width={size} height={size} className={cn('shrink-0', className)} />;
+  if (!src)
+    return <svg aria-hidden width={size} height={size} className={cn('shrink-0', className)} />;
 
   return (
     <img

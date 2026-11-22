@@ -20,7 +20,7 @@ Next.js 16 (App Router, static export) · React 19 · TypeScript (strict) · Tai
 
 ## Architecture
 
-Next.js routes live in the root `app/`; everything else keeps Feature-Sliced–style layering, where each layer may import only from layers below it. (The FSD *pages* layer is called `views/`, because Next reserves `src/pages/` for its Pages Router.)
+Next.js routes live in the root `app/`; everything else keeps Feature-Sliced–style layering, where each layer may import only from layers below it. (The FSD _pages_ layer is called `views/`, because Next reserves `src/pages/` for its Pages Router.)
 
 ```
 app/                    # Next.js App Router: root layout (fonts, metadata, pre-paint motion script), routes

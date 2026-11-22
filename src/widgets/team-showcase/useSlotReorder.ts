@@ -30,7 +30,12 @@ const SLOT_SELECTOR = '[data-slot]';
 
 const toPageRect = (el: Element): PageRect => {
   const r = el.getBoundingClientRect();
-  return { left: r.left + window.scrollX, top: r.top + window.scrollY, right: r.right + window.scrollX, bottom: r.bottom + window.scrollY };
+  return {
+    left: r.left + window.scrollX,
+    top: r.top + window.scrollY,
+    right: r.right + window.scrollX,
+    bottom: r.bottom + window.scrollY,
+  };
 };
 
 const hitIndex = (rects: PageRect[], x: number, y: number) => {
@@ -45,7 +50,12 @@ const releaseSlot = (el: HTMLElement) => {
   delete el.dataset.dropTarget;
 };
 
-const KEY_STEP: Record<string, number> = { ArrowLeft: -1, ArrowUp: -1, ArrowRight: 1, ArrowDown: 1 };
+const KEY_STEP: Record<string, number> = {
+  ArrowLeft: -1,
+  ArrowUp: -1,
+  ArrowRight: 1,
+  ArrowDown: 1,
+};
 
 /**
  * Reorders team slots by dragging a card's handle onto another slot (Draggable) or with
@@ -64,7 +74,8 @@ export function useSlotReorder({ gridRef, team, version, enabled, onSwap, announ
   const [flipToken, setFlipToken] = useState(0);
   const [settledFor, setSettledFor] = useState<string | null>(null);
 
-  const slots = () => Array.from(gridRef.current?.querySelectorAll<HTMLElement>(SLOT_SELECTOR) ?? []);
+  const slots = () =>
+    Array.from(gridRef.current?.querySelectorAll<HTMLElement>(SLOT_SELECTOR) ?? []);
 
   const commit = (from: number, to: number, next: Pending) => {
     const moved = team[from];
@@ -181,7 +192,11 @@ export function useSlotReorder({ gridRef, team, version, enabled, onSwap, announ
       // Keyed slots really move in the DOM, which can drop focus from the moved node.
       const focused = next.focus ? els.find((el) => el.dataset.flipId === next.focus) : undefined;
       if (focused && document.activeElement !== focused) focused.focus({ preventScroll: true });
-      const reveal = () => focused?.scrollIntoView({ block: 'nearest', behavior: prefersReducedMotion() ? 'auto' : 'smooth' });
+      const reveal = () =>
+        focused?.scrollIntoView({
+          block: 'nearest',
+          behavior: prefersReducedMotion() ? 'auto' : 'smooth',
+        });
 
       if (!next.state || reduced || !fx) {
         done();

@@ -9,7 +9,13 @@ const ANNOUNCE_MS = 1200;
  * The text battle log: a collapsible visible list, plus an always-present polite live region
  * that announces new lines in throttled batches (collapsing the panel never silences it).
  */
-export function BattleLog({ lines, defaultOpen = false }: { lines: string[]; defaultOpen?: boolean }) {
+export function BattleLog({
+  lines,
+  defaultOpen = false,
+}: {
+  lines: string[];
+  defaultOpen?: boolean;
+}) {
   const [open, setOpen] = useState(defaultOpen);
   const panelId = useId();
   const listRef = useRef<HTMLOListElement>(null);
@@ -33,19 +39,35 @@ export function BattleLog({ lines, defaultOpen = false }: { lines: string[]; def
         >
           <ScrollText className="size-4 text-ink-300" aria-hidden />
           Battle log
-          <span className="font-mono text-xs font-normal tabular-nums text-ink-400">{lines.length}</span>
-          <span className="ml-auto min-w-0 truncate pl-3 text-xs font-normal text-ink-300 max-sm:hidden" aria-hidden>
+          <span className="font-mono text-xs font-normal text-ink-400 tabular-nums">
+            {lines.length}
+          </span>
+          <span
+            className="ml-auto min-w-0 truncate pl-3 text-xs font-normal text-ink-300 max-sm:hidden"
+            aria-hidden
+          >
             {!open && lines.at(-1)}
           </span>
-          <ChevronDown className={cn('size-4 shrink-0 text-ink-300 transition-transform', open && 'rotate-180')} aria-hidden />
+          <ChevronDown
+            className={cn(
+              'size-4 shrink-0 text-ink-300 transition-transform',
+              open && 'rotate-180',
+            )}
+            aria-hidden
+          />
         </button>
       </h2>
 
       <div id={panelId} hidden={!open}>
-        <ol ref={listRef} className="max-h-56 overflow-y-auto border-t border-white/8 px-4 py-3 text-sm leading-relaxed text-ink-200">
+        <ol
+          ref={listRef}
+          className="max-h-56 overflow-y-auto border-t border-white/8 px-4 py-3 text-sm leading-relaxed text-ink-200"
+        >
           {lines.length === 0 && <li className="text-ink-400">The battle is about to begin…</li>}
           {lines.map((line, i) => (
-            <li key={i} className="py-0.5">{line}</li>
+            <li key={i} className="py-0.5">
+              {line}
+            </li>
           ))}
         </ol>
       </div>
@@ -99,10 +121,13 @@ function useAnnouncements(lines: string[]): Announcement[] {
     schedule();
   }, [lines]);
 
-  useEffect(() => () => {
-    if (timer.current !== null) window.clearTimeout(timer.current);
-    timer.current = null;
-  }, []);
+  useEffect(
+    () => () => {
+      if (timer.current !== null) window.clearTimeout(timer.current);
+      timer.current = null;
+    },
+    [],
+  );
 
   return items;
 }

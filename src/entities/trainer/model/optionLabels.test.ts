@@ -2,11 +2,20 @@ import { describe, expect, it } from 'vitest';
 import type { Trainer } from './roster';
 import { trainerOptionLabels } from './optionLabels';
 
-const t = (id: string, firstName: string, lastName: string, team: string[]): Trainer => ({ id, firstName, lastName, team, savedAt: '' });
+const t = (id: string, firstName: string, lastName: string, team: string[]): Trainer => ({
+  id,
+  firstName,
+  lastName,
+  team,
+  savedAt: '',
+});
 
 describe('trainerOptionLabels', () => {
   it('uses the plain name when names are unique', () => {
-    const labels = trainerOptionLabels([t('1', 'Ash', 'K', ['pikachu']), t('2', 'Mira', 'S', ['eevee'])]);
+    const labels = trainerOptionLabels([
+      t('1', 'Ash', 'K', ['pikachu']),
+      t('2', 'Mira', 'S', ['eevee']),
+    ]);
     expect(labels.get('1')).toBe('Ash K');
     expect(labels.get('2')).toBe('Mira S');
   });
@@ -23,7 +32,10 @@ describe('trainerOptionLabels', () => {
   });
 
   it('numbers trainers whose name and lead still collide', () => {
-    const labels = trainerOptionLabels([t('1', 'Ash', 'K', ['pikachu']), t('2', 'Ash', 'K', ['pikachu'])]);
+    const labels = trainerOptionLabels([
+      t('1', 'Ash', 'K', ['pikachu']),
+      t('2', 'Ash', 'K', ['pikachu']),
+    ]);
     expect(labels.get('1')).toBe('Ash K · Pikachu (1)');
     expect(labels.get('2')).toBe('Ash K · Pikachu (2)');
   });

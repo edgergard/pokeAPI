@@ -22,7 +22,8 @@ export type MotionPreference = 'system' | 'on' | 'off';
 export { MOTION_STORAGE_KEY };
 const REDUCED_QUERY = '(prefers-reduced-motion: reduce)';
 
-const canMatchMedia = () => typeof window !== 'undefined' && typeof window.matchMedia === 'function';
+const canMatchMedia = () =>
+  typeof window !== 'undefined' && typeof window.matchMedia === 'function';
 const systemReduced = () => canMatchMedia() && window.matchMedia(REDUCED_QUERY).matches;
 
 const isPreference = (value: unknown): value is MotionPreference =>
@@ -37,7 +38,8 @@ function readStoredPreference(): MotionPreference {
   }
 }
 
-let preference: MotionPreference = typeof window === 'undefined' ? 'system' : readStoredPreference();
+let preference: MotionPreference =
+  typeof window === 'undefined' ? 'system' : readStoredPreference();
 const listeners = new Set<() => void>();
 
 const resolveReduced = () => preference === 'off' || (preference === 'system' && systemReduced());

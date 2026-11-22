@@ -15,10 +15,13 @@ const DEFAULTS: Record<keyof StageDirector, number> = {
 const SHORT_FACTOR = 0.64;
 
 /** A director whose beats are empty timelines of fixed length: for tests and the no-WebGL fallback. */
-export function createNullDirector(durations: Partial<Record<keyof StageDirector, number>> = {}): StageDirector {
+export function createNullDirector(
+  durations: Partial<Record<keyof StageDirector, number>> = {},
+): StageDirector {
   const d = { ...DEFAULTS, ...durations };
   const beat = (seconds: number) => gsap.timeline().to({}, { duration: seconds });
-  const tiered = (seconds: number, tier: Tier) => beat(tier === 'short' ? seconds * SHORT_FACTOR : seconds);
+  const tiered = (seconds: number, tier: Tier) =>
+    beat(tier === 'short' ? seconds * SHORT_FACTOR : seconds);
   return {
     intro: () => beat(d.intro),
     dealIn: () => beat(d.dealIn),

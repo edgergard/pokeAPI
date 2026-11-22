@@ -44,7 +44,12 @@ export function resumeTime(timeline: Timeline, index: number): number {
 const isResult = (e: BattleEvent | undefined): e is ResultEvent =>
   e !== undefined && (e.kind === 'hit' || e.kind === 'miss' || e.kind === 'noEffect');
 
-const speedFor = (unit: Unit, shortScale: number, fullScale: number, minSeconds: number): number => {
+const speedFor = (
+  unit: Unit,
+  shortScale: number,
+  fullScale: number,
+  minSeconds: number,
+): number => {
   const wanted = unit.compress === 'short' ? shortScale : unit.compress === 'full' ? fullScale : 1;
   const cap = unit.duration > 0 ? unit.duration / minSeconds : 1;
   return Math.max(1, Math.min(wanted, cap));
@@ -58,7 +63,8 @@ function solveScale(total: (scale: number) => number, target: number): number {
   let hi = MAX;
   for (let n = 0; n < 60; n += 1) {
     const mid = (lo + hi) / 2;
-    if (total(mid) > target) lo = mid; else hi = mid;
+    if (total(mid) > target) lo = mid;
+    else hi = mid;
   }
   return hi;
 }
@@ -91,12 +97,15 @@ export function choreograph(
     units.push({ sub, duration: sub.duration(), compress, first });
   };
   // Each beat reports its event the moment it starts, except a move's result, which lands at impact.
-  const simple = (index: number, event: BattleEvent, beat?: () => Timeline) => addUnit('never', index, (sub) => {
-    sub.call(() => deliver(index, event), [], 0);
-    if (beat) sub.add(beat(), 0);
-  });
+  const simple = (index: number, event: BattleEvent, beat?: () => Timeline) =>
+    addUnit('never', index, (sub) => {
+      sub.call(() => deliver(index, event), [], 0);
+      if (beat) sub.add(beat(), 0);
+    });
 
-  addUnit('never', -1, (sub) => { sub.add(director.intro(), 0); });
+  addUnit('never', -1, (sub) => {
+    sub.add(director.intro(), 0);
+  });
 
   for (let i = 0; i < events.length; i += 1) {
     const event = events[i];
@@ -123,18 +132,30 @@ export function choreograph(
           t += lunge.duration();
           if (result) {
             sub.call(() => deliver(moveIndex + 1, result), [], t);
-            const info = result.kind === 'hit'
-              ? { damage: result.damage, effectiveness: result.effectiveness, critical: result.critical }
-              : null;
+            const info =
+              result.kind === 'hit'
+                ? {
+                    damage: result.damage,
+                    effectiveness: result.effectiveness,
+                    critical: result.critical,
+                  }
+                : null;
             sub.add(director.impact(event.targetId, result.kind, info, tier), t);
           }
         });
         break;
       }
-      case 'enter': simple(i, event, () => director.dealIn(event.fighterId)); break;
-      case 'ko': simple(i, event, () => director.knockOut(event.fighterId)); break;
-      case 'end': simple(i, event, () => director.victory(event.winner)); break;
-      default: simple(i, event); // turnStart (or a stray result): no beat, still reported in order
+      case 'enter':
+        simple(i, event, () => director.dealIn(event.fighterId));
+        break;
+      case 'ko':
+        simple(i, event, () => director.knockOut(event.fighterId));
+        break;
+      case 'end':
+        simple(i, event, () => director.victory(event.winner));
+        break;
+      default:
+        simple(i, event); // turnStart (or a stray result): no beat, still reported in order
     }
   }
 

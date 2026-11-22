@@ -20,7 +20,11 @@ function withLeaving(items: string[], prevRendered: string[]) {
  * Keeps removed keys rendered for `exitMs` so they can play an exit animation.
  * `onBeforeDrop` runs right before leaving keys are removed (e.g. to record FLIP rects).
  */
-export function usePresence(items: string[], exitMs: number, onBeforeDrop?: () => void): PresenceItem[] {
+export function usePresence(
+  items: string[],
+  exitMs: number,
+  onBeforeDrop?: () => void,
+): PresenceItem[] {
   const [state, setState] = useState<State>(() => ({ items, rendered: items, leaving: [] }));
   const timers = useRef(new Map<string, ReturnType<typeof setTimeout>>());
   const beforeDrop = useRef(onBeforeDrop);

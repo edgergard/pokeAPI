@@ -30,23 +30,42 @@ import type { Tier } from '../model/director';
  * every move tints the stage in its type colour for a moment.
  */
 
-export type FxFamily = 'fire' | 'water' | 'electric' | 'nature' | 'mystic' | 'impact' | 'toxic' | 'air';
+export type FxFamily =
+  'fire' | 'water' | 'electric' | 'nature' | 'mystic' | 'impact' | 'toxic' | 'air';
 
 const FAMILY_OF: Record<MoveType, FxFamily> = {
-  fire: 'fire', dragon: 'fire',
-  water: 'water', ice: 'water',
+  fire: 'fire',
+  dragon: 'fire',
+  water: 'water',
+  ice: 'water',
   electric: 'electric',
-  grass: 'nature', bug: 'nature',
-  psychic: 'mystic', fairy: 'mystic', ghost: 'mystic',
-  fighting: 'impact', normal: 'impact', rock: 'impact', ground: 'impact', steel: 'impact', typeless: 'impact',
-  poison: 'toxic', dark: 'toxic',
+  grass: 'nature',
+  bug: 'nature',
+  psychic: 'mystic',
+  fairy: 'mystic',
+  ghost: 'mystic',
+  fighting: 'impact',
+  normal: 'impact',
+  rock: 'impact',
+  ground: 'impact',
+  steel: 'impact',
+  typeless: 'impact',
+  poison: 'toxic',
+  dark: 'toxic',
   flying: 'air',
 };
 
 export const fxFamily = (type: MoveType): FxFamily => FAMILY_OF[type] ?? 'impact';
 
 const FAMILY_INDEX: Record<FxFamily, number> = {
-  fire: 0, water: 1, electric: 2, nature: 3, mystic: 4, impact: 5, toxic: 6, air: 7,
+  fire: 0,
+  water: 1,
+  electric: 2,
+  nature: 3,
+  mystic: 4,
+  impact: 5,
+  toxic: 6,
+  air: 7,
 };
 
 /** Progress at which the travel phase reaches the target (the hit). */
@@ -394,10 +413,17 @@ export class FxPool {
   }
 
   /** Travel then burst, back to back. */
-  play(family: FxFamily, from: Vector3, to: Vector3, color: string, tier: Tier): gsap.core.Timeline {
+  play(
+    family: FxFamily,
+    from: Vector3,
+    to: Vector3,
+    color: string,
+    tier: Tier,
+  ): gsap.core.Timeline {
     const shot = this.shot(family, from, to, color, tier);
     const { travel, burst } = FX_SECONDS[tier];
-    return gsap.timeline()
+    return gsap
+      .timeline()
       .to(shot, { progress: FX_HIT, duration: travel, ease: 'none' })
       .to(shot, { progress: 1, duration: burst, ease: 'none' });
   }
@@ -468,7 +494,8 @@ export class FxPool {
     const scale = 3.2 + burst * 1.6;
     emitter.glow.scale.set(scale, 1, scale);
     const rise = Math.min(1, travel * 2.5);
-    emitter.glowUniforms.uStrength.value = burst > 0 ? 0.5 * (1 - burst) ** 1.4 : 0.22 + 0.28 * rise * travel;
+    emitter.glowUniforms.uStrength.value =
+      burst > 0 ? 0.5 * (1 - burst) ** 1.4 : 0.22 + 0.28 * rise * travel;
   }
 }
 
@@ -482,4 +509,3 @@ function createParticleGeometry(): BufferGeometry {
   geometry.setAttribute('aRand', new Float32BufferAttribute(seeds, 4));
   return geometry;
 }
-

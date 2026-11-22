@@ -7,7 +7,9 @@ export default function NotFound() {
     <main className="grid min-h-dvh place-items-center px-4">
       <div className="flex max-w-md flex-col items-center gap-5 text-center">
         <Pokeball className="size-12 text-accent" />
-        <h1 className="font-display text-3xl font-extrabold tracking-tight sm:text-4xl">This page fled the battle</h1>
+        <h1 className="font-display text-3xl font-extrabold tracking-tight sm:text-4xl">
+          This page fled the battle
+        </h1>
         <p className="text-ink-300">The link may be old or mistyped.</p>
         <Link
           href={href('/')}

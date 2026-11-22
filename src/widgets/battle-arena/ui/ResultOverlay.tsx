@@ -44,10 +44,10 @@ export function ResultOverlay({ result, red, blue, onReplay, onNewBattle }: Prop
   return (
     <section
       aria-labelledby={headingId}
-      className="absolute inset-0 z-10 flex overflow-y-auto bg-linear-to-t from-ink-950/90 via-ink-950/55 to-ink-950/10 p-3 sm:items-center sm:p-6 animate-[fade-in_400ms_var(--ease-standard)_backwards]"
+      className="absolute inset-0 z-10 flex animate-[fade-in_400ms_var(--ease-standard)_backwards] overflow-y-auto bg-linear-to-t from-ink-950/90 via-ink-950/55 to-ink-950/10 p-3 sm:items-center sm:p-6"
     >
-      <div className="m-auto w-full max-w-md rounded-3xl border border-white/12 bg-ink-900/92 p-4 shadow-2xl sm:p-6 animate-[rise_600ms_var(--ease-out-expo)_120ms_backwards]">
-        <p className="flex items-center gap-2 font-mono text-[11px] uppercase tracking-[0.25em] text-ink-300">
+      <div className="m-auto w-full max-w-md animate-[rise_600ms_var(--ease-out-expo)_120ms_backwards] rounded-3xl border border-white/12 bg-ink-900/92 p-4 shadow-2xl sm:p-6">
+        <p className="flex items-center gap-2 font-mono text-[11px] tracking-[0.25em] text-ink-300 uppercase">
           <Trophy className="size-3.5 text-accent" aria-hidden />
           {result.reason === 'knockout' ? 'Knockout' : 'Turn limit reached'}
         </p>
@@ -68,11 +68,19 @@ export function ResultOverlay({ result, red, blue, onReplay, onNewBattle }: Prop
         <table className="mt-4 w-full text-sm">
           <caption className="sr-only">Fighter results</caption>
           <thead>
-            <tr className="text-left text-[11px] uppercase tracking-wider text-ink-400">
-              <th scope="col" className="pb-1.5 font-semibold">Fighter</th>
-              <th scope="col" className="pb-1.5 text-right font-semibold">KOs</th>
-              <th scope="col" className="pb-1.5 text-right font-semibold">Dealt</th>
-              <th scope="col" className="pb-1.5 text-right font-semibold">Taken</th>
+            <tr className="text-left text-[11px] tracking-wider text-ink-400 uppercase">
+              <th scope="col" className="pb-1.5 font-semibold">
+                Fighter
+              </th>
+              <th scope="col" className="pb-1.5 text-right font-semibold">
+                KOs
+              </th>
+              <th scope="col" className="pb-1.5 text-right font-semibold">
+                Dealt
+              </th>
+              <th scope="col" className="pb-1.5 text-right font-semibold">
+                Taken
+              </th>
             </tr>
           </thead>
           <tbody className="tabular-nums">
@@ -82,13 +90,28 @@ export function ResultOverlay({ result, red, blue, onReplay, onNewBattle }: Prop
                 <tr key={row.fighterId} className="border-t border-white/6">
                   <th scope="row" className="py-1.5 pr-2 text-left font-medium">
                     <span className="flex items-center gap-2">
-                      <span className={cn('size-1.5 shrink-0 rounded-full', f ? SIDE_BG[f.side] : 'bg-ink-400')} aria-hidden />
-                      <span className={cn('truncate', !row.survived && 'text-ink-400 line-through decoration-ink-500')}>
+                      <span
+                        className={cn(
+                          'size-1.5 shrink-0 rounded-full',
+                          f ? SIDE_BG[f.side] : 'bg-ink-400',
+                        )}
+                        aria-hidden
+                      />
+                      <span
+                        className={cn(
+                          'truncate',
+                          !row.survived && 'text-ink-400 line-through decoration-ink-500',
+                        )}
+                      >
                         {f ? formatName(f.name) : row.fighterId}
                       </span>
                       {/* The coloured dot is decorative: say whose fighter it is (same species can be on both sides). */}
-                      {f && <span className="sr-only">{` (${SIDE_NAME[f.side]}, ${(f.side === 'red' ? red : blue).trainerName})`}</span>}
-                      <span className="sr-only">{row.survived ? ' (still standing)' : ' (knocked out)'}</span>
+                      {f && (
+                        <span className="sr-only">{` (${SIDE_NAME[f.side]}, ${(f.side === 'red' ? red : blue).trainerName})`}</span>
+                      )}
+                      <span className="sr-only">
+                        {row.survived ? ' (still standing)' : ' (knocked out)'}
+                      </span>
                     </span>
                   </th>
                   <td className="py-1.5 text-right font-mono text-ink-100">{row.kos}</td>

@@ -8,7 +8,10 @@ const DEFAULT_TURN_CAP = 40;
 type SideState = { team: BattleTeam; active: number; entered: boolean };
 
 export function simulateBattle(
-  red: BattleTeam, blue: BattleTeam, seed: number, opts: { turnCap?: number } = {},
+  red: BattleTeam,
+  blue: BattleTeam,
+  seed: number,
+  opts: { turnCap?: number } = {},
 ): { events: BattleEvent[]; winner: Side } {
   const turnCap = opts.turnCap ?? DEFAULT_TURN_CAP;
   const rng = createRng(seed);
@@ -58,8 +61,14 @@ export function simulateBattle(
     const hpAfter = hpBefore - damage;
     hp.set(defender.id, hpAfter);
     events.push({
-      kind: 'hit', turn, ...ids, damage,
-      effectiveness: result.effectiveness, critical: result.critical, hpBefore, hpAfter,
+      kind: 'hit',
+      turn,
+      ...ids,
+      damage,
+      effectiveness: result.effectiveness,
+      critical: result.critical,
+      hpBefore,
+      hpAfter,
     });
     const dealer = stats.get(attacker.id);
     const taker = stats.get(defender.id);

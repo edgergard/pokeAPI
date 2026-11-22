@@ -1,4 +1,11 @@
-import { useEffect, useMemo, useRef, useState, type AnimationEvent, type CSSProperties } from 'react';
+import {
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  type AnimationEvent,
+  type CSSProperties,
+} from 'react';
 import { cn } from '@/shared/lib/cn';
 import { usePrefersReducedMotion } from '@/shared/lib/motion';
 
@@ -66,7 +73,10 @@ export function LockInBurst({ colors }: Props) {
         <span
           key={i}
           style={spark.style}
-          className={cn('burst-spark', spark.round ? 'size-1 rounded-full' : 'h-[3px] w-1.5 rounded-[2px]')}
+          className={cn(
+            'burst-spark',
+            spark.round ? 'size-1 rounded-full' : 'h-[3px] w-1.5 rounded-[2px]',
+          )}
         />
       ))}
     </div>

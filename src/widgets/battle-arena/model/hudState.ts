@@ -22,8 +22,16 @@ const MAX_POPUPS = 6;
 
 export function initialHud(red: BattleTeam, blue: BattleTeam): HudState {
   const hp: HudState['hp'] = {};
-  for (const f of [...red.fighters, ...blue.fighters]) hp[f.id] = { current: f.stats.hp, max: f.stats.hp };
-  return { hp, active: { red: null, blue: null }, ko: new Set(), lastMove: null, popups: [], result: null };
+  for (const f of [...red.fighters, ...blue.fighters])
+    hp[f.id] = { current: f.stats.hp, max: f.stats.hp };
+  return {
+    hp,
+    active: { red: null, blue: null },
+    ko: new Set(),
+    lastMove: null,
+    popups: [],
+    result: null,
+  };
 }
 
 /** Fighter ids are `${side}-${slot}`. */
@@ -47,10 +55,15 @@ export function reduceHud(state: HudState, event: BattleEvent): HudState {
     case 'enter':
       return { ...state, active: { ...state.active, [sideOf(event.fighterId)]: event.fighterId } };
     case 'move':
-      return { ...state, lastMove: { attackerId: event.attackerId, name: formatName(event.move.name) } };
+      return {
+        ...state,
+        lastMove: { attackerId: event.attackerId, name: formatName(event.move.name) },
+      };
     case 'hit': {
       const prev = state.hp[event.targetId];
-      const hp = prev ? { ...state.hp, [event.targetId]: { ...prev, current: event.hpAfter } } : state.hp;
+      const hp = prev
+        ? { ...state.hp, [event.targetId]: { ...prev, current: event.hpAfter } }
+        : state.hp;
       return withPopup({ ...state, hp }, event.targetId, `−${event.damage}`, hitTone(event));
     }
     case 'miss':
@@ -63,7 +76,10 @@ export function reduceHud(state: HudState, event: BattleEvent): HudState {
       return { ...state, ko };
     }
     case 'end':
-      return { ...state, result: { winner: event.winner, reason: event.reason, summary: event.summary } };
+      return {
+        ...state,
+        result: { winner: event.winner, reason: event.reason, summary: event.summary },
+      };
     default:
       return state;
   }
@@ -115,9 +131,11 @@ export function describeEvent(
       if (event.critical) parts.push('A critical hit!');
       if (event.effectiveness > 1) parts.push('Super effective!');
       else if (event.effectiveness < 1) parts.push('Not very effective…');
-      parts.push(event.hpAfter > 0
-        ? `${name(event.targetId)} has ${event.hpAfter} HP left.`
-        : `${name(event.targetId)} has no HP left.`);
+      parts.push(
+        event.hpAfter > 0
+          ? `${name(event.targetId)} has ${event.hpAfter} HP left.`
+          : `${name(event.targetId)} has no HP left.`,
+      );
       return parts.join(' ');
     }
     case 'miss':

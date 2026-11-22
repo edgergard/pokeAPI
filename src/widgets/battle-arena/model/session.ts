@@ -3,7 +3,8 @@
 /** Why the arena is showing the log instead of (or on top of) the 3D stage. */
 export type StageNotice = 'unsupported' | 'error' | 'lost' | null;
 
-export type ResumePlan = { kind: 'start' } | { kind: 'resume'; from: number } | { kind: 'finished' };
+export type ResumePlan =
+  { kind: 'start' } | { kind: 'resume'; from: number } | { kind: 'finished' };
 
 /**
  * How a (re)built timeline should start, given how many events the HUD already shows.
@@ -17,6 +18,9 @@ export function resumePlan(delivered: number, total: number): ResumePlan {
 }
 
 /** The notice for running without a 3D stage when no stage was ever created. */
-export function fallbackNotice(opts: { chunkLoaded: boolean; supported: boolean }): Exclude<StageNotice, null> {
+export function fallbackNotice(opts: {
+  chunkLoaded: boolean;
+  supported: boolean;
+}): Exclude<StageNotice, null> {
   return opts.chunkLoaded && !opts.supported ? 'unsupported' : 'error';
 }

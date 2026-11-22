@@ -62,7 +62,12 @@ function shardGeometry(triangles: Pt[][], width: number, height: number): Buffer
 }
 
 /** Deterministic shards for a `width × height` card: same seed, same fracture. */
-export function createShards(width: number, height: number, count: number, seed: number): BufferGeometry[] {
+export function createShards(
+  width: number,
+  height: number,
+  count: number,
+  seed: number,
+): BufferGeometry[] {
   const n = Math.max(1, Math.floor(count));
   const rand = createRng(seed);
   const { cols, rows } = gridFor(width, height, n);
@@ -98,12 +103,33 @@ export function createShards(width: number, height: number, count: number, seed:
   for (let j = 0; j < rows; j++) {
     for (let i = 0; i < cols; i++) {
       // Counter-clockwise: bottom-left, bottom-right, top-right, top-left.
-      const a = at(i, j), b = at(i + 1, j), c = at(i + 1, j + 1), d = at(i, j + 1);
+      const a = at(i, j),
+        b = at(i + 1, j),
+        c = at(i + 1, j + 1),
+        d = at(i, j + 1);
       if (split.has(j * cols + i)) {
-        const tris = rand() < 0.5 ? [[a, b, c], [a, c, d]] : [[a, b, d], [b, c, d]];
+        const tris =
+          rand() < 0.5
+            ? [
+                [a, b, c],
+                [a, c, d],
+              ]
+            : [
+                [a, b, d],
+                [b, c, d],
+              ];
         for (const tri of tris) shards.push(shardGeometry([tri], width, height));
       } else {
-        shards.push(shardGeometry([[a, b, c], [a, c, d]], width, height));
+        shards.push(
+          shardGeometry(
+            [
+              [a, b, c],
+              [a, c, d],
+            ],
+            width,
+            height,
+          ),
+        );
       }
     }
   }

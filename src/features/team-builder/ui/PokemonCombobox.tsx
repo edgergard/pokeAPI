@@ -110,7 +110,10 @@ export function PokemonCombobox({ value, onChange, onBlur, max, error }: Props) 
       .animate(
         [
           { transform: `translate(${dx}px, ${dy}px) scale(${s})` },
-          { transform: `translate(${dx / 2}px, ${dy / 2 - 40}px) scale(${(s + 1.15) / 2})`, offset: 0.5 },
+          {
+            transform: `translate(${dx / 2}px, ${dy / 2 - 40}px) scale(${(s + 1.15) / 2})`,
+            offset: 0.5,
+          },
           { transform: 'none' },
         ],
         { duration: DUR.lg, easing: EASE.standard },
@@ -187,7 +190,9 @@ export function PokemonCombobox({ value, onChange, onBlur, max, error }: Props) 
     wasFull.current = isFull;
     if (!becameFull || document.activeElement !== document.body) return;
     const last = value[value.length - 1];
-    const button = last ? chipEls.current.get(last)?.querySelector<HTMLButtonElement>('button') : null;
+    const button = last
+      ? chipEls.current.get(last)?.querySelector<HTMLButtonElement>('button')
+      : null;
     button?.focus();
   }, [isFull, value]);
 
@@ -217,7 +222,10 @@ export function PokemonCombobox({ value, onChange, onBlur, max, error }: Props) 
         // Never submit the form from the search box.
         event.preventDefault();
         if (showList && activeOption)
-          select(activeOption.name, document.getElementById(`${listId}-${activeOption.name}`)?.querySelector('img'));
+          select(
+            activeOption.name,
+            document.getElementById(`${listId}-${activeOption.name}`)?.querySelector('img'),
+          );
         break;
       case 'Escape':
         if (showList) {
@@ -232,7 +240,11 @@ export function PokemonCombobox({ value, onChange, onBlur, max, error }: Props) 
     }
   };
 
-  const hint = isError ? undefined : isFull ? 'Your team is complete.' : `Pick ${remaining} more to continue.`;
+  const hint = isError
+    ? undefined
+    : isFull
+      ? 'Your team is complete.'
+      : `Pick ${remaining} more to continue.`;
 
   return (
     <FieldShell
@@ -271,7 +283,11 @@ export function PokemonCombobox({ value, onChange, onBlur, max, error }: Props) 
                 className="chip-shine pointer-events-none absolute inset-0 overflow-hidden rounded-[inherit]"
               />
               {idByName.has(name) && (
-                <img src={spriteUrl(idByName.get(name)!)} alt="" className="size-7 [image-rendering:pixelated]" />
+                <img
+                  src={spriteUrl(idByName.get(name)!)}
+                  alt=""
+                  className="size-7 [image-rendering:pixelated]"
+                />
               )}
               {formatName(name)}
               <button
@@ -289,7 +305,10 @@ export function PokemonCombobox({ value, onChange, onBlur, max, error }: Props) 
           ))}
 
           {!isFull && (
-            <div data-flip-key="input" className="flex min-w-[10rem] flex-1 items-center gap-2 pl-1.5">
+            <div
+              data-flip-key="input"
+              className="flex min-w-[10rem] flex-1 items-center gap-2 pl-1.5"
+            >
               {value.length === 0 && <Search className="size-4 shrink-0 text-ink-500" />}
               <input
                 ref={inputRef}
@@ -298,14 +317,22 @@ export function PokemonCombobox({ value, onChange, onBlur, max, error }: Props) 
                 aria-expanded={showList}
                 aria-controls={listId}
                 aria-autocomplete="list"
-                aria-activedescendant={showList && activeOption ? `${listId}-${activeOption.name}` : undefined}
+                aria-activedescendant={
+                  showList && activeOption ? `${listId}-${activeOption.name}` : undefined
+                }
                 aria-describedby={hintId}
                 aria-invalid={Boolean(error)}
                 autoComplete="off"
                 spellCheck={false}
                 disabled={isPending || isError}
                 value={query}
-                placeholder={isPending ? 'Loading Pokédex…' : value.length ? 'Add another…' : 'Search by name, e.g. pikachu'}
+                placeholder={
+                  isPending
+                    ? 'Loading Pokédex…'
+                    : value.length
+                      ? 'Add another…'
+                      : 'Search by name, e.g. pikachu'
+                }
                 onChange={(e) => {
                   setQuery(e.target.value);
                   setActiveIndex(0);
@@ -325,7 +352,12 @@ export function PokemonCombobox({ value, onChange, onBlur, max, error }: Props) 
           <div className="ml-auto flex items-center gap-1 pl-1">
             {isPending && <Spinner className="size-4" />}
             {isError && (
-              <Button variant="ghost" size="md" className="h-8 px-2 text-xs" onClick={() => refetch()}>
+              <Button
+                variant="ghost"
+                size="md"
+                className="h-8 px-2 text-xs"
+                onClick={() => refetch()}
+              >
                 Retry
               </Button>
             )}
@@ -355,7 +387,9 @@ export function PokemonCombobox({ value, onChange, onBlur, max, error }: Props) 
             role="listbox"
             aria-label="Matching Pokémon"
             data-opening={opening || undefined}
-            style={{ '--row-h': `${rowH}px`, '--active-y': `${activeIndex * rowH}px` } as CSSProperties}
+            style={
+              { '--row-h': `${rowH}px`, '--active-y': `${activeIndex * rowH}px` } as CSSProperties
+            }
             className="dropdown-enter listbox-pill absolute inset-x-0 top-full z-20 mt-2 max-h-72 overflow-y-auto rounded-2xl border border-white/10 bg-ink-850/95 p-1.5 shadow-2xl backdrop-blur-xl"
           >
             {results.length === 0 ? (
@@ -387,7 +421,9 @@ export function PokemonCombobox({ value, onChange, onBlur, max, error }: Props) 
                     onError={(e) => (e.currentTarget.style.visibility = 'hidden')}
                   />
                   <span className="flex-1 font-medium">{formatName(pokemon.name)}</span>
-                  <span className="font-mono text-xs text-ink-500">{formatDexNumber(pokemon.id)}</span>
+                  <span className="font-mono text-xs text-ink-500">
+                    {formatDexNumber(pokemon.id)}
+                  </span>
                 </li>
               ))
             )}
@@ -396,14 +432,21 @@ export function PokemonCombobox({ value, onChange, onBlur, max, error }: Props) 
       </div>
 
       {/* Slot indicator: bars charge as picks land, then a sweep runs across when the team is complete. */}
-      <div className="mt-1 flex gap-1.5" aria-hidden data-complete={value.length === max || undefined}>
+      <div
+        className="mt-1 flex gap-1.5"
+        aria-hidden
+        data-complete={value.length === max || undefined}
+      >
         {Array.from({ length: max }, (_, i) => (
           <span
             key={i}
             style={{ '--i': i } as CSSProperties}
             className="relative h-1 flex-1 overflow-hidden rounded-full bg-white/8"
           >
-            <span className="slot-fill absolute inset-0 rounded-full bg-accent" data-filled={i < value.length || undefined} />
+            <span
+              className="slot-fill absolute inset-0 rounded-full bg-accent"
+              data-filled={i < value.length || undefined}
+            />
           </span>
         ))}
       </div>

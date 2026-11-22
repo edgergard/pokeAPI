@@ -3,12 +3,26 @@ import type { BattleEvent, Effectiveness, Move } from '@/entities/battle';
 import { choreograph, eventLabel, resumeTime, tierFor } from './choreograph';
 import { createNullDirector } from './nullDirector';
 
-const move: Move = { name: 'tackle', type: 'normal', power: 40, accuracy: 100, damageClass: 'physical' };
+const move: Move = {
+  name: 'tackle',
+  type: 'normal',
+  power: 40,
+  accuracy: 100,
+  damageClass: 'physical',
+};
 
 type HitEvent = Extract<BattleEvent, { kind: 'hit' }>;
 const hit = (over: Partial<HitEvent> = {}): HitEvent => ({
-  kind: 'hit', turn: 1, attackerId: 'a', targetId: 'b', damage: 10,
-  effectiveness: 1 as Effectiveness, critical: false, hpBefore: 100, hpAfter: 90, ...over,
+  kind: 'hit',
+  turn: 1,
+  attackerId: 'a',
+  targetId: 'b',
+  damage: 10,
+  effectiveness: 1 as Effectiveness,
+  critical: false,
+  hpBefore: 100,
+  hpAfter: 90,
+  ...over,
 });
 const exchange = (attackerId: string, targetId: string): BattleEvent[] => [
   { kind: 'move', turn: 1, attackerId, targetId, move },
@@ -55,7 +69,9 @@ describe('tierFor', () => {
 describe('choreograph', () => {
   it('fires onEvent for every event, in order, when played', () => {
     const seen: string[] = [];
-    const { timeline } = choreograph(shortEvents, createNullDirector(), { onEvent: (e) => seen.push(e.kind) });
+    const { timeline } = choreograph(shortEvents, createNullDirector(), {
+      onEvent: (e) => seen.push(e.kind),
+    });
     timeline.progress(1);
     expect(seen).toEqual(shortEvents.map((e) => e.kind));
   });
@@ -63,7 +79,9 @@ describe('choreograph', () => {
   it('fires the result event when impact starts, after anticipation and lunge', () => {
     const times: Record<string, number> = {};
     const { timeline } = choreograph(exchange('a', 'b'), createNullDirector({ intro: 0 }), {
-      onEvent: (e) => { times[e.kind] = timeline.time(); },
+      onEvent: (e) => {
+        times[e.kind] = timeline.time();
+      },
     });
     timeline.progress(1);
     // time() is read while seeking to the end, so check ordering via a stepped play instead
@@ -71,7 +89,10 @@ describe('choreograph', () => {
   });
 
   it('compresses long battles to <= targetSeconds', () => {
-    const { seconds } = choreograph(longBattleEvents(300), createNullDirector(), { onEvent: () => {}, targetSeconds: 90 });
+    const { seconds } = choreograph(longBattleEvents(300), createNullDirector(), {
+      onEvent: () => {},
+      targetSeconds: 90,
+    });
     expect(seconds).toBeLessThanOrEqual(90.5);
   });
 
@@ -79,7 +100,9 @@ describe('choreograph', () => {
     const events = longBattleEvents(2000);
     const exchanges = events.filter((e) => e.kind === 'move').length;
     const { seconds } = choreograph(events, createNullDirector(), {
-      onEvent: () => {}, targetSeconds: 10, minShortSeconds: 0.35,
+      onEvent: () => {},
+      targetSeconds: 10,
+      minShortSeconds: 0.35,
     });
     // fixed: intro 2 + 2 deal-ins 1.8 + ko 1.2 + victory 2 = 7; each exchange bottoms out at 0.35 s
     expect(seconds).toBeGreaterThanOrEqual(7 + (exchanges - 2) * 0.35 - 0.01);
@@ -92,12 +115,16 @@ describe('choreograph', () => {
   });
 
   it('returns a paused timeline', () => {
-    expect(choreograph(shortEvents, createNullDirector(), { onEvent: () => {} }).timeline.paused()).toBe(true);
+    expect(
+      choreograph(shortEvents, createNullDirector(), { onEvent: () => {} }).timeline.paused(),
+    ).toBe(true);
   });
 
   it('delivers each event once: rewinding or scrubbing back never re-fires', () => {
     const seen: string[] = [];
-    const { timeline, seconds } = choreograph(shortEvents, createNullDirector(), { onEvent: (e) => seen.push(e.kind) });
+    const { timeline, seconds } = choreograph(shortEvents, createNullDirector(), {
+      onEvent: (e) => seen.push(e.kind),
+    });
     timeline.progress(1);
     const afterForward = [...seen];
     expect(afterForward).toEqual(shortEvents.map((e) => e.kind));
@@ -111,7 +138,9 @@ describe('choreograph', () => {
 
 describe('resume labels', () => {
   it('labels each beat by the first event it reports, so a rebuilt timeline can restart there', () => {
-    const { timeline } = choreograph(shortEvents, createNullDirector(), { onEvent: () => undefined });
+    const { timeline } = choreograph(shortEvents, createNullDirector(), {
+      onEvent: () => undefined,
+    });
     expect(resumeTime(timeline, -1)).toBe(0);
     expect(resumeTime(timeline, 0)).toBeCloseTo(2); // after the 2 s intro
     // The move (3) and its hit (4) share one beat: resuming at the hit replays the whole exchange.

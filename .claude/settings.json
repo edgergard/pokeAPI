@@ -1,0 +1,84 @@
+{
+  "$schema": "https://json.schemastore.org/claude-code-settings.json",
+  "enabledPlugins": {
+    "vercel@inline": true,
+    "vercel@synced": true
+  },
+  "permissions": {
+    "allow": [
+      "Bash(npm run lint*)",
+      "Bash(npm run typecheck)",
+      "Bash(npm run test*)",
+      "Bash(npm run build)",
+      "Bash(npm run format*)",
+      "Bash(npm run check)",
+      "PowerShell(npm run lint*)",
+      "PowerShell(npm run typecheck)",
+      "PowerShell(npm run test*)",
+      "PowerShell(npm run build)",
+      "PowerShell(npm run format*)",
+      "PowerShell(npm run check)",
+      "Bash(npm ci)",
+      "PowerShell(npm ci)",
+      "Bash(git add *)",
+      "PowerShell(git add *)",
+      "Bash(git commit *)",
+      "PowerShell(git commit *)",
+      "Bash(git fetch *)",
+      "PowerShell(git fetch *)",
+      "Bash(git merge origin/dev)",
+      "PowerShell(git merge origin/dev)",
+      "Bash(git merge dev)",
+      "PowerShell(git merge dev)",
+      "Bash(git rebase origin/dev)",
+      "PowerShell(git rebase origin/dev)",
+      "Bash(git rebase dev)",
+      "PowerShell(git rebase dev)",
+      "Bash(git push)",
+      "PowerShell(git push)",
+      "Bash(git push -u origin stream/*)",
+      "PowerShell(git push -u origin stream/*)",
+      "Bash(gh pr create *)",
+      "PowerShell(gh pr create *)",
+      "Bash(npx playwright cli *)",
+      "PowerShell(npx playwright cli *)",
+      "Bash(npx next start --port *)",
+      "PowerShell(npx next start --port *)"
+    ],
+    "deny": [
+      "Read(./.env)",
+      "Read(./.env.*)",
+      "Read(!.env.example)",
+      "Bash(npx playwright cli kill-all*)",
+      "PowerShell(npx playwright cli kill-all*)",
+      "Bash(npx playwright cli close-all*)",
+      "PowerShell(npx playwright cli close-all*)"
+    ]
+  },
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Edit|Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node \"$CLAUDE_PROJECT_DIR/.claude/hooks/format.mjs\"",
+            "timeout": 30
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node \"$CLAUDE_PROJECT_DIR/.claude/hooks/typecheck-on-stop.mjs\"",
+            "timeout": 180,
+            "statusMessage": "Typechecking…"
+          }
+        ]
+      }
+    ]
+  }
+}

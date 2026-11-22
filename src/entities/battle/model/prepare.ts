@@ -3,7 +3,10 @@ import { statsAtLevel } from './stats';
 import type { BattleTeam, Fighter, Move, MoveType, Side } from './types';
 
 export type MovesetData = {
-  moves: Record<string, [type: MoveType, power: number, accuracy: number | null, damageClass: 'physical' | 'special']>;
+  moves: Record<
+    string,
+    [type: MoveType, power: number, accuracy: number | null, damageClass: 'physical' | 'special']
+  >;
   /** pokemon slug -> move names */
   sets: Record<string, string[]>;
 };

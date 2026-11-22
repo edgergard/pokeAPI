@@ -96,7 +96,13 @@ export function BattleArena({ red, blue, seed, onNewBattle }: BattleArenaProps) 
         )}
 
         {showResult && hud.result && (
-          <ResultOverlay result={hud.result} red={red} blue={blue} onReplay={replayFromResult} onNewBattle={onNewBattle} />
+          <ResultOverlay
+            result={hud.result}
+            red={red}
+            blue={blue}
+            onReplay={replayFromResult}
+            onNewBattle={onNewBattle}
+          />
         )}
       </div>
 
@@ -109,7 +115,10 @@ export function BattleArena({ red, blue, seed, onNewBattle }: BattleArenaProps) 
 function LogStage({ lines }: { lines: string[] }) {
   const recent = lines.slice(-3);
   return (
-    <div className="absolute inset-x-0 top-1/2 flex -translate-y-1/2 flex-col items-center gap-1.5 px-6 text-center" aria-hidden>
+    <div
+      className="absolute inset-x-0 top-1/2 flex -translate-y-1/2 flex-col items-center gap-1.5 px-6 text-center"
+      aria-hidden
+    >
       {recent.map((line, i) => (
         <p
           key={lines.length - recent.length + i}

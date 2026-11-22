@@ -85,7 +85,10 @@ export type StageDirectorOptions = {
  *   its FX emitters and shard groups otherwise stay in the scene. (`stage.dispose()` frees
  *   them too, on unmount.)
  */
-export function createStageDirector(stage: BattleStage, opts: StageDirectorOptions): StageDirector3D {
+export function createStageDirector(
+  stage: BattleStage,
+  opts: StageDirectorOptions,
+): StageDirector3D {
   const reduced = opts.reducedMotion;
   const now = opts.now ?? (() => performance.now());
   const rig = stage.camera;
@@ -103,7 +106,12 @@ export function createStageDirector(stage: BattleStage, opts: StageDirectorOptio
   const resetModel = () => {
     model.clear();
     for (const f of stage.fighters) {
-      model.set(f.id, { id: f.id, side: f.side, slot: f.slot, status: f.slot === 0 ? 'deck' : 'bench' });
+      model.set(f.id, {
+        id: f.id,
+        side: f.side,
+        slot: f.slot,
+        status: f.slot === 0 ? 'deck' : 'bench',
+      });
     }
   };
   const entry = (id: string): Entry => {
@@ -114,7 +122,8 @@ export function createStageDirector(stage: BattleStage, opts: StageDirectorOptio
   };
   /** Waiting fighters of a side in slot order — their index is their bench slot. */
   const benchOf = (side: Side) =>
-    [...model.values()].filter((e) => e.side === side && (e.status === 'bench' || e.status === 'deck'))
+    [...model.values()]
+      .filter((e) => e.side === side && (e.status === 'bench' || e.status === 'deck'))
       .sort((a, b) => a.slot - b.slot);
 
   // ---------------------------------------------------------------------------------------------
@@ -129,7 +138,7 @@ export function createStageDirector(stage: BattleStage, opts: StageDirectorOptio
   const spinTo = (current: number, target: number, side: Side): number => {
     let d = target - current;
     d = ((((d + Math.PI) % TAU) + TAU) % TAU) - Math.PI;
-    if (Math.abs(d) > Math.PI / 2) d = side === 'red' ? (d > 0 ? d - TAU : d) : (d < 0 ? d + TAU : d);
+    if (Math.abs(d) > Math.PI / 2) d = side === 'red' ? (d > 0 ? d - TAU : d) : d < 0 ? d + TAU : d;
     return current + d;
   };
 
@@ -155,8 +164,16 @@ export function createStageDirector(stage: BattleStage, opts: StageDirectorOptio
     const { group, fighter } = stage.card(id);
     let memo: Pose | null = null;
     const get = () => (memo ??= pose());
-    t.to(group.position, { x: () => get().position.x, y: () => get().position.y, z: () => get().position.z, ...vars }, at);
-    t.to(group.rotation, { x: 0, z: 0, y: () => spinTo(group.rotation.y, get().rotationY, fighter.side), ...vars }, at);
+    t.to(
+      group.position,
+      { x: () => get().position.x, y: () => get().position.y, z: () => get().position.z, ...vars },
+      at,
+    );
+    t.to(
+      group.rotation,
+      { x: 0, z: 0, y: () => spinTo(group.rotation.y, get().rotationY, fighter.side), ...vars },
+      at,
+    );
   };
 
   const snapTo = (id: string, pose: Pose) => {
@@ -171,10 +188,14 @@ export function createStageDirector(stage: BattleStage, opts: StageDirectorOptio
    * captured its target, and the stage only re-places resting cards on the resize itself.
    */
   const rehome = (t: Timeline, id: string, at: number) => {
-    t.call(() => {
-      const pose = stage.home(id);
-      if (pose) snapTo(id, pose);
-    }, [], at);
+    t.call(
+      () => {
+        const pose = stage.home(id);
+        if (pose) snapTo(id, pose);
+      },
+      [],
+      at,
+    );
   };
 
   const tintState = (id: string) => {
@@ -184,10 +205,31 @@ export function createStageDirector(stage: BattleStage, opts: StageDirectorOptio
   };
 
   /** Blend a card towards `color` (fades use the stage ink; flashes white). */
-  const tintTo = (t: Timeline, id: string, color: string, amount: number, duration: number, ease: string, at: number) => {
+  const tintTo = (
+    t: Timeline,
+    id: string,
+    color: string,
+    amount: number,
+    duration: number,
+    ease: string,
+    at: number,
+  ) => {
     const s = tintState(id);
     const apply = () => stage.card(id).setTint(s.color, s.amount);
-    t.to(s, { amount, duration, ease, onStart: () => { s.color = color; apply(); }, onUpdate: apply }, at);
+    t.to(
+      s,
+      {
+        amount,
+        duration,
+        ease,
+        onStart: () => {
+          s.color = color;
+          apply();
+        },
+        onUpdate: apply,
+      },
+      at,
+    );
   };
 
   const setTintNow = (id: string, color: string, amount: number) => {
@@ -203,7 +245,15 @@ export function createStageDirector(stage: BattleStage, opts: StageDirectorOptio
    * One tint pulse on a card: up to `peak` over `rise` s, back to 0 over `fall` s. Pulses share a
    * wall-clock budget: one starting within FLASH_GAP_MS of the previous is skipped entirely.
    */
-  const pulse = (t: Timeline, id: string, color: string, peak: number, rise: number, fall: number, at: number) => {
+  const pulse = (
+    t: Timeline,
+    id: string,
+    color: string,
+    peak: number,
+    rise: number,
+    fall: number,
+    at: number,
+  ) => {
     const s = tintState(id);
     const k = { v: 0 };
     let on = false;
@@ -211,30 +261,40 @@ export function createStageDirector(stage: BattleStage, opts: StageDirectorOptio
       s.amount = amount;
       stage.card(id).setTint(s.color, amount);
     };
-    t.to(k, {
-      v: rise + fall,
-      duration: rise + fall,
-      ease: 'none',
-      onStart: () => {
-        const time = now();
-        on = time - lastFlash >= FLASH_GAP_MS;
-        if (!on) return;
-        lastFlash = time;
-        s.color = color;
+    t.to(
+      k,
+      {
+        v: rise + fall,
+        duration: rise + fall,
+        ease: 'none',
+        onStart: () => {
+          const time = now();
+          on = time - lastFlash >= FLASH_GAP_MS;
+          if (!on) return;
+          lastFlash = time;
+          s.color = color;
+        },
+        onUpdate: () => {
+          if (!on) return;
+          apply(
+            k.v < rise ? peak * riseEase(k.v / rise) : peak * (1 - fallEase((k.v - rise) / fall)),
+          );
+        },
+        onComplete: () => {
+          if (on) apply(0);
+        },
       },
-      onUpdate: () => {
-        if (!on) return;
-        apply(k.v < rise ? peak * riseEase(k.v / rise) : peak * (1 - fallEase((k.v - rise) / fall)));
-      },
-      onComplete: () => {
-        if (on) apply(0);
-      },
-    }, at);
+      at,
+    );
   };
 
   const keyTo = (t: Timeline, color: string, amount: number, duration: number, at: number) => {
     const target = keyTintColor(color, amount, new Color());
-    t.to(stage.lights.key.color, { r: target.r, g: target.g, b: target.b, duration, ease: 'sine.inOut' }, at);
+    t.to(
+      stage.lights.key.color,
+      { r: target.r, g: target.g, b: target.b, duration, ease: 'sine.inOut' },
+      at,
+    );
   };
 
   /** Brief foil glint on a card's face (the holo sheen swells and settles). */
@@ -256,16 +316,23 @@ export function createStageDirector(stage: BattleStage, opts: StageDirectorOptio
     apply: (x: number, y: number) => void,
   ) => {
     const k = { v: 0 };
-    t.to(k, {
-      v: 1,
-      duration,
-      ease: 'none',
-      onUpdate: () => {
-        const decay = (1 - k.v) ** 2 * amplitude;
-        apply(Math.sin(k.v * TAU * cycles) * decay, Math.sin(k.v * TAU * cycles * 1.3 + 1.1) * decay * 0.55);
+    t.to(
+      k,
+      {
+        v: 1,
+        duration,
+        ease: 'none',
+        onUpdate: () => {
+          const decay = (1 - k.v) ** 2 * amplitude;
+          apply(
+            Math.sin(k.v * TAU * cycles) * decay,
+            Math.sin(k.v * TAU * cycles * 1.3 + 1.1) * decay * 0.55,
+          );
+        },
+        onComplete: () => apply(0, 0),
       },
-      onComplete: () => apply(0, 0),
-    }, at);
+      at,
+    );
   };
 
   const cameraShake = (t: Timeline, amplitude: number, duration: number, at: number) =>
@@ -287,7 +354,8 @@ export function createStageDirector(stage: BattleStage, opts: StageDirectorOptio
     target: a.target.lerp(b.target, amount),
   });
   /** A framing `amount` of the way from the wide shot towards `name` — a gentle dolly. */
-  const towards = (name: ShotName, amount: number) => () => lerpShot(rig.shot('wide'), rig.shot(name), amount);
+  const towards = (name: ShotName, amount: number) => () =>
+    lerpShot(rig.shot('wide'), rig.shot(name), amount);
 
   /** Glide the camera to a shot resolved when the move starts; `hold` re-arms resize framing at the end. */
   const cameraTo = (
@@ -302,25 +370,29 @@ export function createStageDirector(stage: BattleStage, opts: StageDirectorOptio
     const fromT = new Vector3();
     let to: Shot | null = null;
     const k = { v: 0 };
-    t.to(k, {
-      v: 1,
-      duration,
-      ease,
-      onStart: () => {
-        rig.held = null;
-        fromP.copy(rig.position);
-        fromT.copy(rig.target);
-        to = shot();
+    t.to(
+      k,
+      {
+        v: 1,
+        duration,
+        ease,
+        onStart: () => {
+          rig.held = null;
+          fromP.copy(rig.position);
+          fromT.copy(rig.target);
+          to = shot();
+        },
+        onUpdate: () => {
+          if (!to) return;
+          rig.position.lerpVectors(fromP, to.position, k.v);
+          rig.target.lerpVectors(fromT, to.target, k.v);
+        },
+        onComplete: () => {
+          if (hold) rig.cut(hold.name, hold.orbit ?? 0);
+        },
       },
-      onUpdate: () => {
-        if (!to) return;
-        rig.position.lerpVectors(fromP, to.position, k.v);
-        rig.target.lerpVectors(fromT, to.target, k.v);
-      },
-      onComplete: () => {
-        if (hold) rig.cut(hold.name, hold.orbit ?? 0);
-      },
-    }, at);
+      at,
+    );
   };
 
   /** Establishing framing for the intro: the wide shot swung to one side, higher and further out. */
@@ -374,29 +446,37 @@ export function createStageDirector(stage: BattleStage, opts: StageDirectorOptio
 
     if (reduced) {
       const t = timeline(REDUCED.beat);
-      t.call(() => {
-        resetAll();
-        rig.cut('wide');
-        for (const e of entries) setTintNow(e.id, INK, 1);
-      }, [], 0);
+      t.call(
+        () => {
+          resetAll();
+          rig.cut('wide');
+          for (const e of entries) setTintNow(e.id, INK, 1);
+        },
+        [],
+        0,
+      );
       for (const e of entries) tintTo(t, e.id, INK, 0, REDUCED.beat, 'sine.out', 0);
       return t;
     }
 
     const t = timeline(BEAT.intro);
-    t.call(() => {
-      resetAll();
-      // Decks wait off stage, out past each corner.
-      for (const e of entries) {
-        const { group } = stage.card(e.id);
-        group.position.x += -sign(e.side) * 7;
-        group.position.z -= 3;
-      }
-      const s = establishing();
-      rig.held = null;
-      rig.position.copy(s.position);
-      rig.target.copy(s.target);
-    }, [], 0);
+    t.call(
+      () => {
+        resetAll();
+        // Decks wait off stage, out past each corner.
+        for (const e of entries) {
+          const { group } = stage.card(e.id);
+          group.position.x += -sign(e.side) * 7;
+          group.position.z -= 3;
+        }
+        const s = establishing();
+        rig.held = null;
+        rig.position.copy(s.position);
+        rig.target.copy(s.target);
+      },
+      [],
+      0,
+    );
 
     // Slow sweep from the establishing angle into the wide shot.
     cameraTo(t, () => rig.shot('wide'), BEAT.intro, 'power2.inOut', 0, { name: 'wide' });
@@ -419,15 +499,19 @@ export function createStageDirector(stage: BattleStage, opts: StageDirectorOptio
       const t = timeline(REDUCED.beat);
       flushPending(t);
       tintTo(t, fighterId, INK, 1, 0.12, 'sine.in', 0);
-      t.call(() => {
-        stage.setRole(fighterId, 'active');
-        snapTo(fighterId, restPose(fighterId, 'active'));
-        bench.forEach((b, j) => {
-          stage.setRole(b.id, { bench: j }, true);
-          snapTo(b.id, restPose(b.id, { bench: j }, true));
-        });
-        stage.setKeyTint(color, 0.3);
-      }, [], 0.12);
+      t.call(
+        () => {
+          stage.setRole(fighterId, 'active');
+          snapTo(fighterId, restPose(fighterId, 'active'));
+          bench.forEach((b, j) => {
+            stage.setRole(b.id, { bench: j }, true);
+            snapTo(b.id, restPose(b.id, { bench: j }, true));
+          });
+          stage.setKeyTint(color, 0.3);
+        },
+        [],
+        0.12,
+      );
       tintTo(t, fighterId, INK, 0, 0.18, 'sine.out', 0.12);
       return t;
     }
@@ -441,15 +525,40 @@ export function createStageDirector(stage: BattleStage, opts: StageDirectorOptio
       const home = () => (memo ??= target());
       t.call(() => stage.setRole(fighterId, null), [], 0); // in flight: never snapped by a resize
       // Arc: glide across, rise and settle with a soft spring, flipping face-up on the way.
-      t.to(group.position, { x: () => home().position.x, z: () => home().position.z, duration: 0.78, ease: 'power3.inOut' }, 0);
-      t.to(group.position, { y: () => home().position.y + 1.25, duration: 0.36, ease: 'power2.out' }, 0);
-      t.to(group.position, { y: () => home().position.y, duration: 0.44, ease: GSAP_EASE.spring }, 0.36);
-      t.to(group.rotation, {
-        y: () => spinTo(group.rotation.y, home().rotationY, e.side),
-        duration: 0.56,
-        ease: 'power2.inOut',
-      }, 0.1);
-      t.to(group.rotation, { x: -0.18, z: sign(e.side) * -0.05, duration: 0.3, ease: 'power2.out' }, 0);
+      t.to(
+        group.position,
+        {
+          x: () => home().position.x,
+          z: () => home().position.z,
+          duration: 0.78,
+          ease: 'power3.inOut',
+        },
+        0,
+      );
+      t.to(
+        group.position,
+        { y: () => home().position.y + 1.25, duration: 0.36, ease: 'power2.out' },
+        0,
+      );
+      t.to(
+        group.position,
+        { y: () => home().position.y, duration: 0.44, ease: GSAP_EASE.spring },
+        0.36,
+      );
+      t.to(
+        group.rotation,
+        {
+          y: () => spinTo(group.rotation.y, home().rotationY, e.side),
+          duration: 0.56,
+          ease: 'power2.inOut',
+        },
+        0.1,
+      );
+      t.to(
+        group.rotation,
+        { x: -0.18, z: sign(e.side) * -0.05, duration: 0.3, ease: 'power2.out' },
+        0,
+      );
       t.to(group.rotation, { x: 0, z: 0, duration: 0.45, ease: GSAP_EASE.standard }, 0.33);
       t.call(() => stage.setRole(fighterId, 'active'), [], 0.8);
       rehome(t, fighterId, 0.8);
@@ -458,7 +567,13 @@ export function createStageDirector(stage: BattleStage, opts: StageDirectorOptio
     // The rest of the bench shuffles forward into the freed slots.
     bench.forEach((b, j) => {
       t.call(() => stage.setRole(b.id, { bench: j }, true), [], 0);
-      poseTo(t, b.id, () => restPose(b.id, { bench: j }, true), { duration: 0.55, ease: GSAP_EASE.standard }, 0.25);
+      poseTo(
+        t,
+        b.id,
+        () => restPose(b.id, { bench: j }, true),
+        { duration: 0.55, ease: GSAP_EASE.standard },
+        0.25,
+      );
       rehome(t, b.id, 0.8);
     });
     keyTo(t, color, 0.3, 0.6, 0.3);
@@ -486,18 +601,28 @@ export function createStageDirector(stage: BattleStage, opts: StageDirectorOptio
     let memo: Pose | null = null;
     const home = () => (memo ??= restPose(attackerId, 'active'));
     // Lean back from the target and tilt away, gathering for the strike.
-    t.to(group.position, {
-      x: () => home().position.x - s * 0.3,
-      y: () => home().position.y + 0.14,
-      z: () => home().position.z - 0.12,
-      duration: seconds,
-      ease: GSAP_EASE.standard,
-    }, 0);
+    t.to(
+      group.position,
+      {
+        x: () => home().position.x - s * 0.3,
+        y: () => home().position.y + 0.14,
+        z: () => home().position.z - 0.12,
+        duration: seconds,
+        ease: GSAP_EASE.standard,
+      },
+      0,
+    );
     t.to(group.rotation, { x: -0.12, z: s * 0.07, duration: seconds, ease: GSAP_EASE.standard }, 0);
     keyTo(t, color, 0.42, seconds, 0);
     glint(t, attackerId, 1.6, seconds, 0);
     if (tier === 'full') {
-      cameraTo(t, towards(e.side === 'red' ? 'redClose' : 'blueClose', 0.3), seconds, 'power2.out', 0);
+      cameraTo(
+        t,
+        towards(e.side === 'red' ? 'redClose' : 'blueClose', 0.3),
+        seconds,
+        'power2.out',
+        0,
+      );
     }
     return t;
   };
@@ -526,33 +651,49 @@ export function createStageDirector(stage: BattleStage, opts: StageDirectorOptio
     // FX endpoints: in front of each card's face, resolved when the lunge starts.
     const from = new Vector3();
     const to = new Vector3();
-    t.call(() => {
-      facePoint(restPose(attackerId, 'active'), 0.3, from).y += 0.1;
-      facePoint(restPose(targetId, 'active'), 0.25, to);
-    }, [], 0);
+    t.call(
+      () => {
+        facePoint(restPose(attackerId, 'active'), 0.3, from).y += 0.1;
+        facePoint(restPose(targetId, 'active'), 0.25, to);
+      },
+      [],
+      0,
+    );
     const shot = pool.shot(fxFamily(move.type), from, to, color, tier);
     const travel = FX_SECONDS[tier].travel;
     t.to(shot, { progress: FX_HIT, duration: travel, ease: 'none' }, seconds - travel);
 
     if (tier === 'full') {
       // Drive forward hard, then carry a little momentum while the effect flies.
-      t.to(group.position, {
-        x: () => home().position.x + s * 1.0,
-        y: () => home().position.y - 0.04,
-        z: () => home().position.z + 0.3,
-        duration: 0.22,
-        ease: 'power2.in',
-      }, 0);
+      t.to(
+        group.position,
+        {
+          x: () => home().position.x + s * 1.0,
+          y: () => home().position.y - 0.04,
+          z: () => home().position.z + 0.3,
+          duration: 0.22,
+          ease: 'power2.in',
+        },
+        0,
+      );
       t.to(group.rotation, { x: 0.1, z: -s * 0.03, duration: 0.22, ease: 'power2.in' }, 0);
-      t.to(group.position, { x: () => home().position.x + s * 1.1, duration: seconds - 0.22, ease: 'power1.out' }, 0.22);
+      t.to(
+        group.position,
+        { x: () => home().position.x + s * 1.1, duration: seconds - 0.22, ease: 'power1.out' },
+        0.22,
+      );
       cameraTo(t, towards('impact', 0.55), seconds, 'power2.inOut', 0);
     } else {
-      t.to(group.position, {
-        x: () => home().position.x + s * 0.45,
-        z: () => home().position.z + 0.15,
-        duration: 0.14,
-        ease: 'power2.out',
-      }, 0);
+      t.to(
+        group.position,
+        {
+          x: () => home().position.x + s * 0.45,
+          z: () => home().position.z + 0.15,
+          duration: 0.14,
+          ease: 'power2.out',
+        },
+        0,
+      );
       t.to(group.rotation, { x: 0.05, z: 0, duration: 0.14, ease: 'power2.out' }, 0);
     }
     pending = { attackerId, shot, tier };
@@ -580,10 +721,17 @@ export function createStageDirector(stage: BattleStage, opts: StageDirectorOptio
 
     const seconds = BEAT.impact[tier];
     const t = timeline(seconds);
-    if (exchange?.shot) t.to(exchange.shot, { progress: 1, duration: FX_SECONDS[tier].burst, ease: 'none' }, 0);
+    if (exchange?.shot)
+      t.to(exchange.shot, { progress: 1, duration: FX_SECONDS[tier].burst, ease: 'none' }, 0);
     if (exchange) {
       const back = tier === 'full' ? 0.5 : 0.32;
-      poseTo(t, exchange.attackerId, () => restPose(exchange.attackerId, 'active'), { duration: back, ease: GSAP_EASE.standard }, 0.04);
+      poseTo(
+        t,
+        exchange.attackerId,
+        () => restPose(exchange.attackerId, 'active'),
+        { duration: back, ease: GSAP_EASE.standard },
+        0.04,
+      );
     }
 
     const { group } = stage.card(targetId);
@@ -595,18 +743,26 @@ export function createStageDirector(stage: BattleStage, opts: StageDirectorOptio
       const eff = info.effectiveness;
       const accent = eff > 1 || info.critical;
       const recoil = (0.12 + 0.1 * Math.min(eff, 2)) * (info.critical ? 1.2 : 1);
-      t.to(group.position, {
-        x: () => home().position.x + p * recoil,
-        z: () => home().position.z - 0.08,
-        duration: 0.1,
-        ease: GSAP_EASE.standard,
-      }, 0);
-      t.to(group.rotation, {
-        y: () => home().rotationY + p * 0.12,
-        z: -p * 0.05,
-        duration: 0.1,
-        ease: GSAP_EASE.standard,
-      }, 0);
+      t.to(
+        group.position,
+        {
+          x: () => home().position.x + p * recoil,
+          z: () => home().position.z - 0.08,
+          duration: 0.1,
+          ease: GSAP_EASE.standard,
+        },
+        0,
+      );
+      t.to(
+        group.rotation,
+        {
+          y: () => home().rotationY + p * 0.12,
+          z: -p * 0.05,
+          duration: 0.1,
+          ease: GSAP_EASE.standard,
+        },
+        0,
+      );
       poseTo(t, targetId, settle, { duration: seconds - 0.12, ease: GSAP_EASE.spring }, 0.1);
       const amplitude = Math.min(0.12, 0.02 + 0.0225 * eff) + (info.critical ? 0.02 : 0);
       cardShake(t, targetId, amplitude, Math.min(0.34, seconds - 0.04), 0);
@@ -623,12 +779,16 @@ export function createStageDirector(stage: BattleStage, opts: StageDirectorOptio
       }
     } else if (result === 'miss') {
       // A quick sidestep out of the effect's path, then back.
-      t.to(group.position, {
-        x: () => home().position.x + p * 0.15,
-        z: () => home().position.z + 0.45,
-        duration: 0.16,
-        ease: 'power2.out',
-      }, 0);
+      t.to(
+        group.position,
+        {
+          x: () => home().position.x + p * 0.15,
+          z: () => home().position.z + 0.45,
+          duration: 0.16,
+          ease: 'power2.out',
+        },
+        0,
+      );
       t.to(group.rotation, { z: p * 0.05, duration: 0.16, ease: 'power2.out' }, 0);
       poseTo(t, targetId, settle, { duration: seconds - 0.2, ease: GSAP_EASE.standard }, 0.18);
     } else {
@@ -636,7 +796,8 @@ export function createStageDirector(stage: BattleStage, opts: StageDirectorOptio
       pulse(t, targetId, '#9aa4b8', 0.15, 0.08, 0.3, 0);
     }
 
-    if (tier === 'full') cameraTo(t, () => rig.shot('wide'), seconds - 0.05, 'power2.inOut', 0.05, { name: 'wide' });
+    if (tier === 'full')
+      cameraTo(t, () => rig.shot('wide'), seconds - 0.05, 'power2.inOut', 0.05, { name: 'wide' });
     return t;
   };
 
@@ -648,10 +809,14 @@ export function createStageDirector(stage: BattleStage, opts: StageDirectorOptio
       const t = timeline(REDUCED.beat);
       flushPending(t);
       tintTo(t, fighterId, INK, 1, REDUCED.beat, 'sine.in', 0);
-      t.call(() => {
-        stage.setRole(fighterId, null);
-        stage.card(fighterId).group.visible = false;
-      }, [], REDUCED.beat);
+      t.call(
+        () => {
+          stage.setRole(fighterId, null);
+          stage.card(fighterId).group.visible = false;
+        },
+        [],
+        REDUCED.beat,
+      );
       return t;
     }
 
@@ -665,15 +830,19 @@ export function createStageDirector(stage: BattleStage, opts: StageDirectorOptio
     tintTo(t, fighterId, INK, 0.35, CRACK, 'sine.in', 0);
     cardShake(t, fighterId, 0.03, CRACK, 0);
     cameraShake(t, 0.05, 0.3, CRACK);
-    t.call(() => {
-      stage.setRole(fighterId, null);
-      group.visible = false;
-      set.group.position.copy(group.position);
-      set.group.rotation.set(0, group.rotation.y, 0);
-      resetShards(set);
-      set.uniforms.uDim.value = 0.35;
-      set.group.visible = true;
-    }, [], CRACK);
+    t.call(
+      () => {
+        stage.setRole(fighterId, null);
+        group.visible = false;
+        set.group.position.copy(group.position);
+        set.group.rotation.set(0, group.rotation.y, 0);
+        resetShards(set);
+        set.uniforms.uDim.value = 0.35;
+        set.group.visible = true;
+      },
+      [],
+      CRACK,
+    );
 
     // Each shard: a hairline crack outward, a gravity fall with a small bounce, scattering forward.
     // A fresh seeded stream per build, so a replay breaks the card exactly the same way.
@@ -690,26 +859,52 @@ export function createStageDirector(stage: BattleStage, opts: StageDirectorOptio
       const faceUp = r() < 0.7;
       const bounce = 0.05 + r() * 0.03;
 
-      t.to(mesh.position, { x: crackX, y: crackY, z: (r() - 0.5) * 0.06, duration: 0.12, ease: 'power2.out' }, CRACK);
+      t.to(
+        mesh.position,
+        { x: crackX, y: crackY, z: (r() - 0.5) * 0.06, duration: 0.12, ease: 'power2.out' },
+        CRACK,
+      );
       t.to(mesh.position, { y: floor, duration: fall, ease: 'power2.in' }, start);
-      t.to(mesh.position, {
-        x: crackX * 1.25 + (r() - 0.5) * 0.8,
-        z: 0.3 + r() * 0.9,
-        duration: fall + 0.18,
-        ease: 'power1.out',
-      }, start);
-      t.to(mesh.rotation, {
-        x: (faceUp ? -1 : 1) * Math.PI / 2 + (r() - 0.5) * 0.1,
-        z: (r() - 0.5) * 3,
-        duration: fall,
-        ease: 'power1.in',
-      }, start);
-      t.to(mesh.position, { y: () => floor() + bounce, duration: 0.09, ease: 'power2.out' }, start + fall);
+      t.to(
+        mesh.position,
+        {
+          x: crackX * 1.25 + (r() - 0.5) * 0.8,
+          z: 0.3 + r() * 0.9,
+          duration: fall + 0.18,
+          ease: 'power1.out',
+        },
+        start,
+      );
+      t.to(
+        mesh.rotation,
+        {
+          x: ((faceUp ? -1 : 1) * Math.PI) / 2 + (r() - 0.5) * 0.1,
+          z: (r() - 0.5) * 3,
+          duration: fall,
+          ease: 'power1.in',
+        },
+        start,
+      );
+      t.to(
+        mesh.position,
+        { y: () => floor() + bounce, duration: 0.09, ease: 'power2.out' },
+        start + fall,
+      );
       t.to(mesh.position, { y: floor, duration: 0.09, ease: 'power2.in' }, start + fall + 0.09);
     });
 
-    t.to(set.uniforms.uOpacity, { value: 0, duration: 0.32, ease: 'sine.in' }, BEAT.knockOut - 0.32);
-    t.call(() => { set.group.visible = false; }, [], BEAT.knockOut);
+    t.to(
+      set.uniforms.uOpacity,
+      { value: 0, duration: 0.32, ease: 'sine.in' },
+      BEAT.knockOut - 0.32,
+    );
+    t.call(
+      () => {
+        set.group.visible = false;
+      },
+      [],
+      BEAT.knockOut,
+    );
     return t;
   };
 
@@ -726,7 +921,11 @@ export function createStageDirector(stage: BattleStage, opts: StageDirectorOptio
       const spacing = Math.min(2.9, span / Math.max(1, n - 1));
       const offset = i - (n - 1) / 2;
       return {
-        position: new Vector3(offset * spacing, CARD_HEIGHT / 2 + CARD_HOVER + 0.5, 0.4 - Math.abs(offset) * 0.35),
+        position: new Vector3(
+          offset * spacing,
+          CARD_HEIGHT / 2 + CARD_HOVER + 0.5,
+          0.4 - Math.abs(offset) * 0.35,
+        ),
         rotationY: 0.38 - offset * 0.06,
       };
     };
@@ -735,15 +934,19 @@ export function createStageDirector(stage: BattleStage, opts: StageDirectorOptio
       const t = timeline(REDUCED.beat);
       flushPending(t);
       for (const e of survivors) tintTo(t, e.id, INK, 1, 0.12, 'sine.in', 0);
-      t.call(() => {
-        survivors.forEach((e, i) => {
-          stage.setRole(e.id, null);
-          snapTo(e.id, lineup(i));
-        });
-        for (const e of losers) setTintNow(e.id, INK, 0.5);
-        stage.setKeyTint(SIDE_COLOR[winner], 0.35);
-        rig.cut('victory');
-      }, [], 0.12);
+      t.call(
+        () => {
+          survivors.forEach((e, i) => {
+            stage.setRole(e.id, null);
+            snapTo(e.id, lineup(i));
+          });
+          for (const e of losers) setTintNow(e.id, INK, 0.5);
+          stage.setKeyTint(SIDE_COLOR[winner], 0.35);
+          rig.cut('victory');
+        },
+        [],
+        0.12,
+      );
       for (const e of survivors) tintTo(t, e.id, INK, 0, 0.18, 'sine.out', 0.12);
       return t;
     }
@@ -770,21 +973,25 @@ export function createStageDirector(stage: BattleStage, opts: StageDirectorOptio
     const k = { v: 0 };
     const centre = new Vector3();
     const offset = new Vector3();
-    t.to(k, {
-      v: ORBIT,
-      duration: BEAT.victory - 1.1,
-      ease: 'sine.inOut',
-      onStart: () => {
-        const shot = rig.shot('victory');
-        centre.copy(shot.target);
-        offset.subVectors(shot.position, shot.target);
+    t.to(
+      k,
+      {
+        v: ORBIT,
+        duration: BEAT.victory - 1.1,
+        ease: 'sine.inOut',
+        onStart: () => {
+          const shot = rig.shot('victory');
+          centre.copy(shot.target);
+          offset.subVectors(shot.position, shot.target);
+        },
+        onUpdate: () => {
+          rig.position.copy(offset).applyAxisAngle(AXIS_Y, k.v).add(centre);
+          rig.target.copy(centre);
+        },
+        onComplete: () => rig.cut('victory', ORBIT),
       },
-      onUpdate: () => {
-        rig.position.copy(offset).applyAxisAngle(AXIS_Y, k.v).add(centre);
-        rig.target.copy(centre);
-      },
-      onComplete: () => rig.cut('victory', ORBIT),
-    }, 1.1);
+      1.1,
+    );
     return t;
   };
 
@@ -805,5 +1012,8 @@ export function createStageDirector(stage: BattleStage, opts: StageDirectorOptio
 
 /** A point `distance` in front of a card's face (along its yaw-facing normal). */
 function facePoint(pose: Pose, distance: number, out: Vector3): Vector3 {
-  return out.set(Math.sin(pose.rotationY), 0, Math.cos(pose.rotationY)).multiplyScalar(distance).add(pose.position);
+  return out
+    .set(Math.sin(pose.rotationY), 0, Math.cos(pose.rotationY))
+    .multiplyScalar(distance)
+    .add(pose.position);
 }

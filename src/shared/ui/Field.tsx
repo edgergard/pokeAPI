@@ -15,11 +15,20 @@ type FieldShellProps = {
 export function FieldShell({ label, hint, error, htmlFor, hintId, children }: FieldShellProps) {
   return (
     <div className="flex flex-col gap-2">
-      <label htmlFor={htmlFor} className="text-[12px] font-semibold tracking-[0.08em] text-ink-300 uppercase">
+      <label
+        htmlFor={htmlFor}
+        className="text-[12px] font-semibold tracking-[0.08em] text-ink-300 uppercase"
+      >
         {label}
       </label>
       {children}
-      <p id={hintId} className={cn('min-h-[1.25rem] text-[13px] leading-snug', error ? 'text-danger' : 'text-ink-400')}>
+      <p
+        id={hintId}
+        className={cn(
+          'min-h-[1.25rem] text-[13px] leading-snug',
+          error ? 'text-danger' : 'text-ink-400',
+        )}
+      >
         {/* Keyed spans replay a soft entrance whenever the message changes. */}
         {error ? (
           <span key={error} className="err-in inline-block">
@@ -67,7 +76,16 @@ type TextFieldProps = ComponentProps<'input'> & {
   showClear?: boolean;
 };
 
-export function TextField({ label, hint, error, onClear, showClear, className, id, ...props }: TextFieldProps) {
+export function TextField({
+  label,
+  hint,
+  error,
+  onClear,
+  showClear,
+  className,
+  id,
+  ...props
+}: TextFieldProps) {
   const autoId = useId();
   const inputId = id ?? autoId;
   const hintId = `${inputId}-hint`;

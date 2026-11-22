@@ -22,7 +22,13 @@ import {
 import type { BattleTeam, Fighter, Side } from '@/entities/battle';
 import { typeColor } from '@/entities/pokemon';
 import { CameraRig } from './cameraRig';
-import { type CardGeometries, type CardHandle, type CardParts, createCard, createCardGeometries } from './cardMesh';
+import {
+  type CardGeometries,
+  type CardHandle,
+  type CardParts,
+  createCard,
+  createCardGeometries,
+} from './cardMesh';
 import {
   ensureFonts,
   loadImage,
@@ -113,7 +119,12 @@ export class BattleStage {
     this.canvas = canvas;
     this.reducedMotion = opts.reducedMotion;
 
-    this.renderer = new WebGLRenderer({ canvas, antialias: true, powerPreference: 'high-performance', stencil: false });
+    this.renderer = new WebGLRenderer({
+      canvas,
+      antialias: true,
+      powerPreference: 'high-performance',
+      stencil: false,
+    });
     this.renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
     this.renderer.outputColorSpace = SRGBColorSpace;
     // Neutral keeps base colours (the cards' type palette) faithful while taming highlights.
@@ -165,7 +176,13 @@ export class BattleStage {
 
     fighters.forEach((fighter, i) => {
       const face = this.track(toTexture(paintCardFace(fighter, images[i] ?? null), anisotropy));
-      const parts = createCard(fighter, geometries, { face, back: backs[fighter.side], shadow }, SIDE_COLOR[fighter.side], this.shared);
+      const parts = createCard(
+        fighter,
+        geometries,
+        { face, back: backs[fighter.side], shadow },
+        SIDE_COLOR[fighter.side],
+        this.shared,
+      );
       const entry: CardEntry = { ...parts, role: defaultRole(fighter), faceDown: false };
       this.cards.set(fighter.id, entry);
       this.scene.add(parts.handle.group, parts.shadow);
@@ -204,11 +221,18 @@ export class BattleStage {
   home(fighterId: string): { position: Vector3; rotationY: number } | null {
     const entry = this.cards.get(fighterId);
     if (!entry?.role) return null;
-    return { position: this.slot(entry, entry.role), rotationY: this.restYaw(entry, entry.role, entry.faceDown) };
+    return {
+      position: this.slot(entry, entry.role),
+      rotationY: this.restYaw(entry, entry.role, entry.faceDown),
+    };
   }
 
   /** Where a card would rest in `role` (whatever its current role), at the current aspect. */
-  slotFor(fighterId: string, role: SlotRole, faceDown = false): { position: Vector3; rotationY: number } | null {
+  slotFor(
+    fighterId: string,
+    role: SlotRole,
+    faceDown = false,
+  ): { position: Vector3; rotationY: number } | null {
     const entry = this.cards.get(fighterId);
     if (!entry) return null;
     return { position: this.slot(entry, role), rotationY: this.restYaw(entry, role, faceDown) };
@@ -463,7 +487,9 @@ export class BattleStage {
   private update(time: number): void {
     const { key } = this.lights;
     this.shared.uKeyColor.value.copy(key.color);
-    this.shared.uKeyDir.value.copy(this.keyDir.subVectors(key.position, key.target.position).normalize());
+    this.shared.uKeyDir.value.copy(
+      this.keyDir.subVectors(key.position, key.target.position).normalize(),
+    );
     // Reduced motion: no ambient drift — the foil still answers to card and camera angles.
     if (!this.reducedMotion) this.shared.uTime.value = time;
     this.camera.update(time);
@@ -476,7 +502,10 @@ export class BattleStage {
         pivot.rotation.z = Math.sin(time * 0.6 + phase) * 0.006;
       }
       // Contact shadow follows the card on the floor, softer and wider as it lifts.
-      const lift = Math.max(0, group.position.y - (CARD_HEIGHT / 2 + CARD_HOVER) + pivot.position.y);
+      const lift = Math.max(
+        0,
+        group.position.y - (CARD_HEIGHT / 2 + CARD_HOVER) + pivot.position.y,
+      );
       shadow.visible = group.visible;
       shadow.position.set(group.position.x, 0.004, group.position.z);
       shadow.rotation.y = group.rotation.y;
@@ -512,11 +541,13 @@ function disposeMaterial(material: Material | Material[]): void {
     if (m instanceof ShaderMaterial) {
       for (const uniform of Object.values(m.uniforms)) {
         const value: unknown = uniform.value;
-        if (value && typeof value === 'object' && 'isTexture' in value) (value as Texture).dispose();
+        if (value && typeof value === 'object' && 'isTexture' in value)
+          (value as Texture).dispose();
       }
     } else {
       for (const value of Object.values(m)) {
-        if (value && typeof value === 'object' && 'isTexture' in value) (value as Texture).dispose();
+        if (value && typeof value === 'object' && 'isTexture' in value)
+          (value as Texture).dispose();
       }
     }
     m.dispose();

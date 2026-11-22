@@ -35,7 +35,8 @@ export class ErrorBoundary extends Component<Props, State> {
 
   componentDidUpdate(_: Props, prev: State) {
     // The control that held focus is gone with the failed subtree: land on the notice.
-    if (this.state.hasError && !prev.hasError) this.headingRef.current?.focus({ preventScroll: true });
+    if (this.state.hasError && !prev.hasError)
+      this.headingRef.current?.focus({ preventScroll: true });
   }
 
   private retry = () => {
@@ -56,7 +57,11 @@ export class ErrorBoundary extends Component<Props, State> {
           this.props.className,
         )}
       >
-        <h2 ref={this.headingRef} tabIndex={-1} className="font-display text-xl font-bold tracking-tight focus:outline-none">
+        <h2
+          ref={this.headingRef}
+          tabIndex={-1}
+          className="font-display text-xl font-bold tracking-tight focus:outline-none"
+        >
           {this.props.title}
         </h2>
         <p className="max-w-sm text-sm text-ink-300">

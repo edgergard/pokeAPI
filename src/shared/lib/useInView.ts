@@ -22,6 +22,7 @@ export function useInView(
     const el = ref.current;
     if (!el || inView) return;
     if (typeof IntersectionObserver === 'undefined') {
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- no observer to subscribe to; show at once
       setInView(true);
       return;
     }

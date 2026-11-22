@@ -29,7 +29,10 @@ describe('toPokemon', () => {
       { base_stat: 85, stat: { name: 'special-defense', url: '' } },
       { base_stat: 100, stat: { name: 'speed', url: '' } },
     ],
-    sprites: { front_default: 'sprite.png', other: { 'official-artwork': { front_default: 'art.png' } } },
+    sprites: {
+      front_default: 'sprite.png',
+      other: { 'official-artwork': { front_default: 'art.png' } },
+    },
   };
 
   it('maps stats by name rather than by array position', () => {
@@ -48,12 +51,17 @@ describe('toPokemon', () => {
   });
 
   it('falls back to the default sprite when artwork is missing', () => {
-    expect(toPokemon({ ...dto, sprites: { front_default: 'sprite.png' } }).artwork).toBe('sprite.png');
+    expect(toPokemon({ ...dto, sprites: { front_default: 'sprite.png' } }).artwork).toBe(
+      'sprite.png',
+    );
   });
 });
 
 describe('searchPokemon', () => {
-  const index = ['pikachu', 'raichu', 'pichu', 'charmander', 'chikorita'].map((name, i) => ({ name, id: i + 1 }));
+  const index = ['pikachu', 'raichu', 'pichu', 'charmander', 'chikorita'].map((name, i) => ({
+    name,
+    id: i + 1,
+  }));
 
   it('returns nothing for an empty query', () => {
     expect(searchPokemon(index, '   ')).toEqual([]);
@@ -65,6 +73,8 @@ describe('searchPokemon', () => {
   });
 
   it('is case-insensitive and excludes picked names', () => {
-    expect(searchPokemon(index, 'PI', { exclude: ['pikachu'] }).map((p) => p.name)).toEqual(['pichu']);
+    expect(searchPokemon(index, 'PI', { exclude: ['pikachu'] }).map((p) => p.name)).toEqual([
+      'pichu',
+    ]);
   });
 });

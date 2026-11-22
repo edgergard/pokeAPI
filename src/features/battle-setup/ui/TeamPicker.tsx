@@ -22,12 +22,23 @@ type Props = {
   disabled?: boolean;
 };
 
-const ACCENT: Record<Props['side'], string> = { red: 'var(--color-side-red)', blue: 'var(--color-side-blue)' };
+const ACCENT: Record<Props['side'], string> = {
+  red: 'var(--color-side-red)',
+  blue: 'var(--color-side-blue)',
+};
 
 /** Team entrance: four cards spring in, 70ms apart (≤ 0.6s in all). */
 const ENTRANCE = { duration: 0.38, stagger: 0.07 } as const;
 
-export function TeamPicker({ side, trainer, own, onChange, onRandom, randomReady, disabled }: Props) {
+export function TeamPicker({
+  side,
+  trainer,
+  own,
+  onChange,
+  onRandom,
+  randomReady,
+  disabled,
+}: Props) {
   const selectId = useId();
   const team = usePokemonList(trainer.team);
   const label = side === 'red' ? 'Red corner' : 'Blue corner';
@@ -84,7 +95,10 @@ export function TeamPicker({ side, trainer, own, onChange, onRandom, randomReady
 
       <div className="flex items-end gap-2">
         <div className="flex min-w-0 flex-1 flex-col gap-2">
-          <label htmlFor={selectId} className="text-[12px] font-semibold tracking-[0.08em] text-ink-300 uppercase">
+          <label
+            htmlFor={selectId}
+            className="text-[12px] font-semibold tracking-[0.08em] text-ink-300 uppercase"
+          >
             Trainer
           </label>
           <div className={cn(controlClass(false), 'h-12')}>
@@ -140,7 +154,11 @@ export function TeamPicker({ side, trainer, own, onChange, onRandom, randomReady
         </Button>
       </div>
 
-      <ul ref={listRef} className="grid grid-cols-2 gap-2 sm:grid-cols-4" aria-label={`Team of ${trainerName(trainer)}`}>
+      <ul
+        ref={listRef}
+        className="grid grid-cols-2 gap-2 sm:grid-cols-4"
+        aria-label={`Team of ${trainerName(trainer)}`}
+      >
         {trainer.team.map((name, i) => {
           const p = team.data[i];
           return (
@@ -159,14 +177,21 @@ export function TeamPicker({ side, trainer, own, onChange, onRandom, randomReady
                   >
                     {p ? (
                       // Front sprites face left: the Red corner (on the left from md up) turns to face Blue.
-                      <PokemonSprite id={p.id} mirrored={side === 'red'} size={64} className="size-16" />
+                      <PokemonSprite
+                        id={p.id}
+                        mirrored={side === 'red'}
+                        size={64}
+                        className="size-16"
+                      />
                     ) : (
                       <span className="size-12 animate-pulse rounded-full bg-white/5" />
                     )}
                   </span>
                 </span>
               </span>
-              <span className="w-full truncate text-center text-[13px] font-semibold text-ink-100">{formatName(name)}</span>
+              <span className="w-full truncate text-center text-[13px] font-semibold text-ink-100">
+                {formatName(name)}
+              </span>
               <span className="flex min-h-6 flex-wrap justify-center gap-1">
                 {p?.types.map((t) => (
                   <TypeBadge key={t} type={t} />

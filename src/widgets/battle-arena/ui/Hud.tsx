@@ -28,38 +28,74 @@ const SIDE_BG: Record<Side, string> = { red: 'bg-side-red', blue: 'bg-side-blue'
 const SIDE_RING: Record<Side, string> = { red: 'ring-side-red', blue: 'ring-side-blue' };
 
 /** The DOM layer over the canvas: real, readable text for everything the stage shows. */
-export function Hud({ red, blue, hud, ready, speed, onSpeed, onReplay, onNewBattle, project, inert = false, replayRef }: Props) {
+export function Hud({
+  red,
+  blue,
+  hud,
+  ready,
+  speed,
+  onSpeed,
+  onReplay,
+  onNewBattle,
+  project,
+  inert = false,
+  replayRef,
+}: Props) {
   const fighters = [...red.fighters, ...blue.fighters];
   const started = hud.active.red !== null || hud.active.blue !== null;
   return (
-    <div className="pointer-events-none absolute inset-0 flex flex-col justify-between p-2 sm:p-4" inert={inert}>
+    <div
+      className="pointer-events-none absolute inset-0 flex flex-col justify-between p-2 sm:p-4"
+      inert={inert}
+    >
       <div className="grid grid-cols-2 gap-2 sm:gap-4">
         <TeamBar team={red} hud={hud} />
         <TeamBar team={blue} hud={hud} />
       </div>
 
       {ready && !started && <TitleCard red={red} blue={blue} />}
-      {hud.lastMove && !hud.result && <MoveBanner move={hud.lastMove} side={sideOf(hud.lastMove.attackerId)} />}
+      {hud.lastMove && !hud.result && (
+        <MoveBanner move={hud.lastMove} side={sideOf(hud.lastMove.attackerId)} />
+      )}
 
       <div className="absolute inset-0 overflow-hidden" aria-hidden>
         {hud.popups.map((p) => (
-          <Popup key={p.id} popup={p} speed={speed} project={project} fighter={fighters.find((f) => f.id === p.fighterId)} />
+          <Popup
+            key={p.id}
+            popup={p}
+            speed={speed}
+            project={project}
+            fighter={fighters.find((f) => f.id === p.fighterId)}
+          />
         ))}
       </div>
 
-      <div className="pointer-events-auto relative flex items-center justify-center gap-2" role="group" aria-label="Battle controls">
+      <div
+        className="pointer-events-auto relative flex items-center justify-center gap-2"
+        role="group"
+        aria-label="Battle controls"
+      >
         <Button
           variant="outline"
           size="md"
           aria-pressed={speed === 2}
           onClick={() => onSpeed(speed === 2 ? 1 : 2)}
-          className={cn('bg-ink-950/75 font-mono tabular-nums', speed === 2 && 'border-accent/70 text-accent')}
+          className={cn(
+            'bg-ink-950/75 font-mono tabular-nums',
+            speed === 2 && 'border-accent/70 text-accent',
+          )}
           disabled={!ready}
         >
           <span aria-hidden>×2</span>
           <span className="sr-only">Double speed</span>
         </Button>
-        <Button ref={replayRef} variant="outline" onClick={onReplay} disabled={!ready} className="bg-ink-950/75">
+        <Button
+          ref={replayRef}
+          variant="outline"
+          onClick={onReplay}
+          disabled={!ready}
+          className="bg-ink-950/75"
+        >
           <RotateCcw className="size-4" aria-hidden />
           Replay
         </Button>
@@ -93,7 +129,9 @@ function TeamBar({ team, hud }: { team: BattleTeam; hud: HudState }) {
       <div className={cn('flex w-full min-w-0 items-center gap-2', mirrored && 'flex-row-reverse')}>
         <span className={cn('size-2 shrink-0 rounded-full', SIDE_BG[team.side])} aria-hidden />
         <h2 className="truncate font-display text-sm font-bold sm:text-base">{team.trainerName}</h2>
-        <span className="sr-only">{remaining} of {team.fighters.length} fighters left.</span>
+        <span className="sr-only">
+          {remaining} of {team.fighters.length} fighters left.
+        </span>
       </div>
 
       <ul className={cn('flex gap-1 sm:gap-1.5', mirrored && 'flex-row-reverse')} aria-label="Team">
@@ -103,11 +141,19 @@ function TeamBar({ team, hud }: { team: BattleTeam; hud: HudState }) {
       </ul>
 
       <div className="flex w-full flex-col gap-1">
-        <div className={cn('flex items-baseline justify-between gap-2 text-xs sm:text-sm', mirrored && 'flex-row-reverse')}>
-          <span className="truncate font-semibold text-ink-100">{active ? formatName(active.name) : 'Waiting…'}</span>
+        <div
+          className={cn(
+            'flex items-baseline justify-between gap-2 text-xs sm:text-sm',
+            mirrored && 'flex-row-reverse',
+          )}
+        >
+          <span className="truncate font-semibold text-ink-100">
+            {active ? formatName(active.name) : 'Waiting…'}
+          </span>
           {hp && (
-            <span className="shrink-0 font-mono text-[11px] tabular-nums text-ink-300 sm:text-xs">
-              {hp.current}<span className="text-ink-400">/{hp.max}</span> HP
+            <span className="shrink-0 font-mono text-[11px] text-ink-300 tabular-nums sm:text-xs">
+              {hp.current}
+              <span className="text-ink-400">/{hp.max}</span> HP
             </span>
           )}
         </div>
@@ -155,23 +201,28 @@ function Pip({ fighter, ko, active }: { fighter: Fighter; ko: boolean; active: b
           onError={() => setBroken(true)}
         />
       ) : (
-        <span className="text-[10px] font-bold text-ink-300" aria-hidden>{name.charAt(0)}</span>
+        <span className="text-[10px] font-bold text-ink-300" aria-hidden>
+          {name.charAt(0)}
+        </span>
       )}
       {ko && <span className="absolute inset-x-0 top-1/2 h-px -rotate-45 bg-ink-100" aria-hidden />}
-      <span className="sr-only">{name}{ko ? ', knocked out' : active ? ', in battle' : ''}</span>
+      <span className="sr-only">
+        {name}
+        {ko ? ', knocked out' : active ? ', in battle' : ''}
+      </span>
     </li>
   );
 }
 
 function TitleCard({ red, blue }: { red: BattleTeam; blue: BattleTeam }) {
   return (
-    <div className="absolute inset-x-0 top-1/2 flex -translate-y-1/2 flex-col items-center gap-1 text-center animate-[rise_500ms_var(--ease-out-expo)_backwards]">
+    <div className="absolute inset-x-0 top-1/2 flex -translate-y-1/2 animate-[rise_500ms_var(--ease-out-expo)_backwards] flex-col items-center gap-1 text-center">
       <p className="font-display text-xl font-extrabold tracking-tight drop-shadow sm:text-3xl">
         <span className={SIDE_TEXT.red}>{red.trainerName}</span>
         <span className="mx-2 text-ink-300 sm:mx-3">vs</span>
         <span className={SIDE_TEXT.blue}>{blue.trainerName}</span>
       </p>
-      <p className="font-mono text-xs uppercase tracking-[0.3em] text-accent sm:text-sm">Fight</p>
+      <p className="font-mono text-xs tracking-[0.3em] text-accent uppercase sm:text-sm">Fight</p>
     </div>
   );
 }
@@ -222,19 +273,29 @@ const TONE: Record<PopupTone, { text: string; caption?: string }> = {
 };
 
 /** Where popups sit without a 3D stage: above each side's half of the arena. */
-const FALLBACK: Record<Side, Projection> = { red: { x: 0.28, y: 0.42 }, blue: { x: 0.72, y: 0.42 } };
+const FALLBACK: Record<Side, Projection> = {
+  red: { x: 0.28, y: 0.42 },
+  blue: { x: 0.72, y: 0.42 },
+};
 
 /** Popup lifetime at 1× (ms): it rises in, holds, then is removed (a cut under reduced motion). */
 const POPUP_MS = 1100;
 
-function Popup({ popup, speed, project, fighter }: {
+function Popup({
+  popup,
+  speed,
+  project,
+  fighter,
+}: {
   popup: HudPopup;
   speed: 1 | 2;
   project(fighterId: string): Projection | null;
   fighter: Fighter | undefined;
 }) {
   // Positioned once, at spawn, from the target card's screen position — no per-frame renders.
-  const [pos] = useState(() => project(popup.fighterId) ?? FALLBACK[fighter?.side ?? sideOf(popup.fighterId)]);
+  const [pos] = useState(
+    () => project(popup.fighterId) ?? FALLBACK[fighter?.side ?? sideOf(popup.fighterId)],
+  );
   const [gone, setGone] = useState(false);
   useEffect(() => {
     const timer = window.setTimeout(() => setGone(true), POPUP_MS / speed);
@@ -247,13 +308,21 @@ function Popup({ popup, speed, project, fighter }: {
       className="absolute flex -translate-x-1/2 -translate-y-full flex-col items-center"
       style={{ left: `${(pos.x * 100).toFixed(2)}%`, top: `${(pos.y * 100).toFixed(2)}%` }}
     >
-      <div className="battle-popup flex flex-col items-center" style={{ animationDuration: `${POPUP_MS / speed}ms` }}>
+      <div
+        className="battle-popup flex flex-col items-center"
+        style={{ animationDuration: `${POPUP_MS / speed}ms` }}
+      >
         {tone.caption && (
-          <span className="rounded-full bg-ink-950/80 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-ink-200 sm:text-xs">
+          <span className="rounded-full bg-ink-950/80 px-2 py-0.5 text-[10px] font-semibold tracking-wider text-ink-200 uppercase sm:text-xs">
             {tone.caption}
           </span>
         )}
-        <span className={cn('font-display font-extrabold tabular-nums [text-shadow:0_2px_12px_rgb(7_8_11/0.9)]', tone.text)}>
+        <span
+          className={cn(
+            'font-display font-extrabold tabular-nums [text-shadow:0_2px_12px_rgb(7_8_11/0.9)]',
+            tone.text,
+          )}
+        >
           {popup.text}
         </span>
       </div>

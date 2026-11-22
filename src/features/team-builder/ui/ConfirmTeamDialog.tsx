@@ -29,7 +29,10 @@ export function ConfirmTeamDialog({ values, onClose, onConfirm }: Props) {
           <Button variant="outline" onClick={onClose}>
             Back to edit
           </Button>
-          <Button disabled={isPending || isError || !values} onClick={() => values && onConfirm(values)}>
+          <Button
+            disabled={isPending || isError || !values}
+            onClick={() => values && onConfirm(values)}
+          >
             Save team
           </Button>
         </>

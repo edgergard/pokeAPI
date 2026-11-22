@@ -93,7 +93,11 @@ export function HomePage() {
 
   return (
     <div ref={pageRef} className="relative min-h-dvh overflow-x-clip">
-      <div ref={auroraRef} className="aurora pointer-events-none absolute inset-x-0 top-0 h-[44rem]" aria-hidden>
+      <div
+        ref={auroraRef}
+        className="pointer-events-none absolute inset-x-0 top-0 h-[44rem] aurora"
+        aria-hidden
+      >
         {AURORA_LAYERS.map(({ blob, shift }) => (
           // The layer takes the scroll parallax; the blob inside keeps its CSS drift — no shared transform.
           <span key={blob} data-aurora-shift={shift} className="absolute inset-0">
@@ -102,9 +106,15 @@ export function HomePage() {
         ))}
       </div>
 
-      <div ref={contentRef} className="relative mx-auto flex max-w-7xl flex-col gap-16 px-4 pb-20 sm:px-6 lg:px-8">
+      <div
+        ref={contentRef}
+        className="relative mx-auto flex max-w-7xl flex-col gap-16 px-4 pb-20 sm:px-6 lg:px-8"
+      >
         <nav className="reveal-down flex h-20 items-center justify-between" style={stagger(0)}>
-          <Link href={href('/')} className="flex items-center gap-2.5 font-display text-lg font-bold tracking-tight">
+          <Link
+            href={href('/')}
+            className="flex items-center gap-2.5 font-display text-lg font-bold tracking-tight"
+          >
             <Pokeball className="size-7 text-accent" />
             Trainer Studio
           </Link>
@@ -117,7 +127,7 @@ export function HomePage() {
               Battle
             </Link>
             <a
-              href="https://github.com/edgergard/pokeAPI"
+              href="https://github.com/edgergard/trainer-studio"
               target="_blank"
               rel="noreferrer"
               className="tap-target flex items-center gap-2 rounded-lg px-3 py-2 text-sm text-ink-300 transition-colors hover:bg-white/5 hover:text-white focus-visible:outline-2 focus-visible:outline-accent"
@@ -139,13 +149,20 @@ export function HomePage() {
               Powered by PokeAPI
             </span>
             <HeroHeading />
-            <p style={stagger(4)} className="reveal-up max-w-md text-lg leading-relaxed text-ink-300">
-              Register as a trainer, search across more than a thousand Pokémon and lock in the team you’d take
-              into battle.
+            <p
+              style={stagger(4)}
+              className="reveal-up max-w-md text-lg leading-relaxed text-ink-300"
+            >
+              Register as a trainer, search across more than a thousand Pokémon and lock in the team
+              you’d take into battle.
             </p>
             <ol className="mt-2 flex flex-wrap gap-x-6 gap-y-2 text-sm text-ink-400">
               {['Introduce yourself', 'Pick four partners', 'Review & save'].map((step, i) => (
-                <li key={step} style={stagger(5 + i * 0.5)} className="reveal-up flex items-center gap-2">
+                <li
+                  key={step}
+                  style={stagger(5 + i * 0.5)}
+                  className="reveal-up flex items-center gap-2"
+                >
                   <span className="grid size-6 place-items-center rounded-full border border-white/12 font-mono text-[11px] text-ink-200">
                     {i + 1}
                   </span>
@@ -155,7 +172,10 @@ export function HomePage() {
             </ol>
           </div>
 
-          <div style={stagger(3)} className="reveal-card glass relative isolate rounded-3xl p-6 sm:p-7">
+          <div
+            style={stagger(3)}
+            className="reveal-card relative isolate rounded-3xl p-6 glass sm:p-7"
+          >
             <Spotlight />
             <h2 className="mb-6 font-display text-xl font-bold tracking-tight">New trainer card</h2>
             <TeamBuilderForm

@@ -1,4 +1,12 @@
-import { Color, type IUniform, ShaderMaterial, type Texture, UniformsLib, UniformsUtils, Vector3 } from 'three';
+import {
+  Color,
+  type IUniform,
+  ShaderMaterial,
+  type Texture,
+  UniformsLib,
+  UniformsUtils,
+  Vector3,
+} from 'three';
 
 /*
  * Holographic card surface — the 3D twin of the `.holo` layer on the home page's PokemonCard:

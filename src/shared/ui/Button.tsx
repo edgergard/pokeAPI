@@ -21,7 +21,13 @@ const sizes: Record<Size, string> = {
   icon: 'size-9 justify-center',
 };
 
-export function Button({ variant = 'primary', size = 'md', className, type = 'button', ...props }: Props) {
+export function Button({
+  variant = 'primary',
+  size = 'md',
+  className,
+  type = 'button',
+  ...props
+}: Props) {
   return (
     <button
       type={type}

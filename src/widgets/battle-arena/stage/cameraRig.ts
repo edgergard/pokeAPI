@@ -36,7 +36,11 @@ function wideDistance(aspect: number, target: Vector3, pitch: number, margin = 1
 
 /** Unit direction from the target towards the camera, from a yaw (about +y) and a pitch (above the floor). */
 function direction(yaw: number, pitch: number): Vector3 {
-  return new Vector3(Math.sin(yaw) * Math.cos(pitch), Math.sin(pitch), Math.cos(yaw) * Math.cos(pitch));
+  return new Vector3(
+    Math.sin(yaw) * Math.cos(pitch),
+    Math.sin(pitch),
+    Math.cos(yaw) * Math.cos(pitch),
+  );
 }
 
 /**
@@ -98,7 +102,11 @@ export class CameraRig {
 
     switch (name) {
       case 'wide': {
-        const target = new Vector3(0, MathUtils.lerp(1.9, 2.3, portrait), MathUtils.lerp(-1.3, -2.2, portrait));
+        const target = new Vector3(
+          0,
+          MathUtils.lerp(1.9, 2.3, portrait),
+          MathUtils.lerp(-1.3, -2.2, portrait),
+        );
         const pitch = MathUtils.degToRad(MathUtils.lerp(13, 24, portrait));
         const distance = wideDistance(aspect, target, pitch);
         shot = { target, position: target.clone().addScaledVector(direction(0, pitch), distance) };
@@ -122,7 +130,10 @@ export class CameraRig {
         const halfW = slotPosition('blue', 'active', aspect).x + CARD_WIDTH * 0.75;
         const target = new Vector3(0, CARD_HEIGHT * 0.62, 0);
         const distance = fitDistance(halfW, CARD_HEIGHT * 0.75, aspect, 1.02);
-        shot = { target, position: target.clone().addScaledVector(direction(0, MathUtils.degToRad(-3)), distance) };
+        shot = {
+          target,
+          position: target.clone().addScaledVector(direction(0, MathUtils.degToRad(-3)), distance),
+        };
         break;
       }
       case 'victory': {

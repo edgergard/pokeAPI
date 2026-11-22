@@ -27,8 +27,11 @@ export function Dialog({ open, onClose, title, description, children, footer, cl
   const closing = !open && mounted;
 
   // Callers usually null their props on close; keep the last open content for the exit animation.
+  // Reading/writing the ref during render is deliberate: it only replays the last open content while closing.
   const snapshot = useRef({ title, description, children, footer });
+  // eslint-disable-next-line react-hooks/refs -- see above
   if (open) snapshot.current = { title, description, children, footer };
+  // eslint-disable-next-line react-hooks/refs -- see above
   const content = open ? { title, description, children, footer } : snapshot.current;
 
   const finish = () => {
@@ -45,12 +48,14 @@ export function Dialog({ open, onClose, title, description, children, footer, cl
       return;
     }
     if (!dialog.open) {
+      // Syncs with the native <dialog>, which closed outside React (Esc, form submit).
       setMounted(false);
       return;
     }
 
     if (prefersReducedMotion()) {
       dialog.close();
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- closes the native dialog without an exit animation
       setMounted(false);
       return;
     }

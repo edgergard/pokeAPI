@@ -44,7 +44,7 @@ export function PokemonCard({ pokemon, slot, entrance = 'rise' }: Props) {
       {/* Artwork stage */}
       <div className="relative aspect-[5/4] overflow-hidden">
         <div className="absolute inset-0 bg-[radial-gradient(120%_90%_at_50%_100%,var(--type)_0%,transparent_65%)] opacity-35" />
-        <div className="dot-grid absolute inset-0 opacity-40" />
+        <div className="absolute inset-0 dot-grid opacity-40" />
 
         <span className="absolute top-4 left-4 font-mono text-xs font-bold text-white/70">
           {formatDexNumber(id)}
@@ -66,7 +66,9 @@ export function PokemonCard({ pokemon, slot, entrance = 'rise' }: Props) {
               className="absolute inset-0 m-auto h-[88%] object-contain drop-shadow-[0_18px_24px_rgb(0_0_0/0.45)] transition-transform duration-500 group-hover:scale-[1.06] group-hover:-rotate-2"
             />
           ) : (
-            <div className="absolute inset-0 grid place-items-center font-display text-6xl text-white/20">?</div>
+            <div className="absolute inset-0 grid place-items-center font-display text-6xl text-white/20">
+              ?
+            </div>
           )}
         </div>
       </div>

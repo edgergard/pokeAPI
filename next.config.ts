@@ -1,7 +1,7 @@
 import type { NextConfig } from 'next';
 import { BASE_PATH } from './src/shared/config/site';
 
-// GitHub Pages serves the site under /pokeAPI/; Vercel and `next dev` serve it at the root.
+// GitHub Pages serves the site under /trainer-studio/; Vercel and `next dev` serve it at the root.
 const basePath = BASE_PATH;
 
 const nextConfig: NextConfig = {

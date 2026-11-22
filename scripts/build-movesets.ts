@@ -12,8 +12,24 @@ const BASE = 'https://pokeapi.co/api/v2';
 const CONCURRENCY = 8;
 const OUT = fileURLToPath(new URL('../src/entities/battle/data/movesets.json', import.meta.url));
 const MOVE_TYPES = new Set<string>([
-  'normal', 'fire', 'water', 'electric', 'grass', 'ice', 'fighting', 'poison', 'ground',
-  'flying', 'psychic', 'bug', 'rock', 'ghost', 'dragon', 'dark', 'steel', 'fairy',
+  'normal',
+  'fire',
+  'water',
+  'electric',
+  'grass',
+  'ice',
+  'fighting',
+  'poison',
+  'ground',
+  'flying',
+  'psychic',
+  'bug',
+  'rock',
+  'ghost',
+  'dragon',
+  'dark',
+  'steel',
+  'fairy',
 ]);
 
 type Named = { name: string; url: string };
@@ -23,7 +39,13 @@ type PokemonDto = {
   types: { type: Named }[];
   moves: { move: Named; version_group_details: { move_learn_method: Named }[] }[];
 };
-type MoveDto = { name: string; type: Named; power: number | null; accuracy: number | null; damage_class: Named };
+type MoveDto = {
+  name: string;
+  type: Named;
+  power: number | null;
+  accuracy: number | null;
+  damage_class: Named;
+};
 
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
 
@@ -45,12 +67,14 @@ async function getJson<T>(url: string): Promise<T> {
 async function mapPool<T, R>(items: readonly T[], fn: (item: T) => Promise<R>): Promise<R[]> {
   const out = new Array<R>(items.length);
   let next = 0;
-  await Promise.all(Array.from({ length: CONCURRENCY }, async () => {
-    while (next < items.length) {
-      const i = next++;
-      out[i] = await fn(items[i] as T);
-    }
-  }));
+  await Promise.all(
+    Array.from({ length: CONCURRENCY }, async () => {
+      while (next < items.length) {
+        const i = next++;
+        out[i] = await fn(items[i] as T);
+      }
+    }),
+  );
   return out;
 }
 
@@ -67,9 +91,11 @@ async function main() {
     return p;
   });
 
-  const learned = pokemon.map((p) => p.moves
-    .filter((m) => m.version_group_details.some((d) => d.move_learn_method.name === 'level-up'))
-    .map((m) => m.move.name));
+  const learned = pokemon.map((p) =>
+    p.moves
+      .filter((m) => m.version_group_details.some((d) => d.move_learn_method.name === 'level-up'))
+      .map((m) => m.move.name),
+  );
   const uniqueMoves = [...new Set(learned.flat())].sort();
   console.log(`unique level-up moves: ${uniqueMoves.length}`);
 
@@ -78,9 +104,18 @@ async function main() {
   await mapPool(uniqueMoves, async (name) => {
     const d = await getJson<MoveDto>(`${BASE}/move/${name}`);
     const cls = d.damage_class.name;
-    if (d.power && d.power > 0 && MOVE_TYPES.has(d.type.name) && (cls === 'physical' || cls === 'special')) {
+    if (
+      d.power &&
+      d.power > 0 &&
+      MOVE_TYPES.has(d.type.name) &&
+      (cls === 'physical' || cls === 'special')
+    ) {
       moveByName.set(name, {
-        name, type: d.type.name as MoveType, power: d.power, accuracy: d.accuracy, damageClass: cls,
+        name,
+        type: d.type.name as MoveType,
+        power: d.power,
+        accuracy: d.accuracy,
+        damageClass: cls,
       });
     }
     if (++done % 200 === 0) console.log(`  moves ${done}/${uniqueMoves.length}`);
@@ -90,7 +125,10 @@ async function main() {
   const sets: MovesetData['sets'] = {};
   pokemon.forEach((p, i) => {
     const candidates = (learned[i] ?? []).flatMap((n) => moveByName.get(n) ?? []);
-    const picked = selectMoves(candidates, p.types.map((t) => t.type.name as PokemonType));
+    const picked = selectMoves(
+      candidates,
+      p.types.map((t) => t.type.name as PokemonType),
+    );
     if (picked.length === 0) return;
     sets[p.name] = picked.map((m) => m.name);
     for (const m of picked) moves[m.name] = [m.type, m.power, m.accuracy, m.damageClass];
@@ -101,7 +139,9 @@ async function main() {
   const json = JSON.stringify({ moves: sortKeys(moves), sets: sortKeys(sets) });
   mkdirSync(dirname(OUT), { recursive: true });
   writeFileSync(OUT, json);
-  console.log(`wrote ${Object.keys(sets).length} Pokemon, ${Object.keys(moves).length} moves, ${json.length} bytes`);
+  console.log(
+    `wrote ${Object.keys(sets).length} Pokemon, ${Object.keys(moves).length} moves, ${json.length} bytes`,
+  );
 }
 
 main().catch((e) => {

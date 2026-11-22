@@ -24,7 +24,12 @@ export type StorageStore<T> = {
  * Reading storage inside `useState` would make the first client render differ from the server HTML;
  * `useSyncExternalStore` hydrates with `serverValue` and swaps in the stored value before paint.
  */
-export function createStorageStore<T>({ read, write, serverValue, syncKey }: Options<T>): StorageStore<T> {
+export function createStorageStore<T>({
+  read,
+  write,
+  serverValue,
+  syncKey,
+}: Options<T>): StorageStore<T> {
   let value: T | undefined;
   let loaded = false;
   /** The last write never reached storage: memory is the only copy, so storage must not be re-read over it. */

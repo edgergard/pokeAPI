@@ -8,7 +8,13 @@ const ROLES: SlotRole[] = ['active', { bench: 0 }, { bench: 1 }, { bench: 2 }];
 const SIDES: Side[] = ['red', 'blue'];
 
 /** Projects the four corners of every card (ignoring yaw) through the rig's camera at `shot`. */
-function projectedCorners(rig: CameraRig, aspect: number, shot: ShotName, sides = SIDES, roles = ROLES) {
+function projectedCorners(
+  rig: CameraRig,
+  aspect: number,
+  shot: ShotName,
+  sides = SIDES,
+  roles = ROLES,
+) {
   rig.cut(shot);
   rig.drift = 0;
   rig.update(0);
@@ -17,20 +23,27 @@ function projectedCorners(rig: CameraRig, aspect: number, shot: ShotName, sides 
     roles.flatMap((role) => {
       const c = slotPosition(side, role, aspect);
       return [-1, 1].flatMap((sx) =>
-        [-1, 1].map((sy) => new Vector3(c.x + (sx * CARD_WIDTH) / 2, c.y + (sy * CARD_HEIGHT) / 2, c.z).project(rig.camera)),
+        [-1, 1].map((sy) =>
+          new Vector3(c.x + (sx * CARD_WIDTH) / 2, c.y + (sy * CARD_HEIGHT) / 2, c.z).project(
+            rig.camera,
+          ),
+        ),
       );
     }),
   );
 }
 
 describe('CameraRig', () => {
-  it.each([16 / 9, 4 / 3, 1, 4 / 5, 9 / 16])('keeps all eight cards in the wide shot at aspect %d', (aspect) => {
-    const rig = new CameraRig(aspect, { reducedMotion: true });
-    for (const p of projectedCorners(rig, aspect, 'wide')) {
-      expect(Math.abs(p.x)).toBeLessThanOrEqual(1);
-      expect(Math.abs(p.y)).toBeLessThanOrEqual(1);
-    }
-  });
+  it.each([16 / 9, 4 / 3, 1, 4 / 5, 9 / 16])(
+    'keeps all eight cards in the wide shot at aspect %d',
+    (aspect) => {
+      const rig = new CameraRig(aspect, { reducedMotion: true });
+      for (const p of projectedCorners(rig, aspect, 'wide')) {
+        expect(Math.abs(p.x)).toBeLessThanOrEqual(1);
+        expect(Math.abs(p.y)).toBeLessThanOrEqual(1);
+      }
+    },
+  );
 
   it('keeps the attacker in its close-up and the opponent out of it (landscape)', () => {
     const rig = new CameraRig(16 / 9, { reducedMotion: true });
@@ -58,7 +71,9 @@ describe('CameraRig', () => {
     const b = rig.shot('victory');
     const orbited = rig.shot('victory', Math.PI / 2);
     expect(b.position.length()).toBeGreaterThan(0);
-    expect(orbited.position.distanceTo(orbited.target)).toBeCloseTo(b.position.distanceTo(b.target));
+    expect(orbited.position.distanceTo(orbited.target)).toBeCloseTo(
+      b.position.distanceTo(b.target),
+    );
     expect(orbited.target.equals(b.target)).toBe(true);
   });
 

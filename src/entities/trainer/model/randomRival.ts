@@ -2,14 +2,27 @@ import type { PokemonListItem } from '@/entities/pokemon';
 import { TEAM_SIZE, type Trainer } from './roster';
 
 const FIRST_NAMES = ['Nova', 'Tarin', 'Ela', 'Bram', 'Ilsa', 'Corin', 'Wren', 'Dax'] as const;
-const LAST_NAMES = ['Marsh', 'Okoro', 'Lindqvist', 'Vance', 'Ashby', 'Tiernan', 'Rook', 'Fenn'] as const;
+const LAST_NAMES = [
+  'Marsh',
+  'Okoro',
+  'Lindqvist',
+  'Vance',
+  'Ashby',
+  'Tiernan',
+  'Rook',
+  'Fenn',
+] as const;
 /** Pokédex ids at or above this are alternate forms (megas, regionals…). */
 const FORM_ID_START = 10000;
 
-const pick = <T>(list: readonly T[], rng: () => number): T => list[Math.floor(rng() * list.length)] as T;
+const pick = <T>(list: readonly T[], rng: () => number): T =>
+  list[Math.floor(rng() * list.length)] as T;
 
 /** A rival with four distinct default-form Pokémon drawn from the index. Throws if fewer than four exist. */
-export function randomRival(index: readonly PokemonListItem[], rng: () => number = Math.random): Trainer {
+export function randomRival(
+  index: readonly PokemonListItem[],
+  rng: () => number = Math.random,
+): Trainer {
   const pool = index.filter((p) => p.id < FORM_ID_START);
   if (pool.length < TEAM_SIZE) throw new Error('Not enough Pokémon to build a rival team');
 

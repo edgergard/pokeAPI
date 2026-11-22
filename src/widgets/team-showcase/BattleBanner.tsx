@@ -21,15 +21,29 @@ export function BattleBanner({ trainerId, fullName, team }: Props) {
   const inView = useInView(ref);
 
   return (
-    <div ref={ref} data-inview={inView || undefined} className="battle-banner relative isolate mt-4 rounded-[2rem] p-px">
+    <div
+      ref={ref}
+      data-inview={inView || undefined}
+      className="battle-banner relative isolate mt-4 rounded-[2rem] p-px"
+    >
       {/* Gradient border + glow; the sweep moves on its own layer. */}
-      <div aria-hidden className="battle-banner-border absolute inset-0 -z-10 overflow-hidden rounded-[inherit]" />
+      <div
+        aria-hidden
+        className="battle-banner-border absolute inset-0 -z-10 overflow-hidden rounded-[inherit]"
+      />
 
       <div className="relative flex flex-col items-center gap-6 overflow-hidden rounded-[calc(2rem-1px)] bg-ink-900/95 px-5 py-10 text-center sm:gap-7 sm:px-10 sm:py-14">
-        <div aria-hidden className="battle-banner-glows pointer-events-none absolute inset-0 -z-10" />
+        <div
+          aria-hidden
+          className="battle-banner-glows pointer-events-none absolute inset-0 -z-10"
+        />
 
         {/* Decorative face-off: the team (mirrored to face right) against the unknown. */}
-        <div aria-hidden className="banner-reveal flex items-center justify-center gap-3 sm:gap-6" style={{ '--i': 0 } as CSSProperties}>
+        <div
+          aria-hidden
+          className="banner-reveal flex items-center justify-center gap-3 sm:gap-6"
+          style={{ '--i': 0 } as CSSProperties}
+        >
           <div className="flex items-end gap-1 sm:gap-2">
             {slots.map((slot) => {
               const p = team[slot];
@@ -69,10 +83,19 @@ export function BattleBanner({ trainerId, fullName, team }: Props) {
           </div>
         </div>
 
-        <div className="banner-reveal flex flex-col items-center gap-2" style={{ '--i': 1 } as CSSProperties}>
-          <span className="font-mono text-[11px] font-bold tracking-[0.2em] text-ink-400 uppercase">Arena</span>
-          <h3 className="font-display text-3xl font-extrabold tracking-tight text-white sm:text-5xl">Ready to battle?</h3>
-          <p className="max-w-md text-base text-ink-300 sm:text-lg">Take {fullName}’s team into the arena.</p>
+        <div
+          className="banner-reveal flex flex-col items-center gap-2"
+          style={{ '--i': 1 } as CSSProperties}
+        >
+          <span className="font-mono text-[11px] font-bold tracking-[0.2em] text-ink-400 uppercase">
+            Arena
+          </span>
+          <h3 className="font-display text-3xl font-extrabold tracking-tight text-white sm:text-5xl">
+            Ready to battle?
+          </h3>
+          <p className="max-w-md text-base text-ink-300 sm:text-lg">
+            Take {fullName}’s team into the arena.
+          </p>
         </div>
 
         <Link

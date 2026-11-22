@@ -13,11 +13,12 @@ import { Spinner } from '@/shared/ui/Spinner';
 import { BattleAmbient } from './BattleAmbient';
 
 // The arena (and, inside it, three.js) loads only once a battle starts.
-const BattleArena = lazy(() => import('@/widgets/battle-arena').then((m) => ({ default: m.BattleArena })));
+const BattleArena = lazy(() =>
+  import('@/widgets/battle-arena').then((m) => ({ default: m.BattleArena })),
+);
 
 type State =
-  | { phase: 'setup' }
-  | { phase: 'battle'; red: BattleTeam; blue: BattleTeam; seed: number };
+  { phase: 'setup' } | { phase: 'battle'; red: BattleTeam; blue: BattleTeam; seed: number };
 
 /** Setup, then the arena. "New battle" returns to setup with the previous picks kept. */
 export default function BattlePage() {
@@ -60,7 +61,11 @@ export default function BattlePage() {
           </Link>
           <MotionToggle />
         </div>
-        <h1 ref={headingRef} tabIndex={-1} className="font-display text-3xl font-extrabold tracking-tight focus:outline-none sm:text-4xl">
+        <h1
+          ref={headingRef}
+          tabIndex={-1}
+          className="font-display text-3xl font-extrabold tracking-tight focus:outline-none sm:text-4xl"
+        >
           Battle arena
         </h1>
       </header>
@@ -70,7 +75,9 @@ export default function BattlePage() {
           <SetupWithQuery
             picks={picks}
             onPicksChange={setPicks}
-            onReady={(red, blue) => setState({ phase: 'battle', red, blue, seed: Math.floor(Math.random() * 2 ** 31) })}
+            onReady={(red, blue) =>
+              setState({ phase: 'battle', red, blue, seed: Math.floor(Math.random() * 2 ** 31) })
+            }
           />
         ) : (
           <SetupPlaceholder />
@@ -118,9 +125,14 @@ function SetupPlaceholder() {
   return (
     <div className="flex flex-col gap-6" role="status" aria-busy="true" aria-label="Loading teams">
       <div className="grid gap-4 md:grid-cols-2 md:gap-6">
-        {(['border-(--color-side-red)/30', 'border-(--color-side-blue)/30'] as const).map((border) => (
-          <div key={border} className={`h-[496px] rounded-3xl md:h-[331px] border ${border} bg-ink-900/85`} />
-        ))}
+        {(['border-(--color-side-red)/30', 'border-(--color-side-blue)/30'] as const).map(
+          (border) => (
+            <div
+              key={border}
+              className={`h-[496px] rounded-3xl border md:h-[331px] ${border} bg-ink-900/85`}
+            />
+          ),
+        )}
       </div>
       <div className="mx-auto h-12 w-full rounded-xl bg-white/5 sm:w-64" />
     </div>

@@ -54,14 +54,18 @@ export function PokemonRow({ pokemon, index }: Props) {
           ] as const
         ).map(([label, value]) => (
           <div key={label}>
-            <dt className="text-[10px] font-semibold tracking-wider text-ink-500 uppercase">{label}</dt>
+            <dt className="text-[10px] font-semibold tracking-wider text-ink-500 uppercase">
+              {label}
+            </dt>
             <dd className="font-mono text-sm font-bold">{value}</dd>
           </div>
         ))}
       </dl>
 
       <div className="flex w-16 flex-col items-end border-l border-white/8 pl-4">
-        <span className="text-[10px] font-semibold tracking-wider text-ink-500 uppercase">Total</span>
+        <span className="text-[10px] font-semibold tracking-wider text-ink-500 uppercase">
+          Total
+        </span>
         <span className="font-mono text-lg font-bold text-(--type)">{totalStats}</span>
       </div>
     </li>

@@ -34,7 +34,8 @@ export function usePointerTilt<T extends HTMLElement>(): RefObject<T | null> {
     };
 
     const paused = () => el.closest('[data-tilt-paused]') !== null;
-    const canTilt = (e: PointerEvent) => e.pointerType !== 'touch' && finePointer.matches && !paused();
+    const canTilt = (e: PointerEvent) =>
+      e.pointerType !== 'touch' && finePointer.matches && !paused();
 
     const onEnter = (e: PointerEvent) => {
       if (!canTilt(e)) return;
@@ -56,7 +57,12 @@ export function usePointerTilt<T extends HTMLElement>(): RefObject<T | null> {
         el.dataset.tilting ??= ''; // resumed after a pause without a fresh pointerenter
         const px = clamp(((lastX - rect.left) / rect.width) * 2 - 1);
         const py = clamp(((lastY - rect.top) / rect.height) * 2 - 1);
-        write(`${(-py * MAX_TILT_DEG).toFixed(2)}deg`, `${(px * MAX_TILT_DEG).toFixed(2)}deg`, px.toFixed(3), py.toFixed(3));
+        write(
+          `${(-py * MAX_TILT_DEG).toFixed(2)}deg`,
+          `${(px * MAX_TILT_DEG).toFixed(2)}deg`,
+          px.toFixed(3),
+          py.toFixed(3),
+        );
       });
     };
 

@@ -19,7 +19,12 @@ type SpriteState = {
  * Which picture a sprite shows. The GIF only plays with full motion and falls back to the static sprite;
  * reduced motion never shows the GIF, even when the static one failed (then nothing is shown).
  */
-export function pickSpriteSource({ animated, motion, gifFailed, staticFailed }: SpriteState): SpriteSource {
+export function pickSpriteSource({
+  animated,
+  motion,
+  gifFailed,
+  staticFailed,
+}: SpriteState): SpriteSource {
   if (animated && motion === 'full' && !gifFailed) return 'animated';
   if (!staticFailed) return 'static';
   return 'none';

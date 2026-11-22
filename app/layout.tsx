@@ -27,7 +27,8 @@ const jetbrains = JetBrains_Mono({
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
   title: { default: 'Trainer Studio · PokeAPI', template: '%s · Trainer Studio' },
-  description: 'Build your Pokémon team of four and watch two teams battle as 3D cards — powered by PokeAPI.',
+  description:
+    'Build your Pokémon team of four and watch two teams battle as 3D cards — powered by PokeAPI.',
   openGraph: {
     title: 'Trainer Studio · PokeAPI',
     description: 'Build your Pokémon team of four and watch two teams battle as 3D cards.',

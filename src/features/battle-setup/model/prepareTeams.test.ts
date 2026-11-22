@@ -21,7 +21,12 @@ const EMPTY: MovesetData = { moves: {}, sets: {} };
 describe('prepareTeams', () => {
   it('fetches both teams while the movesets are still loading', async () => {
     let resolveMovesets: (d: MovesetData) => void = () => undefined;
-    const load = vi.fn(() => new Promise<MovesetData>((r) => { resolveMovesets = r; }));
+    const load = vi.fn(
+      () =>
+        new Promise<MovesetData>((r) => {
+          resolveMovesets = r;
+        }),
+    );
     const fetchPokemon = vi.fn(async (name: string) => mon(name));
 
     const done = prepareTeams(
@@ -45,7 +50,12 @@ describe('prepareTeams', () => {
       return mon(name);
     });
     await expect(
-      prepareTeams({ trainerName: 'A', team: ['nope'] }, { trainerName: 'B', team: ['eevee'] }, fetchPokemon, async () => EMPTY),
+      prepareTeams(
+        { trainerName: 'A', team: ['nope'] },
+        { trainerName: 'B', team: ['eevee'] },
+        fetchPokemon,
+        async () => EMPTY,
+      ),
     ).rejects.toThrow('404');
   });
 });

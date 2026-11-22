@@ -14,7 +14,10 @@ describe('href', () => {
   });
 
   it('round-trips params through URLSearchParams', () => {
-    const url = new URL(href('/battle', { red: 'legacy-2026-11-20T19:55:33.096Z' }), 'https://x.test');
+    const url = new URL(
+      href('/battle', { red: 'legacy-2026-11-20T19:55:33.096Z' }),
+      'https://x.test',
+    );
     expect(url.searchParams.get('red')).toBe('legacy-2026-11-20T19:55:33.096Z');
   });
 });
@@ -24,7 +27,10 @@ describe('legacyHashTarget', () => {
     ['#/battle', '/battle/'],
     ['#/battle/', '/battle/'],
     ['#/battle?red=t-1', '/battle/?red=t-1'],
-    ['#/battle?red=legacy-2026-11-20T19%3A55%3A33.096Z', '/battle/?red=legacy-2026-11-20T19%3A55%3A33.096Z'],
+    [
+      '#/battle?red=legacy-2026-11-20T19%3A55%3A33.096Z',
+      '/battle/?red=legacy-2026-11-20T19%3A55%3A33.096Z',
+    ],
     ['#/', '/'],
   ])('maps %j to %j', (hash, target) => expect(legacyHashTarget(hash)).toBe(target));
 

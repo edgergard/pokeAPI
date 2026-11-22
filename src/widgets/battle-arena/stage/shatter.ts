@@ -48,7 +48,10 @@ export const seedOf = (id: string) =>
 export class ShatterCache {
   private readonly sets = new Map<string, ShardSet>();
 
-  constructor(private readonly scene: Scene, private readonly keyColor: Color) {}
+  constructor(
+    private readonly scene: Scene,
+    private readonly keyColor: Color,
+  ) {}
 
   /** The shard set for this card, cutting a new one (and freeing a stale one) when needed. */
   get(handle: CardHandle): ShardSet {
@@ -106,15 +109,17 @@ function createShardSet(handle: CardHandle, keyColor: Color): ShardSet {
   group.name = `${id}-shards`;
   group.visible = false;
   const base: Vector3[] = [];
-  const meshes = createShards(CARD_WIDTH, CARD_HEIGHT, SHARDS_PER_CARD, seedOf(id)).map((geometry) => {
-    const c = geometry.userData.centroid as { x: number; y: number };
-    geometry.translate(-c.x, -c.y, 0); // spin about the shard's own centre
-    const mesh = new Mesh(geometry, material);
-    mesh.position.set(c.x, c.y, 0);
-    base.push(new Vector3(c.x, c.y, 0));
-    group.add(mesh);
-    return mesh;
-  });
+  const meshes = createShards(CARD_WIDTH, CARD_HEIGHT, SHARDS_PER_CARD, seedOf(id)).map(
+    (geometry) => {
+      const c = geometry.userData.centroid as { x: number; y: number };
+      geometry.translate(-c.x, -c.y, 0); // spin about the shard's own centre
+      const mesh = new Mesh(geometry, material);
+      mesh.position.set(c.x, c.y, 0);
+      base.push(new Vector3(c.x, c.y, 0));
+      group.add(mesh);
+      return mesh;
+    },
+  );
   return { handle, group, meshes, base, uniforms, material, seed: seedOf(id) };
 }
 

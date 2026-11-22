@@ -10,7 +10,8 @@ export function LegacyHashRedirect() {
   useEffect(() => {
     const target = legacyHashTarget(window.location.hash);
     if (target && target !== '/') router.replace(target);
-    else if (target === '/') window.history.replaceState(null, '', window.location.pathname + window.location.search);
+    else if (target === '/')
+      window.history.replaceState(null, '', window.location.pathname + window.location.search);
   }, [router]);
   return null;
 }

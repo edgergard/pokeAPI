@@ -87,8 +87,24 @@ function edgeGeometry(shape: Shape): BufferGeometry {
     const ny = -dx / len;
     // Two triangles: (p0−, p1−, p1+) and (p0−, p1+, p0+) — CCW seen from outside.
     positions.push(
-      p0.x, p0.y, -half, p1.x, p1.y, -half, p1.x, p1.y, half,
-      p0.x, p0.y, -half, p1.x, p1.y, half, p0.x, p0.y, half,
+      p0.x,
+      p0.y,
+      -half,
+      p1.x,
+      p1.y,
+      -half,
+      p1.x,
+      p1.y,
+      half,
+      p0.x,
+      p0.y,
+      -half,
+      p1.x,
+      p1.y,
+      half,
+      p0.x,
+      p0.y,
+      half,
     );
     for (let k = 0; k < 6; k++) normals.push(nx, ny, 0);
   }
@@ -125,7 +141,13 @@ export function createCard(
   const phase = fighter.slot * 0.37 + (fighter.side === 'red' ? 0 : 0.19);
 
   const faceMaterial = new HoloMaterial({ map: textures.face, color, shared, phase });
-  const backMaterial = new HoloMaterial({ map: textures.back, color: backColor, shared, phase, sheen: 0.6 });
+  const backMaterial = new HoloMaterial({
+    map: textures.back,
+    color: backColor,
+    shared,
+    phase,
+    sheen: 0.6,
+  });
   const edgeMaterial = new MeshStandardMaterial({
     color: new Color(color).multiplyScalar(0.55),
     emissive: new Color(color),
@@ -155,7 +177,13 @@ export function createCard(
 
   const shadow = new Mesh(
     geometries.shadow,
-    new MeshBasicMaterial({ map: textures.shadow, color: 0x000000, transparent: true, depthWrite: false, opacity: 0.7 }),
+    new MeshBasicMaterial({
+      map: textures.shadow,
+      color: 0x000000,
+      transparent: true,
+      depthWrite: false,
+      opacity: 0.7,
+    }),
   );
   shadow.name = `${fighter.id}-shadow`;
   shadow.renderOrder = -1; // under the cards, over the floor

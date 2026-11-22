@@ -19,7 +19,11 @@ const BALLS: Ball[] = [
   { right: '12%', bottom: '18%', size: 11, float: 12, spin: 80, dir: 'normal' },
 ];
 
-const TINT = { red: 'var(--color-side-red)', blue: 'var(--color-side-blue)', gold: 'var(--color-accent)' } as const;
+const TINT = {
+  red: 'var(--color-side-red)',
+  blue: 'var(--color-side-blue)',
+  gold: 'var(--color-accent)',
+} as const;
 
 /**
  * Battle page backdrop: drifting corner glows, a perspective floor, rising motes and slow pokéballs.

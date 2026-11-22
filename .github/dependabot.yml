@@ -1,0 +1,32 @@
+# Monthly dependency updates as one grouped PR; CI checks it.
+# Major versions are ignored on purpose: upgrade them deliberately (read the release notes).
+# target-branch: dev, where work happens (/product-build). Security-fix PRs
+# ignore target-branch and these rules: they always open against main — review them by hand.
+version: 2
+updates:
+  - package-ecosystem: npm
+    directory: /
+    target-branch: dev
+    schedule:
+      interval: monthly
+    open-pull-requests-limit: 5
+    commit-message:
+      prefix: 'chore(deps)'
+    groups:
+      dependencies:
+        patterns: ['*']
+        update-types: [minor, patch]
+    ignore:
+      - dependency-name: '*'
+        update-types: ['version-update:semver-major']
+
+  - package-ecosystem: github-actions
+    directory: /
+    target-branch: dev
+    schedule:
+      interval: monthly
+    commit-message:
+      prefix: 'ci'
+    groups:
+      actions:
+        patterns: ['*']

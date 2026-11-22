@@ -71,7 +71,10 @@ export function loadRoster(storage: Pick<Storage, 'getItem'>): Trainer[] {
  * Writes the roster, then (only if that succeeded) removes the legacy key it may have absorbed.
  * Storage failures are swallowed (returns false): the legacy key stays, so nothing is lost on reload.
  */
-export function persistRoster(storage: Pick<Storage, 'setItem' | 'removeItem'>, trainers: readonly Trainer[]): boolean {
+export function persistRoster(
+  storage: Pick<Storage, 'setItem' | 'removeItem'>,
+  trainers: readonly Trainer[],
+): boolean {
   try {
     storage.setItem(ROSTER_KEY, JSON.stringify(trainers));
     storage.removeItem(LEGACY_TRAINER_KEY);
@@ -111,7 +114,8 @@ const rosterStore = createStorageStore<Trainer[]>({
   syncKey: ROSTER_KEY,
 });
 
-const byNewest = (a: Trainer, b: Trainer) => (a.savedAt < b.savedAt ? 1 : a.savedAt > b.savedAt ? -1 : 0);
+const byNewest = (a: Trainer, b: Trainer) =>
+  a.savedAt < b.savedAt ? 1 : a.savedAt > b.savedAt ? -1 : 0;
 
 /**
  * The visitor's trainers, persisted across reloads and kept in sync across tabs.
@@ -127,7 +131,11 @@ export function useRoster() {
     trainers,
     latest: trainers[0] ?? null,
     add(data: { firstName: string; lastName: string; team: string[] }): Trainer {
-      const trainer: Trainer = { ...data, id: crypto.randomUUID(), savedAt: new Date().toISOString() };
+      const trainer: Trainer = {
+        ...data,
+        id: crypto.randomUUID(),
+        savedAt: new Date().toISOString(),
+      };
       setStored((current) => [...current, trainer]);
       return trainer;
     },

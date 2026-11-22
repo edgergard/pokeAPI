@@ -2,10 +2,28 @@ import { describe, expect, it, vi } from 'vitest';
 import type { PokemonListItem } from '@/entities/pokemon';
 import { PRESET_TRAINERS } from './presets';
 import { randomRival } from './randomRival';
-import { LEGACY_TRAINER_KEY, ROSTER_KEY, loadRoster, parseRoster, persistRoster, type Trainer } from './roster';
+import {
+  LEGACY_TRAINER_KEY,
+  ROSTER_KEY,
+  loadRoster,
+  parseRoster,
+  persistRoster,
+  type Trainer,
+} from './roster';
 
-const valid: Trainer = { id: 'a', firstName: 'Ash', lastName: 'K', team: ['pikachu', 'eevee', 'snorlax', 'mew'], savedAt: '2026-02-01T00:00:00.000Z' };
-const legacy = { firstName: 'Old', lastName: 'Timer', team: ['bulbasaur', 'charmander', 'squirtle', 'pidgey'], savedAt: '2025-01-01T00:00:00.000Z' };
+const valid: Trainer = {
+  id: 'a',
+  firstName: 'Ash',
+  lastName: 'K',
+  team: ['pikachu', 'eevee', 'snorlax', 'mew'],
+  savedAt: '2026-02-01T00:00:00.000Z',
+};
+const legacy = {
+  firstName: 'Old',
+  lastName: 'Timer',
+  team: ['bulbasaur', 'charmander', 'squirtle', 'pidgey'],
+  savedAt: '2025-01-01T00:00:00.000Z',
+};
 
 function fakeStorage(items: Record<string, string>) {
   return { getItem: (k: string) => items[k] ?? null, removeItem: vi.fn() };
@@ -25,7 +43,12 @@ function createSeq(seed: number) {
 describe('roster', () => {
   it('parseRoster drops invalid entries instead of throwing', () => {
     expect(parseRoster('nope')).toEqual([]);
-    expect(parseRoster([{ id: 'a2', firstName: 'A', lastName: 'B', team: ['x', 'y'], savedAt: '2026' }, valid])).toEqual([valid]);
+    expect(
+      parseRoster([
+        { id: 'a2', firstName: 'A', lastName: 'B', team: ['x', 'y'], savedAt: '2026' },
+        valid,
+      ]),
+    ).toEqual([valid]);
     expect(parseRoster([{ ...valid, team: ['a', 'a', 'b', 'c'] }])).toEqual([]);
   });
 
@@ -50,18 +73,28 @@ describe('roster', () => {
 
   it('keeps the legacy key when the roster write fails', () => {
     const removeItem = vi.fn();
-    const store = { setItem: () => { throw new Error('quota'); }, removeItem };
+    const store = {
+      setItem: () => {
+        throw new Error('quota');
+      },
+      removeItem,
+    };
     expect(() => persistRoster(store, [valid])).not.toThrow();
     expect(removeItem).not.toHaveBeenCalled();
   });
 
   it('merges the stored roster with a legacy trainer', () => {
-    const store = fakeStorage({ [ROSTER_KEY]: JSON.stringify([valid]), [LEGACY_TRAINER_KEY]: JSON.stringify(legacy) });
+    const store = fakeStorage({
+      [ROSTER_KEY]: JSON.stringify([valid]),
+      [LEGACY_TRAINER_KEY]: JSON.stringify(legacy),
+    });
     expect(loadRoster(store).map((t) => t.firstName)).toEqual(['Ash', 'Old']);
   });
 
   it('survives non-JSON in either key', () => {
-    expect(loadRoster(fakeStorage({ [ROSTER_KEY]: '{oops', [LEGACY_TRAINER_KEY]: '][' }))).toEqual([]);
+    expect(loadRoster(fakeStorage({ [ROSTER_KEY]: '{oops', [LEGACY_TRAINER_KEY]: '][' }))).toEqual(
+      [],
+    );
   });
 
   it('presets are 4 valid trainers with distinct ids and default-form teams', () => {
@@ -70,7 +103,10 @@ describe('roster', () => {
   });
 
   it('randomRival picks 4 distinct default-form Pokémon deterministically for a seeded rng', () => {
-    const index: PokemonListItem[] = Array.from({ length: 1200 }, (_, i) => ({ id: i < 1025 ? i + 1 : 10001 + i, name: `p${i}` }));
+    const index: PokemonListItem[] = Array.from({ length: 1200 }, (_, i) => ({
+      id: i < 1025 ? i + 1 : 10001 + i,
+      name: `p${i}`,
+    }));
     const a = randomRival(index, createSeq(1));
     const b = randomRival(index, createSeq(1));
     expect(a.team).toEqual(b.team);

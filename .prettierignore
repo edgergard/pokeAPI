@@ -1,0 +1,18 @@
+# Prettier also reads .gitignore (node_modules, .next, out, next-env.d.ts, ...).
+package-lock.json
+
+# AGENTS.md is (re)written by `next dev`; reformatting it causes churn.
+AGENTS.md
+
+# Product docs written by the /product-* skills (hand-made tables, *assumption* markers)
+docs/product/
+
+# Historical plans from before the product chain
+docs/superpowers/
+
+# Vendored by `npx playwright cli install --skills`
+.claude/skills/playwright-cli/
+
+# Generated data
+src/entities/battle/data/*.json
+src/entities/pokemon/data/*.json

@@ -45,11 +45,17 @@ describe('createStorageStore', () => {
   it('re-reads when another tab changes the watched key', () => {
     const handlers: Record<string, (e: { key: string | null }) => void> = {};
     vi.stubGlobal('window', {
-      addEventListener: (type: string, fn: (e: { key: string | null }) => void) => (handlers[type] = fn),
+      addEventListener: (type: string, fn: (e: { key: string | null }) => void) =>
+        (handlers[type] = fn),
       removeEventListener: vi.fn(),
     });
     let stored = 1;
-    const store = createStorageStore({ read: () => stored, write: () => true, serverValue: 0, syncKey: 'k' });
+    const store = createStorageStore({
+      read: () => stored,
+      write: () => true,
+      serverValue: 0,
+      syncKey: 'k',
+    });
     const listener = vi.fn();
     store.subscribe(listener);
     expect(store.get()).toBe(1);
@@ -69,7 +75,12 @@ describe('createStorageStore', () => {
       stored = v;
       return true;
     });
-    const store = createStorageStore<string[]>({ read: () => stored, write, serverValue: [], syncKey: 'k' });
+    const store = createStorageStore<string[]>({
+      read: () => stored,
+      write,
+      serverValue: [],
+      syncKey: 'k',
+    });
     const unsubscribe = store.subscribe(vi.fn());
     expect(store.get()).toEqual(['a']);
     unsubscribe();
@@ -83,7 +94,12 @@ describe('createStorageStore', () => {
 
   it('keeps the in-memory value when storage refused the write (never re-reads over it)', () => {
     vi.stubGlobal('window', { addEventListener: vi.fn(), removeEventListener: vi.fn() });
-    const store = createStorageStore<string[]>({ read: () => [], write: () => false, serverValue: [], syncKey: 'k' });
+    const store = createStorageStore<string[]>({
+      read: () => [],
+      write: () => false,
+      serverValue: [],
+      syncKey: 'k',
+    });
     const unsubscribe = store.subscribe(vi.fn());
     store.set(['saved in memory']);
     unsubscribe();

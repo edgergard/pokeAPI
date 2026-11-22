@@ -67,7 +67,9 @@ export function loadImage(url: string, timeoutMs = 4000): Promise<HTMLImageEleme
       reject(new Error(`Artwork timed out: ${url}`));
     }, timeoutMs);
   });
-  const pending = Promise.race([img.decode().then(() => img), timeout]).finally(() => clearTimeout(timer));
+  const pending = Promise.race([img.decode().then(() => img), timeout]).finally(() =>
+    clearTimeout(timer),
+  );
   pending.catch(() => imageCache.delete(url)); // let a later battle retry
   imageCache.set(url, pending);
   return pending;
@@ -100,7 +102,14 @@ function createCanvas(): [HTMLCanvasElement, CanvasRenderingContext2D] {
   return [canvas, ctx];
 }
 
-function roundRect(ctx: CanvasRenderingContext2D, x: number, y: number, w: number, h: number, r: number) {
+function roundRect(
+  ctx: CanvasRenderingContext2D,
+  x: number,
+  y: number,
+  w: number,
+  h: number,
+  r: number,
+) {
   ctx.beginPath();
   ctx.roundRect(x, y, w, h, r);
 }
@@ -116,7 +125,13 @@ function alpha(hex: string, a: number): string {
   return `rgba(${(n >> 16) & 255}, ${(n >> 8) & 255}, ${n & 255}, ${a})`;
 }
 
-function dotGrid(ctx: CanvasRenderingContext2D, w: number, h: number, step: number, color: (y: number) => string) {
+function dotGrid(
+  ctx: CanvasRenderingContext2D,
+  w: number,
+  h: number,
+  step: number,
+  color: (y: number) => string,
+) {
   for (let y = step / 2; y < h; y += step) {
     ctx.fillStyle = color(y);
     for (let x = step / 2; x < w; x += step) ctx.fillRect(x - 0.5, y - 0.5, 1, 1);
@@ -124,7 +139,14 @@ function dotGrid(ctx: CanvasRenderingContext2D, w: number, h: number, step: numb
 }
 
 /** Shrinks the font until `text` fits `maxWidth`. */
-function fitText(ctx: CanvasRenderingContext2D, text: string, weight: number, size: number, family: string, maxWidth: number) {
+function fitText(
+  ctx: CanvasRenderingContext2D,
+  text: string,
+  weight: number,
+  size: number,
+  family: string,
+  maxWidth: number,
+) {
   let px = size;
   ctx.font = `${weight} ${px}px ${family}`;
   while (px > 12 && ctx.measureText(text).width > maxWidth) {
@@ -178,7 +200,13 @@ function paintArtwork(ctx: CanvasRenderingContext2D, color: string, img: HTMLIma
   }
 }
 
-function paintStat(ctx: CanvasRenderingContext2D, y: number, label: string, value: number, color: string) {
+function paintStat(
+  ctx: CanvasRenderingContext2D,
+  y: number,
+  label: string,
+  value: number,
+  color: string,
+) {
   ctx.font = `500 10px ${MONO}`;
   ctx.fillStyle = INK_500;
   ctx.fillText(label, 20, y + 4);
@@ -263,7 +291,12 @@ export function paintCardFace(fighter: Fighter, img: HTMLImageElement | null): H
 
   // Battle stats (level 50).
   const { hp, attack, defense, speed } = fighter.stats;
-  [['HP', hp], ['ATK', attack], ['DEF', defense], ['SPD', speed]].forEach(([label, value], i) => {
+  [
+    ['HP', hp],
+    ['ATK', attack],
+    ['DEF', defense],
+    ['SPD', speed],
+  ].forEach(([label, value], i) => {
     paintStat(ctx, ART_H + 96 + i * 19, String(label), Number(value), color);
   });
 

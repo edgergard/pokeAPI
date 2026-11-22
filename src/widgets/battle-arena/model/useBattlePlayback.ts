@@ -41,7 +41,8 @@ export type BattlePlayback = {
 };
 
 // The stage pulls in three.js: load it only once a battle is on screen, in its own chunk.
-const loadStage = () => Promise.all([import('../stage/BattleStage'), import('../stage/director3d')]);
+const loadStage = () =>
+  Promise.all([import('../stage/BattleStage'), import('../stage/director3d')]);
 
 /**
  * A disposed stage force-loses its canvas's context, so a canvas can host one stage only.
@@ -53,13 +54,22 @@ const spentCanvases = new WeakSet<HTMLCanvasElement>();
  * Plays one simulated battle: builds the stage (or the null director without WebGL),
  * choreographs the events, feeds the HUD and the log, and owns every timeline and GPU resource.
  */
-export function useBattlePlayback({ red, blue, seed, canvas, reducedMotion }: Args): BattlePlayback {
+export function useBattlePlayback({
+  red,
+  blue,
+  seed,
+  canvas,
+  reducedMotion,
+}: Args): BattlePlayback {
   const events = useMemo(() => simulateBattle(red, blue, seed).events, [red, blue, seed]);
   const fighters = useMemo<Record<string, Fighter>>(
     () => Object.fromEntries([...red.fighters, ...blue.fighters].map((f) => [f.id, f])),
     [red, blue],
   );
-  const indexOf = useMemo(() => new Map<BattleEvent, number>(events.map((e, i) => [e, i])), [events]);
+  const indexOf = useMemo(
+    () => new Map<BattleEvent, number>(events.map((e, i) => [e, i])),
+    [events],
+  );
   const trainers = useMemo(() => ({ red: red.trainerName, blue: blue.trainerName }), [red, blue]);
 
   const [hud, setHud] = useState(() => initialHud(red, blue));
@@ -84,37 +94,43 @@ export function useBattlePlayback({ red, blue, seed, canvas, reducedMotion }: Ar
     deliveredRef.current = 0;
   }
 
-  const onEvent = useCallback((event: BattleEvent) => {
-    const index = indexOf.get(event) ?? -1;
-    // A rebuilt timeline re-runs earlier beats on its way to the resume point: already shown.
-    if (index < deliveredRef.current) return;
-    deliveredRef.current = index + 1;
-    setHud((s) => reduceHud(s, event));
-    const line = describeEvent(event, fighters, trainers);
-    if (line) setLog((l) => [...l, line]);
-  }, [indexOf, fighters, trainers]);
+  const onEvent = useCallback(
+    (event: BattleEvent) => {
+      const index = indexOf.get(event) ?? -1;
+      // A rebuilt timeline re-runs earlier beats on its way to the resume point: already shown.
+      if (index < deliveredRef.current) return;
+      deliveredRef.current = index + 1;
+      setHud((s) => reduceHud(s, event));
+      const line = describeEvent(event, fighters, trainers);
+      if (line) setLog((l) => [...l, line]);
+    },
+    [indexOf, fighters, trainers],
+  );
 
   /** (Re)builds the timeline on the current director and plays it from event `from` onward. */
-  const play = useCallback((director: StageDirector, from: number) => {
-    timelineRef.current?.kill();
-    const { timeline } = choreograph(events, director, { onEvent });
-    timeline.timeScale(speedRef.current);
-    timeline.eventCallback('onComplete', () => setFinished(true));
-    timelineRef.current = timeline;
-    const plan = resumePlan(from, events.length);
-    if (plan.kind === 'finished') {
-      // Rebuilt after the battle ended (motion flip): land on the end state without replaying
-      // the victory beat, and leave the result screen where it is.
-      timeline.progress(1, false);
-      setFinished(true);
-      return;
-    }
-    setFinished(false);
-    // Re-run the earlier beats instantly (scene state catches up), then play from the beat that
-    // reported the last shown event.
-    if (plan.kind === 'resume') timeline.seek(resumeTime(timeline, plan.from - 1), false);
-    if (!document.hidden) timeline.play();
-  }, [events, onEvent]);
+  const play = useCallback(
+    (director: StageDirector, from: number) => {
+      timelineRef.current?.kill();
+      const { timeline } = choreograph(events, director, { onEvent });
+      timeline.timeScale(speedRef.current);
+      timeline.eventCallback('onComplete', () => setFinished(true));
+      timelineRef.current = timeline;
+      const plan = resumePlan(from, events.length);
+      if (plan.kind === 'finished') {
+        // Rebuilt after the battle ended (motion flip): land on the end state without replaying
+        // the victory beat, and leave the result screen where it is.
+        timeline.progress(1, false);
+        setFinished(true);
+        return;
+      }
+      setFinished(false);
+      // Re-run the earlier beats instantly (scene state catches up), then play from the beat that
+      // reported the last shown event.
+      if (plan.kind === 'resume') timeline.seek(resumeTime(timeline, plan.from - 1), false);
+      if (!document.hidden) timeline.play();
+    },
+    [events, onEvent],
+  );
 
   // One session per (battle, canvas, motion setting): stage + director + timeline.
   useEffect(() => {

@@ -20,7 +20,12 @@ type Props = {
   onPicksChange?: (picks: Picks) => void;
 };
 
-export function BattleSetup({ onReady, picks = { red: null, blue: null }, preferredRedId, onPicksChange }: Props) {
+export function BattleSetup({
+  onReady,
+  picks = { red: null, blue: null },
+  preferredRedId,
+  onPicksChange,
+}: Props) {
   const { trainers } = useRoster();
   const index = usePokemonIndex();
   const { prepare, status, error } = usePrepareBattle();
@@ -82,7 +87,11 @@ export function BattleSetup({ onReady, picks = { red: null, blue: null }, prefer
           disabled={loading}
           className={cn('relative w-full justify-center sm:w-64', !loading && 'fight-ready')}
         >
-          {loading ? <Spinner label="Preparing teams" className="size-4" /> : <Swords className="size-4" aria-hidden />}
+          {loading ? (
+            <Spinner label="Preparing teams" className="size-4" />
+          ) : (
+            <Swords className="size-4" aria-hidden />
+          )}
           {loading ? 'Preparing…' : 'Fight'}
         </Button>
         <div role="alert" className="min-h-5 text-center text-[13px]">

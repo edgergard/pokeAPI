@@ -13,7 +13,13 @@ type Props = {
 export function PokemonCardPlaceholder({ slot, variant, entrance = 'rise' }: Props) {
   // An error replaces a loading slot in place, so it shakes instead of entering again.
   const motion =
-    variant === 'error' ? 'slot-shake' : entrance === 'swap' ? 'swap-in' : entrance === 'rise' ? 'card-enter' : undefined;
+    variant === 'error'
+      ? 'slot-shake'
+      : entrance === 'swap'
+        ? 'swap-in'
+        : entrance === 'rise'
+          ? 'card-enter'
+          : undefined;
 
   return (
     <div
@@ -34,11 +40,17 @@ export function PokemonCardPlaceholder({ slot, variant, entrance = 'rise' }: Pro
       <Pokeball
         className={cn(
           'size-16 text-white',
-          variant === 'loading' ? 'ball-charge' : variant === 'empty' ? 'ball-breathe' : 'opacity-10',
+          variant === 'loading'
+            ? 'ball-charge'
+            : variant === 'empty'
+              ? 'ball-breathe'
+              : 'opacity-10',
         )}
       />
       <div className="flex flex-col gap-1">
-        <span className="font-mono text-[10px] font-bold tracking-widest text-ink-500 uppercase">Slot {slot + 1}</span>
+        <span className="font-mono text-[10px] font-bold tracking-widest text-ink-500 uppercase">
+          Slot {slot + 1}
+        </span>
         <span className="text-sm text-ink-400">
           {variant === 'empty' && 'Waiting for a partner'}
           {variant === 'loading' && 'Summoning…'}

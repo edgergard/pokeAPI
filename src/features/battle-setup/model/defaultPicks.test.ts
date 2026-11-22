@@ -2,7 +2,13 @@ import { describe, expect, it } from 'vitest';
 import { PRESET_TRAINERS, type Trainer } from '@/entities/trainer';
 import { defaultPicks } from './defaultPicks';
 
-const own = (id: string): Trainer => ({ id, firstName: 'A', lastName: id, team: ['pikachu', 'eevee', 'mew', 'snorlax'], savedAt: '' });
+const own = (id: string): Trainer => ({
+  id,
+  firstName: 'A',
+  lastName: id,
+  team: ['pikachu', 'eevee', 'mew', 'snorlax'],
+  savedAt: '',
+});
 
 describe('defaultPicks', () => {
   it('falls back to presets when there is no own trainer', () => {

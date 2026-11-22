@@ -7,8 +7,12 @@ function area(geometry: BufferGeometry): number {
   const pos = geometry.getAttribute('position');
   let sum = 0;
   for (let i = 0; i + 2 < pos.count; i += 3) {
-    const abx = pos.getX(i + 1) - pos.getX(i), aby = pos.getY(i + 1) - pos.getY(i), abz = pos.getZ(i + 1) - pos.getZ(i);
-    const acx = pos.getX(i + 2) - pos.getX(i), acy = pos.getY(i + 2) - pos.getY(i), acz = pos.getZ(i + 2) - pos.getZ(i);
+    const abx = pos.getX(i + 1) - pos.getX(i),
+      aby = pos.getY(i + 1) - pos.getY(i),
+      abz = pos.getZ(i + 1) - pos.getZ(i);
+    const acx = pos.getX(i + 2) - pos.getX(i),
+      acy = pos.getY(i + 2) - pos.getY(i),
+      acz = pos.getZ(i + 2) - pos.getZ(i);
     sum += Math.hypot(aby * acz - abz * acy, abz * acx - abx * acz, abx * acy - aby * acx) / 2;
   }
   return sum;
@@ -16,14 +20,17 @@ function area(geometry: BufferGeometry): number {
 
 describe('createShards', () => {
   it('createShards is deterministic and covers the card area', () => {
-    const a = createShards(2.5, 3.5, 24, 9), b = createShards(2.5, 3.5, 24, 9);
+    const a = createShards(2.5, 3.5, 24, 9),
+      b = createShards(2.5, 3.5, 24, 9);
     expect(a).toHaveLength(24);
     expect(a.map(area)).toEqual(b.map(area));
     expect(a.reduce((s, g) => s + area(g), 0)).toBeCloseTo(2.5 * 3.5, 1);
   });
 
   it('different seeds give different fractures', () => {
-    expect(createShards(2.5, 3.5, 24, 9).map(area)).not.toEqual(createShards(2.5, 3.5, 24, 10).map(area));
+    expect(createShards(2.5, 3.5, 24, 9).map(area)).not.toEqual(
+      createShards(2.5, 3.5, 24, 10).map(area),
+    );
   });
 
   it('honours the requested count, stays inside the card and has no empty shards', () => {
@@ -48,8 +55,9 @@ describe('createShards', () => {
       const pos = g.getAttribute('position');
       const uv = g.getAttribute('uv');
       for (let i = 0; i < pos.count; i += 3) {
-        const cross = (pos.getX(i + 1) - pos.getX(i)) * (pos.getY(i + 2) - pos.getY(i))
-          - (pos.getY(i + 1) - pos.getY(i)) * (pos.getX(i + 2) - pos.getX(i));
+        const cross =
+          (pos.getX(i + 1) - pos.getX(i)) * (pos.getY(i + 2) - pos.getY(i)) -
+          (pos.getY(i + 1) - pos.getY(i)) * (pos.getX(i + 2) - pos.getX(i));
         expect(cross).toBeGreaterThan(0);
       }
       for (let i = 0; i < uv.count; i++) {

@@ -3,7 +3,11 @@ import { effectiveness } from './typeChart';
 import type { Effectiveness, Fighter, Move } from './types';
 
 export const FALLBACK_MOVE: Move = {
-  name: 'desperate-strike', type: 'typeless', power: 40, accuracy: 100, damageClass: 'physical',
+  name: 'desperate-strike',
+  type: 'typeless',
+  power: 40,
+  accuracy: 100,
+  damageClass: 'physical',
 };
 
 const CRIT_CHANCE = 1 / 24;
@@ -14,7 +18,10 @@ function stab(attacker: Fighter, move: Move): number {
 
 /** Rolls crit first, then the random factor; immunity consumes no rng. */
 export function calcDamage(
-  attacker: Fighter, defender: Fighter, move: Move, rng: () => number,
+  attacker: Fighter,
+  defender: Fighter,
+  move: Move,
+  rng: () => number,
 ): { damage: number; effectiveness: Effectiveness; critical: boolean } {
   const eff = effectiveness(move.type, defender.types);
   if (eff === 0) return { damage: 0, effectiveness: eff, critical: false };
@@ -35,12 +42,16 @@ export function calcDamage(
 export function chooseMove(attacker: Fighter, defender: Fighter, rng: () => number): Move {
   const candidates = attacker.moves.map((move) => ({
     move,
-    weight: move.power * stab(attacker, move) * effectiveness(move.type, defender.types)
-      * ((move.accuracy ?? 100) / 100),
+    weight:
+      move.power *
+      stab(attacker, move) *
+      effectiveness(move.type, defender.types) *
+      ((move.accuracy ?? 100) / 100),
   }));
   if (candidates.length === 0) return FALLBACK_MOVE;
   const usable = candidates.filter((c) => c.weight > 0);
-  if (usable.length === 0) return candidates[Math.floor(rng() * candidates.length)]?.move ?? FALLBACK_MOVE;
+  if (usable.length === 0)
+    return candidates[Math.floor(rng() * candidates.length)]?.move ?? FALLBACK_MOVE;
   let roll = rng() * usable.reduce((s, c) => s + c.weight, 0);
   for (const c of usable) {
     roll -= c.weight;

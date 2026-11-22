@@ -29,7 +29,9 @@ describe('loadImage', () => {
       crossOrigin = '';
       decoding = '';
       src = '';
-      decode() { return new Promise<void>(() => {}); }
+      decode() {
+        return new Promise<void>(() => {});
+      }
     }
     vi.stubGlobal('Image', StalledImage);
     const pending = resolveArtwork('https://example.test/stalled.png', loadImage);
@@ -45,7 +47,9 @@ describe('loadImage', () => {
       src = '';
       complete = true;
       naturalWidth = 475;
-      decode() { return new Promise<void>(() => {}); }
+      decode() {
+        return new Promise<void>(() => {});
+      }
     }
     vi.stubGlobal('Image', ArrivedImage);
     const pending = loadImage('https://example.test/arrived.png');

@@ -3,13 +3,18 @@ import { slotPosition } from './layout';
 
 describe('slotPosition', () => {
   it('places actives facing each other and benches behind their side', () => {
-    const ra = slotPosition('red', 'active', 16 / 9), ba = slotPosition('blue', 'active', 16 / 9);
-    expect(ra.x).toBeLessThan(0); expect(ba.x).toBeGreaterThan(0); expect(ra.x).toBeCloseTo(-ba.x);
+    const ra = slotPosition('red', 'active', 16 / 9),
+      ba = slotPosition('blue', 'active', 16 / 9);
+    expect(ra.x).toBeLessThan(0);
+    expect(ba.x).toBeGreaterThan(0);
+    expect(ra.x).toBeCloseTo(-ba.x);
     expect(Math.abs(slotPosition('red', { bench: 0 }, 16 / 9).x)).toBeGreaterThan(Math.abs(ra.x));
   });
 
   it('pulls benches closer on portrait', () => {
-    expect(Math.abs(slotPosition('red', { bench: 0 }, 9 / 16).x)).toBeLessThan(Math.abs(slotPosition('red', { bench: 0 }, 16 / 9).x));
+    expect(Math.abs(slotPosition('red', { bench: 0 }, 9 / 16).x)).toBeLessThan(
+      Math.abs(slotPosition('red', { bench: 0 }, 16 / 9).x),
+    );
   });
 
   it('keeps every bench slot distinct and behind the active line', () => {

@@ -13,7 +13,12 @@ export interface StageDirector {
   dealIn(fighterId: string): Timeline;
   anticipate(attackerId: string, move: Move, tier: Tier): Timeline;
   lunge(attackerId: string, targetId: string, move: Move, tier: Tier): Timeline;
-  impact(targetId: string, result: 'hit' | 'miss' | 'noEffect', info: ImpactInfo | null, tier: Tier): Timeline;
+  impact(
+    targetId: string,
+    result: 'hit' | 'miss' | 'noEffect',
+    info: ImpactInfo | null,
+    tier: Tier,
+  ): Timeline;
   knockOut(fighterId: string): Timeline;
   victory(winner: Side): Timeline;
 }
