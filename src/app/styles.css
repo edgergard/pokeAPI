@@ -1835,3 +1835,10 @@
     scroll-behavior: auto !important;
   }
 }
+
+/* Phones: the fixed bottom tab bar (AppNav, 44px + safe area) must never cover the end of a page. */
+@media (max-width: 767px) {
+  main#content {
+    padding-bottom: calc(44px + env(safe-area-inset-bottom) + 1.5rem);
+  }
+}
