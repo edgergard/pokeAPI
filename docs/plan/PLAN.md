@@ -85,10 +85,11 @@ Status values: pending · running · permission · escalation · done (report in
 ## Metrics
 
 Gate A approved: 2026-11-22 · Gate A rounds: 1
-Retries: 0 · Failed streams: 0 · Escalations: 0 · Red dev fixes: 0 · Review findings fixed: 0 · User corrections: 0
+Retries: 0 · Failed streams: 0 · Escalations: 1 · Red dev fixes: 0 · Review findings fixed: 0 · User corrections: 0
 
 ## Log
 
 - 2026-11-22 plan drafted
 - 2026-11-22 foundation committed on main at c2cd6c5 (template config 4818d5b); repo renamed to edgergard/trainer-studio; dev CI green; fresh worktree check green
 - 2026-11-22 wave 1 launched (4 streams) from dev ce97573
+- 2026-11-22 ESCALATION from 1-save: export persistence API from src/entities/save/index.ts → decision: `export * from ./persistence` on dev (b87e199); agent told to merge origin/dev
