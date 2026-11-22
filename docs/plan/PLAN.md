@@ -85,7 +85,7 @@ Status values: pending · running · permission · escalation · done (report in
 ## Metrics
 
 Gate A approved: 2026-11-22 · Gate A rounds: 1
-Retries: 0 · Failed streams: 0 · Escalations: 1 · Red dev fixes: 0 · Review findings fixed: 0 · User corrections: 0
+Retries: 0 · Failed streams: 0 · Escalations: 1 · Red dev fixes: 0 · Review findings fixed: 3 · User corrections: 0
 
 ## Log
 
@@ -96,3 +96,4 @@ Retries: 0 · Failed streams: 0 · Escalations: 1 · Red dev fixes: 0 · Review 
 - 2026-11-22 1-progression merged (PR #7, 38b0e48); review: no findings ≥80; integration on dev: questEventReducer registered in SaveProvider, bonus capsule moved to economy.battle.bonusCapsuleReward
 - 2026-11-22 foundation fix on dev 1832d85: npm run preview (next start does not work with static export), vitest.setup.ts in tsconfig
 - 2026-11-22 1-engine merged (PR #10, 9143311); review: 0 confirmed (2 refuted); ESLint battle-arena override removed on dev; note: intro lasts 15-21 s, not 25 s, at loaner Lv 5 / rival Lv 3
+- 2026-11-22 1-capsules merged (PR #8, 25d382a); review: fixed 3 (Open-next reveal spoiler, endless pity shimmer on load error, rarity frame shape)
