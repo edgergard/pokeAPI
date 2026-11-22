@@ -1,140 +1,102 @@
 'use client';
 
-import { lazy, Suspense, useEffect, useRef, useState, type ComponentProps } from 'react';
+import { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { useSearchParams } from 'next/navigation';
-import { BattleSetup, type Picks } from '@/features/battle-setup';
-import { MotionToggle } from '@/features/motion-toggle/MotionToggle';
-import type { BattleTeam } from '@/entities/battle';
-import { href } from '@/shared/lib/router';
+import { useRouter, useSearchParams } from 'next/navigation';
+import { useSave, useSaveStatus } from '@/entities/save';
 import { useHydrated } from '@/shared/lib/useHydrated';
-import { ErrorBoundary } from '@/shared/ui/ErrorBoundary';
-import { Spinner } from '@/shared/ui/Spinner';
 import { BattleAmbient } from './BattleAmbient';
+import { resolveBattleRoute } from './model/route';
+import { IntroBattle } from './ui/IntroBattle';
+import { StageBattle } from './ui/StageBattle';
 
-// The arena (and, inside it, three.js) loads only once a battle starts.
-const BattleArena = lazy(() =>
-  import('@/widgets/battle-arena').then((m) => ({ default: m.BattleArena })),
-);
-
-type State =
-  { phase: 'setup' } | { phase: 'battle'; red: BattleTeam; blue: BattleTeam; seed: number };
-
-/** Setup, then the arena. "New battle" returns to setup with the previous picks kept. */
+/**
+ * Battle (design.md screen `battle`): `/battle/?stage=N` (ladder) or `?stage=intro` (onboarding),
+ * one route with three phases — preview → arena → result. The query and the save are browser-only:
+ * until hydration a same-size placeholder stands in.
+ */
 export default function BattlePage() {
-  const [state, setState] = useState<State>({ phase: 'setup' });
-  const [picks, setPicks] = useState<Picks>({ red: null, blue: null });
-  /**
-   * The picks depend on the roster (localStorage) and `?red=`, neither of which exists in the prerendered HTML:
-   * until hydration a same-size placeholder stands in, so no wrong trainers flash and swap.
-   */
   const hydrated = useHydrated();
-  const headingRef = useRef<HTMLHeadingElement>(null);
-  const backFromBattle = useRef(false);
-  const battleRef = useRef<HTMLElement>(null);
-
-  // "New battle" unmounts the arena (and the control that held focus): land on the page heading,
-  // right above the setup, instead of <body>.
-  useEffect(() => {
-    if (state.phase !== 'setup' || !backFromBattle.current) return;
-    backFromBattle.current = false;
-    headingRef.current?.focus({ preventScroll: true });
-    headingRef.current?.scrollIntoView({ block: 'nearest' });
-  }, [state.phase]);
-
-  // Fight unmounts the setup (and the button that held focus): move focus to the battle region,
-  // so keyboard users continue from the arena controls instead of the top of <body>.
-  useEffect(() => {
-    if (state.phase === 'battle') battleRef.current?.focus({ preventScroll: true });
-  }, [state.phase]);
-
+  const [arenaActive, setArenaActive] = useState(false);
   return (
-    <main className="relative isolate mx-auto flex min-h-dvh max-w-5xl flex-col gap-6 px-4 py-8 sm:py-12">
-      <BattleAmbient paused={state.phase === 'battle'} />
-      <header className="flex flex-col gap-3">
-        <div className="flex items-center justify-between gap-3">
-          <Link
-            href={href('/')}
-            className="tap-target -ml-3 w-fit rounded-lg px-3 py-2 text-sm text-ink-300 transition-colors hover:bg-white/5 hover:text-white focus-visible:outline-2 focus-visible:outline-accent"
-          >
-            ← Back to Trainer Studio
-          </Link>
-          <MotionToggle />
-        </div>
-        <h1
-          ref={headingRef}
-          tabIndex={-1}
-          className="font-display text-3xl font-extrabold tracking-tight focus:outline-none sm:text-4xl"
-        >
-          Battle arena
-        </h1>
-      </header>
-
-      {state.phase === 'setup' ? (
-        hydrated ? (
-          <SetupWithQuery
-            picks={picks}
-            onPicksChange={setPicks}
-            onReady={(red, blue) =>
-              setState({ phase: 'battle', red, blue, seed: Math.floor(Math.random() * 2 ** 31) })
-            }
-          />
-        ) : (
-          <SetupPlaceholder />
-        )
-      ) : (
-        <section ref={battleRef} tabIndex={-1} aria-label="Battle" className="focus:outline-none">
-          <ErrorBoundary key={state.seed} title="The battle arena couldn’t load">
-            <Suspense
-              fallback={
-                <div className="grid aspect-[4/5] place-items-center rounded-3xl border border-white/10 bg-ink-950 min-[480px]:aspect-[4/3] md:aspect-video">
-                  <Spinner className="size-7" label="Loading the arena" />
-                </div>
-              }
-            >
-              <BattleArena
-                red={state.red}
-                blue={state.blue}
-                seed={state.seed}
-                onNewBattle={() => {
-                  backFromBattle.current = true;
-                  setState({ phase: 'setup' });
-                }}
-              />
-            </Suspense>
-          </ErrorBoundary>
-        </section>
-      )}
+    <main
+      id="content"
+      className="relative isolate mx-auto flex min-h-dvh w-full max-w-5xl flex-col gap-6 px-4 py-8 sm:py-12"
+    >
+      <BattleAmbient paused={arenaActive} />
+      {hydrated ? <BattleRouteView onArena={setArenaActive} /> : <BattlePlaceholder />}
     </main>
   );
 }
 
-type SetupProps = Omit<ComponentProps<typeof BattleSetup>, 'preferredRedId'>;
-
 /**
- * Reads `?red=<trainer id>` ("Battle with this team" on home): that team starts in Red.
- * Rendered only after hydration, so useSearchParams never runs during prerender (where it would turn the
- * whole page into a client-rendered shell) and has the new URL on client-side navigation.
+ * Reads `?stage` — rendered only after hydration, so useSearchParams never runs during prerender
+ * (no `<Suspense>`: it broke hydration in `next dev`) — validates it against the save and shows
+ * the battle or redirects (Home before onboarding is done, the ladder for a locked/invalid stage).
  */
-function SetupWithQuery(props: SetupProps) {
-  return <BattleSetup {...props} preferredRedId={useSearchParams().get('red')} />;
+function BattleRouteView({ onArena }: { onArena: (active: boolean) => void }) {
+  const raw = useSearchParams().get('stage');
+  const router = useRouter();
+  const { status } = useSaveStatus();
+  const route = useSave((s) => resolveBattleRoute(s, raw));
+  const [attempt, setAttempt] = useState(0);
+  const redirect = route?.kind === 'redirect' ? route.to : null;
+
+  useEffect(() => {
+    if (redirect) router.replace(redirect);
+  }, [redirect, router]);
+
+  if (status === 'error') return <SaveUnavailable />;
+  if (!route || route.kind === 'redirect') return <BattlePlaceholder />;
+  if (route.kind === 'intro') return <IntroBattle onArena={onArena} />;
+  return (
+    <StageBattle
+      key={`${route.stage}:${attempt}`}
+      stage={route.stage}
+      onRetry={() => setAttempt((n) => n + 1)}
+      onArena={onArena}
+    />
+  );
 }
 
-/** Same footprint as the two corners + Fight button, so hydration doesn't shift the page. */
-function SetupPlaceholder() {
+/** Same footprint as the preview (title, two lineups, actions), so nothing jumps when it loads. */
+function BattlePlaceholder() {
   return (
-    <div className="flex flex-col gap-6" role="status" aria-busy="true" aria-label="Loading teams">
-      <div className="grid gap-4 md:grid-cols-2 md:gap-6">
-        {(['border-(--color-side-red)/30', 'border-(--color-side-blue)/30'] as const).map(
-          (border) => (
-            <div
-              key={border}
-              className={`h-[496px] rounded-3xl border md:h-[331px] ${border} bg-ink-900/85`}
-            />
-          ),
-        )}
+    <>
+      <header className="flex flex-col gap-3">
+        <div aria-hidden className="h-9 w-32 rounded-lg bg-white/5" />
+        <h1 className="font-display text-3xl font-extrabold tracking-tight sm:text-4xl">Battle</h1>
+        <div aria-hidden className="h-4 w-64 max-w-full rounded bg-white/5" />
+      </header>
+      <div
+        role="status"
+        aria-busy="true"
+        aria-label="Loading the battle"
+        data-phase="loading"
+        className="grid gap-4 md:grid-cols-[1fr_auto_1fr]"
+      >
+        <div className="shimmer relative h-56 overflow-hidden rounded-3xl bg-card" />
+        <span className="hidden w-8 md:block" />
+        <div className="shimmer relative h-56 overflow-hidden rounded-3xl bg-card" />
       </div>
-      <div className="mx-auto h-12 w-full rounded-xl bg-white/5 sm:w-64" />
-    </div>
+      <div aria-hidden className="h-12 w-full rounded-xl bg-white/5 sm:w-64" />
+    </>
+  );
+}
+
+function SaveUnavailable() {
+  return (
+    <>
+      <h1 className="font-display text-3xl font-extrabold tracking-tight sm:text-4xl">Battle</h1>
+      <div role="alert" className="flex flex-col items-start gap-4 rounded-3xl p-6 glass">
+        <p>Your save couldn&apos;t be loaded, so battles can&apos;t start.</p>
+        <Link
+          href="/"
+          className="tap-target font-semibold text-primary underline underline-offset-4 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
+        >
+          Go to Home
+        </Link>
+      </div>
+    </>
   );
 }
