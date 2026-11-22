@@ -33,4 +33,5 @@ export {
   type GameEventKind,
   type GameEventReducer,
 } from './model/events';
-export { createDefaultPersistence } from './persistence';
+// Everything stream 1-save exposes from persistence (adapter, migrations, backup slot, persist state).
+export * from './persistence';
