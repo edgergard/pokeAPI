@@ -90,7 +90,8 @@ export const economy = {
     /** The capsule a replay streak or the trainer capsuleChance talent gives. */
     bonusCapsuleReward: { capsules: { basic: 1 } } as { capsules: { basic: number } },
     /** Rival level at stage s: start + perStage × (s − 1). */
-    rivalLevel: { start: 3, perStage: 2 },
+    // Stage 1 rival at Lv 1: a fresh Lv 1 Pokémon from the first capsule must have a fair first fight.
+    rivalLevel: { start: 1, perStage: 2 },
     ladderStages: 25,
     /** Rival team size by ladder stage: the last entry whose fromStage <= stage wins (sorted asc). */
     rivalTeamSize: [
@@ -113,6 +114,8 @@ export const economy = {
     loanerLevel: 5,
     rivalLevel: 3,
     introReward: { capsules: { basic: 1 } },
+    /** Trainer XP for the scripted intro win (design.md first-visit step 4: the XP bar fills). */
+    introTrainerXp: 120,
   },
 
   quests: {

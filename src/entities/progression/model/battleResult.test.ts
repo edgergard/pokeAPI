@@ -157,7 +157,7 @@ describe('applyBattleResult — loss', () => {
 });
 
 describe('applyBattleResult — intro', () => {
-  it('grants the intro reward only', () => {
+  it('grants the intro reward and the intro trainer XP only', () => {
     const save = makeSave({ owned: [] });
     const fresh = { ...save, onboarding: { ...save.onboarding, step: 'fought' as const } };
     const { save: next, summary } = applyBattleResult(fresh, {
@@ -169,7 +169,7 @@ describe('applyBattleResult — intro', () => {
     });
     expect(next.capsules).toEqual({ basic: 1, great: 0 });
     expect(next.dust).toBe(0);
-    expect(next.trainer).toEqual(fresh.trainer);
+    expect(next.trainer).toEqual({ ...fresh.trainer, xp: economy.onboarding.introTrainerXp });
     expect(next.collection).toBe(fresh.collection);
     expect(next.ladder).toEqual(fresh.ladder);
     expect(next.onboarding).toBe(fresh.onboarding);

@@ -74,18 +74,18 @@ No keys are needed: streams and CI run with no `.env`.
 
 ### Wave 2
 
-| Stream       | Branch              | Owns (only these paths)                                                                                                                                                                                 | Port | Provider/profile · mode       | Agent ID | Workspace ID         | Status  | PR                                                         |
-| ------------ | ------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---- | ----------------------------- | -------- | -------------------- | ------- | ---------------------------------------------------------- |
-| 2-collection | stream/2-collection | `src/views/collection/**`, `src/views/creature/**`, `src/views/trainer/**`, `src/widgets/talent-tree/**`, `src/features/pokemon-search/**`                                                              | 3201 | claude/claude-opus-5-5 · auto | 77686b22 | wks_6b48f5dcfc40670d | merged  | [#12](https://github.com/edgergard/trainer-studio/pull/12) |
-| 2-play       | stream/2-play       | `src/views/battle/**`, `src/views/ladder/**`, `src/entities/ladder/**`, `src/widgets/team-dialog/**`, `src/widgets/level-up/**`, `src/features/battle-setup/**` (delete)                                | 3202 | claude/claude-opus-5-5 · auto | 66df01da | wks_8a3b437e09b1144f | running |                                                            |
-| 2-home       | stream/2-home       | `src/views/home/**`, `src/widgets/app-nav/**`, `src/widgets/quest-list/**`, `src/widgets/team-showcase/**`, `src/features/team-builder/**` (delete), `src/entities/trainer/**` (v1 roster code retired) | 3203 | claude/claude-opus-5-5 · auto | 8b1fceab | wks_686a3715d3caf059 | merged  | [#11](https://github.com/edgergard/trainer-studio/pull/11) |
+| Stream       | Branch              | Owns (only these paths)                                                                                                                                                                                 | Port | Provider/profile · mode       | Agent ID | Workspace ID         | Status | PR                                                         |
+| ------------ | ------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---- | ----------------------------- | -------- | -------------------- | ------ | ---------------------------------------------------------- |
+| 2-collection | stream/2-collection | `src/views/collection/**`, `src/views/creature/**`, `src/views/trainer/**`, `src/widgets/talent-tree/**`, `src/features/pokemon-search/**`                                                              | 3201 | claude/claude-opus-5-5 · auto | 77686b22 | wks_6b48f5dcfc40670d | merged | [#12](https://github.com/edgergard/trainer-studio/pull/12) |
+| 2-play       | stream/2-play       | `src/views/battle/**`, `src/views/ladder/**`, `src/entities/ladder/**`, `src/widgets/team-dialog/**`, `src/widgets/level-up/**`, `src/features/battle-setup/**` (delete)                                | 3202 | claude/claude-opus-5-5 · auto | 66df01da | wks_8a3b437e09b1144f | merged | [#13](https://github.com/edgergard/trainer-studio/pull/13) |
+| 2-home       | stream/2-home       | `src/views/home/**`, `src/widgets/app-nav/**`, `src/widgets/quest-list/**`, `src/widgets/team-showcase/**`, `src/features/team-builder/**` (delete), `src/entities/trainer/**` (v1 roster code retired) | 3203 | claude/claude-opus-5-5 · auto | 8b1fceab | wks_686a3715d3caf059 | merged | [#11](https://github.com/edgergard/trainer-studio/pull/11) |
 
 Status values: pending · running · permission · escalation · done (report in) · in review · fixing · merged · failed
 
 ## Metrics
 
 Gate A approved: 2026-11-22 · Gate A rounds: 1
-Retries: 0 · Failed streams: 0 · Escalations: 1 · Red dev fixes: 1 · Review findings fixed: 16 · User corrections: 0
+Retries: 0 · Failed streams: 0 · Escalations: 1 · Red dev fixes: 1 · Review findings fixed: 18 · User corrections: 0
 
 ## Log
 
@@ -106,3 +106,6 @@ Retries: 0 · Failed streams: 0 · Escalations: 1 · Red dev fixes: 1 · Review 
 - 2026-11-23 2-collection merged (PR #12, b122ff1); review: fixed 4 (clear-search focus loss, silent filter result count, misleading filter-mode status, owned count mismatch)
 - 2026-11-23 session restarted: Paseo daemon had stopped (L-023); 2-play agent died mid-fix — orchestrator finished its two review fixes in the idle worktree (484709b)
 - 2026-11-23 red dev fix: cross-tab test timed out under parallel load → waitFor timeout 5 s
+- 2026-11-23 2-play merged (PR #13, 0043b7f); review: fixed 2 (ladder scroll to current stage, mobile result focus scroll)
+- 2026-11-23 integration on dev: stage-1 rival Lv 1 (economy.battle.rivalLevel.start), intro trainer XP (economy.onboarding.introTrainerXp), shared Dialog close button tap-target + focus ring, battle page metadata
+- 2026-11-23 wave 2 complete; open: 5 TODO(2-play) links in home/app-nav (next-stage helper, rival preview, team dialog, level-up on quest claim) and leftover src/entities/trainer

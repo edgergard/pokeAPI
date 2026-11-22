@@ -134,8 +134,9 @@ export function applyBattleResult(save: Save, input: BattleInput): BattleResult 
   const stageEvents: GameEvent[] = [];
 
   if (stage === 'intro') {
-    // The scripted intro always pays out its reward; the loaner isn't owned, so no XP.
+    // The scripted intro always pays out its reward and trainer XP; the loaner isn't owned, so no Pokémon XP.
     grant(economy.onboarding.introReward);
+    trainerXp = economy.onboarding.introTrainerXp;
   } else {
     const bonuses = trainerBonuses(save.trainer.talents);
     trainerXp = stageXp(economy.battle.trainerXp, stage, won);
