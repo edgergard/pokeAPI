@@ -51,25 +51,25 @@ export function HomePage() {
   const hub = view === 'hub';
 
   return (
-    <>
+    // Full-width wrapper so the onboarding glow spans the viewport, clipped sideways.
+    <div className="relative isolate overflow-x-clip">
+      {!hub && (
+        <div
+          aria-hidden
+          className="pointer-events-none absolute inset-x-0 top-0 -z-10 h-[44rem] aurora"
+        >
+          {AURORA_BLOBS.map((blob) => (
+            <span key={blob} className="absolute inset-0">
+              <span className={`aurora-blob ${blob}`} />
+            </span>
+          ))}
+        </div>
+      )}
       <main
         id="content"
         data-view={view}
-        className="relative isolate mx-auto flex min-h-[calc(100dvh-8rem)] w-full max-w-6xl flex-col px-4 py-8 sm:px-6 lg:px-8 lg:py-10"
+        className="relative mx-auto flex min-h-[calc(100dvh-8rem)] w-full max-w-6xl flex-col px-4 py-8 sm:px-6 lg:px-8 lg:py-10"
       >
-        {!hub && (
-          <div
-            aria-hidden
-            className="pointer-events-none absolute inset-x-0 top-0 -z-10 h-[40rem] aurora"
-          >
-            {AURORA_BLOBS.map((blob) => (
-              <span key={blob} className="absolute inset-0">
-                <span className={`aurora-blob ${blob}`} />
-              </span>
-            ))}
-          </div>
-        )}
-
         {hub ? (
           <Hub />
         ) : view === 'error' ? (
@@ -88,6 +88,6 @@ export function HomePage() {
       <footer className="px-4 pt-4 pb-24 text-center text-xs text-muted-foreground lg:pb-8">
         {FOOTER_TEXT}
       </footer>
-    </>
+    </div>
   );
 }

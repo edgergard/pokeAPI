@@ -154,7 +154,8 @@ function CreatureCard({
         {tag ? (
           <span
             className={cn(
-              'font-mono text-xs font-bold tracking-[0.12em] uppercase',
+              'min-w-0 truncate font-mono text-xs font-bold uppercase',
+              large ? 'tracking-[0.12em]' : 'tracking-wide',
               TAG_CLASS[tag.tone],
             )}
           >
@@ -164,7 +165,8 @@ function CreatureCard({
           rarity && (
             <span
               className={cn(
-                'font-mono text-xs font-bold tracking-[0.12em] uppercase',
+                'min-w-0 truncate font-mono text-xs font-bold uppercase',
+                large ? 'tracking-[0.12em]' : 'tracking-wide',
                 RARITY_TEXT_CLASS[rarity],
               )}
             >
@@ -172,7 +174,9 @@ function CreatureCard({
             </span>
           )
         )}
-        <span className="font-mono text-xs font-bold text-foreground">Lv {level}</span>
+        <span className="shrink-0 font-mono text-xs font-bold whitespace-nowrap text-foreground">
+          Lv {level}
+        </span>
       </div>
       <div
         aria-hidden

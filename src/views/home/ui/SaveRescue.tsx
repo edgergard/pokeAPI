@@ -129,13 +129,13 @@ export function SaveRescue({ error, announce }: { error: string | null; announce
           >
             Import file
           </Button>
+          {/* Opened by "Import file"; hidden from the page and the accessibility tree. */}
           <input
             ref={fileRef}
             type="file"
             accept=".txt,text/plain"
             onChange={importFile}
-            className="sr-only"
-            tabIndex={-1}
+            hidden
             aria-label="Save file to import"
           />
           <Button variant="ghost" onClick={() => setConfirming(true)} className="cursor-pointer">
