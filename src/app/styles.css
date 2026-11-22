@@ -26,6 +26,64 @@
   --color-side-blue: #5eb0ff; /* Blue corner: cool azure */
 
   --shadow-glow: inset 0 0 0 1px rgb(255 255 255 / 0.15), 0 10px 30px -10px rgb(255 210 63 / 0.6);
+
+  /* Rarity (design.md Tokens). Always paired with a text label, never colour alone. */
+  --color-rarity-common: #aab1c2;
+  --color-rarity-uncommon: #5ee39a;
+  --color-rarity-rare: #5eb0ff;
+  --color-rarity-epic: #c48cff;
+  --color-rarity-legendary: #ffb347;
+}
+
+/*
+ * Semantic tokens (shadcn names) as an alias layer over the ink/accent palette — dark only (design.md Theme wiring).
+ * New code uses these (`bg-card`, `text-muted-foreground`, `bg-primary`, `ring-ring`); ink-* classes keep working.
+ * Note: `--color-accent` stays the brand yellow from the block above; shadcn's neutral hover is `--accent-surface`.
+ */
+:root {
+  --background: var(--color-ink-950);
+  --foreground: var(--color-ink-100);
+  --card: var(--color-ink-850);
+  --card-foreground: var(--color-ink-100);
+  --popover: var(--color-ink-850);
+  --popover-foreground: var(--color-ink-100);
+  --primary: #ffd23f;
+  --primary-hover: #ffe27a;
+  --primary-foreground: var(--color-ink-950);
+  --secondary: var(--color-ink-800);
+  --secondary-foreground: var(--color-ink-100);
+  --muted: var(--color-ink-900);
+  --muted-foreground: var(--color-ink-500);
+  --accent-surface: var(--color-ink-800);
+  --accent-surface-foreground: var(--color-ink-100);
+  --destructive: #ff6b6b;
+  --border: var(--color-ink-600);
+  --input: var(--color-ink-500);
+  --ring: #ffd23f;
+  --radius: 1rem;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-hover: var(--primary-hover);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent-surface: var(--accent-surface);
+  --color-accent-surface-foreground: var(--accent-surface-foreground);
+  --color-destructive: var(--destructive);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  /* Radii: Tailwind's default scale is kept on purpose (existing UI uses rounded-xl/2xl/3xl); --radius = rounded-2xl. */
 }
 
 @layer base {

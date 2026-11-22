@@ -1,0 +1,114 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Trainer Studio — battle result</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&amp;family=Inter:wght@400;500;600&amp;family=JetBrains+Mono:wght@500&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0;background:#07080b}
+a{color:#ffd23f}a:hover{color:#ffe27a}
+button:focus-visible,a:focus-visible{outline:2px solid #ffd23f;outline-offset:3px}
+</style>
+</helmet>
+<div style="min-height: 820px; box-sizing: border-box; position: relative; overflow: hidden; background: radial-gradient(1200px 600px at 70% -10%, rgba(94,176,255,0.16), transparent 60%), radial-gradient(900px 500px at 10% 110%, rgba(255,210,63,0.10), transparent 60%), #07080b; color: #e7e9ef; font-family: Inter, system-ui, sans-serif; display: flex; flex-direction: column">
+
+  <div aria-hidden="true" inert="" style="display: flex; flex-direction: column; flex: 1; opacity: 0.35; filter: saturate(0.7)">
+    <header style="display: flex; align-items: center; justify-content: space-between; padding: 20px 40px; gap: 16px">
+      <div style="display: flex; align-items: center; gap: 10px">
+        <svg width="28" height="28" viewBox="0 0 28 28" aria-hidden="true"><rect x="3" y="3" width="22" height="22" rx="7" fill="none" stroke="#ffd23f" stroke-width="2.5"></rect><path d="M3 14h22" stroke="#ffd23f" stroke-width="2.5"></path><circle cx="14" cy="14" r="3.5" fill="#07080b" stroke="#ffd23f" stroke-width="2.5"></circle></svg>
+        <span style="font-family: 'Bricolage Grotesque', Inter, sans-serif; font-weight: 800; font-size: 20px; letter-spacing: -0.01em">Trainer Studio</span>
+      </div>
+      <span style="font: 500 12px 'JetBrains Mono', monospace; letter-spacing: 0.14em; text-transform: uppercase; color: #aab1c2">Intro battle · Rival Rattata</span>
+      <span style="min-height: 44px; display: inline-flex; align-items: center; padding: 0 16px; border-radius: 999px; border: 1px solid #3a4152; background: #0f1117; color: #cdd2de; font: 500 13px Inter, sans-serif">Motion · Auto</span>
+    </header>
+
+    <div style="flex: 1; display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 160px; padding: 24px 40px">
+      <div style="width: 220px; border-radius: 20px; padding: 14px; background: linear-gradient(160deg, #151821, #0f1117); border: 2px solid #5ee39a; display: flex; flex-direction: column; gap: 10px; transform: translateY(-8px)">
+        <div style="display: flex; justify-content: space-between"><span style="font: 500 12px 'JetBrains Mono', monospace; color: #5ee39a">Loaner</span><span style="font: 500 12px 'JetBrains Mono', monospace; color: #cdd2de">Lv 5</span></div>
+        <div style="height: 180px; border-radius: 14px; background: radial-gradient(circle at 50% 40%, rgba(247,208,44,0.45), rgba(247,208,44,0.05) 70%), #1b1f2a; display: flex; align-items: center; justify-content: center"><div style="width: 100px; height: 100px; border-radius: 50%; background: #f7d02c"></div></div>
+        <div style="font-family: 'Bricolage Grotesque', Inter, sans-serif; font-size: 22px; font-weight: 800">Pikachu</div>
+        <div style="height: 8px; border-radius: 999px; background: #0f1117"><div style="width: 72%; height: 100%; border-radius: 999px; background: #5ee39a"></div></div>
+      </div>
+      <div style="position: relative; width: 220px; height: 300px">
+        <div style="position: absolute; left: 0; top: 10px; width: 100px; height: 140px; border-radius: 16px 4px 4px 4px; background: linear-gradient(160deg, #151821, #0f1117); border: 2px solid #ff7a66; transform: rotate(-14deg) translate(-18px, -6px)"></div>
+        <div style="position: absolute; right: 0; top: 0; width: 110px; height: 130px; border-radius: 4px 16px 4px 4px; background: linear-gradient(160deg, #151821, #0f1117); border: 2px solid #ff7a66; transform: rotate(18deg) translate(20px, -10px)"></div>
+        <div style="position: absolute; left: 10px; bottom: 0; width: 120px; height: 130px; border-radius: 4px 4px 4px 16px; background: radial-gradient(circle at 60% 30%, rgba(168,167,122,0.35), transparent 70%), #151821; border: 2px solid #ff7a66; transform: rotate(9deg) translate(-24px, 18px)"></div>
+        <div style="position: absolute; right: 6px; bottom: 16px; width: 90px; height: 110px; border-radius: 4px 4px 16px 4px; background: #151821; border: 2px solid #ff7a66; transform: rotate(-22deg) translate(26px, 14px)"></div>
+      </div>
+    </div>
+
+    <div style="display: flex; justify-content: center; gap: 12px; padding: 0 40px 28px">
+      <span style="min-height: 44px; min-width: 44px; display: inline-flex; align-items: center; justify-content: center; border-radius: 12px; background: #1b1f2a; font: 500 13px 'JetBrains Mono', monospace">×2</span>
+      <span style="min-height: 44px; display: inline-flex; align-items: center; padding: 0 16px; border-radius: 12px; background: #1b1f2a; font: 500 13px Inter, sans-serif">Battle log</span>
+    </div>
+  </div>
+
+  <div style="position: absolute; inset: 0; background: rgba(7,8,11,0.55); display: flex; align-items: center; justify-content: center; padding: 24px">
+    <main id="content" style="width: 100%; max-width: 520px">
+      <section role="dialog" aria-modal="true" aria-labelledby="result-title" style="box-sizing: border-box; width: 100%; border-radius: 24px; padding: 32px; background: rgba(21,24,33,0.86); backdrop-filter: blur(14px); border: 1px solid rgba(255,255,255,0.12); box-shadow: 0 40px 100px -30px rgba(255,210,63,0.35); display: flex; flex-direction: column; gap: 22px">
+        <div style="display: flex; flex-direction: column; gap: 6px">
+          <span style="font-family: 'JetBrains Mono', monospace; font-size: 12px; letter-spacing: 0.18em; text-transform: uppercase; color: #ffd23f">Intro battle · Cleared</span>
+          <h1 id="result-title" style="margin: 0; font-family: 'Bricolage Grotesque', Inter, sans-serif; font-weight: 800; font-size: 56px; line-height: 1; letter-spacing: -0.03em">Victory</h1>
+          <p aria-live="polite" style="margin: 0; font-size: 15px; color: #aab1c2">Victory. 1 capsule earned.</p>
+        </div>
+
+        <div style="display: flex; flex-direction: column; gap: 8px">
+          <div style="display: flex; justify-content: space-between; align-items: baseline; gap: 12px">
+            <span style="font: 600 14px Inter, sans-serif">Trainer Rowan · Lv 1</span>
+            <span style="font: 500 13px 'JetBrains Mono', monospace; color: #cdd2de">120 / 200 XP</span>
+          </div>
+          <div role="progressbar" aria-label="Trainer experience" aria-valuemin="0" aria-valuemax="200" aria-valuenow="120" aria-valuetext="120 of 200 XP" style="height: 12px; border-radius: 999px; background: #0f1117; overflow: hidden">
+            <div style="width: 60%; height: 100%; border-radius: 999px; background: #ffd23f; box-shadow: 0 0 16px rgba(255,210,63,0.6)"></div>
+          </div>
+          <span style="font-size: 13px; color: #818a9e">+120 XP · Next: Lv 2 · daily quests</span>
+        </div>
+
+        <div style="display: flex; flex-wrap: wrap; gap: 10px">
+          <div style="display: flex; align-items: center; gap: 10px; padding: 10px 16px 10px 10px; border-radius: 16px; background: #0f1117; border: 1px solid rgba(255,210,63,0.45)">
+            <svg width="32" height="32" viewBox="0 0 28 28" aria-hidden="true"><rect x="3" y="3" width="22" height="22" rx="7" fill="none" stroke="#ffd23f" stroke-width="2"></rect><path d="M3 14h22" stroke="#ffd23f" stroke-width="2"></path><circle cx="14" cy="14" r="3.5" fill="#151821" stroke="#ffd23f" stroke-width="2"></circle></svg>
+            <span style="font: 600 16px Inter, sans-serif; color: #ffd23f">+1 Capsule</span>
+          </div>
+          <div style="display: flex; align-items: center; padding: 10px 16px; border-radius: 16px; background: #0f1117; border: 1px solid #3a4152; font: 500 14px Inter, sans-serif; color: #cdd2de">First-clear bonus</div>
+        </div>
+
+        <div style="display: flex; align-items: center; gap: 12px; padding: 12px; border-radius: 16px; background: #0f1117">
+          <div aria-hidden="true" style="flex: 0 0 44px; height: 44px; border-radius: 12px; background: radial-gradient(circle, rgba(247,208,44,0.45), rgba(247,208,44,0.05) 70%), #1b1f2a; display: flex; align-items: center; justify-content: center"><div style="width: 24px; height: 24px; border-radius: 50%; background: #f7d02c"></div></div>
+          <div style="flex: 1; display: flex; flex-direction: column; gap: 6px; min-width: 0">
+            <div style="display: flex; justify-content: space-between; gap: 8px"><span style="font: 600 14px Inter, sans-serif">Pikachu <span style="color: #818a9e; font-weight: 500">· Loaner · Lv 5</span></span><span style="font: 500 13px 'JetBrains Mono', monospace; color: #5eb0ff">+45 XP</span></div>
+            <div role="progressbar" aria-label="Pikachu experience" aria-valuemin="0" aria-valuemax="80" aria-valuenow="45" aria-valuetext="45 of 80 XP" style="height: 6px; border-radius: 999px; background: #1b1f2a; overflow: hidden"><div style="width: 56%; height: 100%; background: #5eb0ff"></div></div>
+            <span style="font-size: 12px; color: #818a9e">45 / 80 XP to Lv 6</span>
+          </div>
+        </div>
+
+        <div style="display: flex; flex-wrap: wrap; gap: 12px; align-items: center">
+          <a href="a-capsule-reveal.dc.html" style="flex: 1 1 220px; min-height: 56px; display: inline-flex; align-items: center; justify-content: center; padding: 0 28px; border-radius: 16px; background: #ffd23f; color: #07080b; font: 600 17px Inter, sans-serif; text-decoration: none; box-shadow: inset 0 0 0 1px rgba(255,255,255,0.15), 0 10px 30px -10px rgba(255,210,63,0.6)">Open capsule</a>
+          <button type="button" onClick="{{ replay }}" style="min-height: 56px; display: inline-flex; align-items: center; gap: 8px; padding: 0 22px; border-radius: 16px; border: 1px solid #818a9e; background: #1b1f2a; color: #e7e9ef; font: 600 15px Inter, sans-serif; cursor: pointer">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 12a9 9 0 1 0 3-6.7"></path><path d="M3 4v5h5"></path></svg>
+            Replay
+          </button>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <footer style="position: absolute; left: 0; right: 0; bottom: 0; padding: 12px 40px 16px; font-size: 12px; color: #818a9e; text-align: center">Unofficial fan project, not affiliated with Nintendo, Game Freak or The Pokémon Company · Data: PokéAPI</footer>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1280,"height":820}}'>
+class Component extends DCLogic {
+  constructor(props) { super(props); this.state = { replays: 0 }; }
+  renderVals() {
+    return {
+      replay: () => this.setState({ replays: this.state.replays + 1 })
+    };
+  }
+}
+</script>
+</body>
+</html>

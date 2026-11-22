@@ -1,0 +1,232 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Trainer Studio — Charmander</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&amp;family=Inter:wght@400;500;600&amp;family=JetBrains+Mono:wght@500&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0;background:#07080b}
+a{color:#ffd23f}a:hover{color:#ffe27a}
+button:focus-visible,a:focus-visible{outline:2px solid #ffd23f;outline-offset:3px}
+</style>
+</helmet>
+<div style="min-height: 1000px; box-sizing: border-box; background: radial-gradient(1000px 520px at 20% -10%, rgba(238,129,48,0.14), transparent 60%), radial-gradient(900px 500px at 90% 110%, rgba(94,176,255,0.10), transparent 60%), #07080b; color: #e7e9ef; font-family: Inter, system-ui, sans-serif; display: flex; flex-direction: column">
+
+  <a href="#content" style="position: absolute; left: -9999px; top: 8px">Skip to content</a>
+
+  <header style="position: sticky; top: 0; z-index: 5; background: rgba(15,17,23,0.72); backdrop-filter: blur(14px); border-bottom: 1px solid rgba(255,255,255,0.08)">
+    <nav aria-label="Main" style="max-width: 1240px; margin: 0 auto; display: flex; flex-wrap: wrap; align-items: center; gap: 12px 20px; padding: 10px 24px; box-sizing: border-box">
+      <a href="Main.dc.html" aria-label="Trainer Studio, home" style="display: flex; align-items: center; gap: 10px; min-height: 44px; color: #e7e9ef; text-decoration: none">
+        <svg width="28" height="28" viewBox="0 0 28 28" aria-hidden="true"><rect x="3" y="3" width="22" height="22" rx="7" fill="none" stroke="#ffd23f" stroke-width="2.5"></rect><path d="M3 14h22" stroke="#ffd23f" stroke-width="2.5"></path><circle cx="14" cy="14" r="3.5" fill="#07080b" stroke="#ffd23f" stroke-width="2.5"></circle></svg>
+        <span style="font-family: 'Bricolage Grotesque', Inter, sans-serif; font-weight: 800; font-size: 19px; letter-spacing: -0.01em">Trainer Studio</span>
+      </a>
+      <ul style="list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: 4px">
+        <li><a href="a-home-hub.dc.html" style="display: inline-flex; align-items: center; min-height: 44px; padding: 0 12px; border-radius: 12px; color: #cdd2de; text-decoration: none; font: 500 14px Inter, sans-serif">Home</a></li>
+        <li><a href="#ladder" style="display: inline-flex; align-items: center; min-height: 44px; padding: 0 12px; border-radius: 12px; color: #cdd2de; text-decoration: none; font: 500 14px Inter, sans-serif">Ladder</a></li>
+        <li><a href="#collection" aria-current="page" style="display: inline-flex; align-items: center; min-height: 44px; padding: 0 12px; border-radius: 12px; background: #1b1f2a; color: #e7e9ef; text-decoration: none; font: 600 14px Inter, sans-serif; box-shadow: inset 0 -2px 0 #ffd23f">Collection</a></li>
+        <li><a href="#capsules" style="display: inline-flex; align-items: center; gap: 6px; min-height: 44px; padding: 0 12px; border-radius: 12px; color: #cdd2de; text-decoration: none; font: 500 14px Inter, sans-serif">Capsules <span aria-label="2 unopened" style="min-width: 20px; height: 20px; padding: 0 6px; box-sizing: border-box; border-radius: 999px; background: #ffd23f; color: #07080b; font: 600 12px Inter, sans-serif; display: inline-flex; align-items: center; justify-content: center">2</span></a></li>
+        <li><a href="#trainer" style="display: inline-flex; align-items: center; gap: 6px; min-height: 44px; padding: 0 12px; border-radius: 12px; color: #cdd2de; text-decoration: none; font: 500 14px Inter, sans-serif">Trainer <span role="img" aria-label="unspent talent points" style="width: 8px; height: 8px; border-radius: 50%; background: #5ee39a"></span></a></li>
+      </ul>
+      <div style="flex: 1 1 0; min-width: 0"></div>
+      <div style="display: flex; align-items: center; gap: 10px">
+        <span style="padding: 4px 10px; border-radius: 999px; border: 1px solid #ffd23f; color: #ffd23f; font: 500 12px 'JetBrains Mono', monospace">Lv 3</span>
+        <div role="progressbar" aria-label="Trainer XP" aria-valuenow="180" aria-valuemin="0" aria-valuemax="400" style="display: flex; flex-direction: column; gap: 3px">
+          <div style="width: 84px; height: 6px; border-radius: 999px; background: #0f1117; overflow: hidden"><div style="width: 45%; height: 100%; background: #ffd23f"></div></div>
+          <span style="font: 500 12px 'JetBrains Mono', monospace; color: #818a9e">180 / 400 XP</span>
+        </div>
+      </div>
+      <a href="a-battle.dc.html" style="display: inline-flex; align-items: center; min-height: 44px; padding: 0 18px; border-radius: 16px; background: #ffd23f; color: #07080b; font: 600 14px Inter, sans-serif; text-decoration: none; box-shadow: inset 0 0 0 1px rgba(255,255,255,0.15), 0 8px 24px -10px rgba(255,210,63,0.6)">Fight · Stage 2</a>
+      <button type="button" aria-label="Motion: Auto" style="min-height: 44px; padding: 0 14px; border-radius: 999px; border: 1px solid #3a4152; background: #0f1117; color: #cdd2de; font: 500 13px Inter, sans-serif; cursor: pointer">Motion · Auto</button>
+      <a href="#settings" aria-label="Settings" style="width: 44px; height: 44px; display: inline-flex; align-items: center; justify-content: center; border-radius: 12px; color: #cdd2de">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"></path></svg>
+      </a>
+    </nav>
+  </header>
+
+  <main id="content" style="flex: 1; width: 100%; max-width: 1240px; margin: 0 auto; padding: 20px 24px 12px; box-sizing: border-box; display: flex; flex-direction: column; gap: 16px">
+
+    <div style="display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px">
+      <div style="display: flex; flex-direction: column; gap: 4px">
+        <a href="#collection" style="display: inline-flex; align-items: center; gap: 6px; font: 500 13px Inter, sans-serif; text-decoration: none; min-height: 24px">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 18l-6-6 6-6"></path></svg>Collection 4 / 1025</a>
+        <div style="display: flex; align-items: baseline; gap: 12px; flex-wrap: wrap">
+          <h1 style="margin: 0; font-family: 'Bricolage Grotesque', Inter, sans-serif; font-weight: 800; font-size: 40px; line-height: 1.05; letter-spacing: -0.02em">Charmander</h1>
+          <span style="font: 500 14px 'JetBrains Mono', monospace; color: #818a9e">#004</span>
+        </div>
+      </div>
+      <div style="display: flex; flex-wrap: wrap; gap: 8px; align-items: center">
+        <a href="a-creature.dc.html" aria-label="Previous: Bulbasaur, number 1" style="display: inline-flex; align-items: center; gap: 6px; min-height: 44px; padding: 0 14px; border-radius: 16px; background: #1b1f2a; border: 1px solid #3a4152; color: #e7e9ef; text-decoration: none; font: 500 14px Inter, sans-serif">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 18l-6-6 6-6"></path></svg>#001 Bulbasaur</a>
+        <a href="a-creature.dc.html" aria-label="Next: Pikachu, number 25" style="display: inline-flex; align-items: center; gap: 6px; min-height: 44px; padding: 0 14px; border-radius: 16px; background: #1b1f2a; border: 1px solid #3a4152; color: #e7e9ef; text-decoration: none; font: 500 14px Inter, sans-serif">#025 Pikachu<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 18l6-6-6-6"></path></svg></a>
+        <button type="button" aria-disabled="true" style="display: inline-flex; align-items: center; gap: 8px; min-height: 44px; padding: 0 18px; border-radius: 999px; border: 1px solid #5ee39a; background: rgba(94,227,154,0.10); color: #5ee39a; font: 600 14px Inter, sans-serif; cursor: default">In team
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6L9 17l-5-5"></path></svg></button>
+      </div>
+    </div>
+
+    <div style="display: flex; flex-wrap: wrap; gap: 24px; align-items: flex-start">
+
+      <!-- Left: holo card + moves -->
+      <div style="flex: 0 1 340px; min-width: 280px; display: flex; flex-direction: column; gap: 16px">
+        <div style="perspective: 1000px">
+          <article aria-label="Charmander, Fire, Rare, level 6, 2 of 5 stars" style="position: relative; overflow: hidden; border-radius: 24px; padding: 16px; background: linear-gradient(160deg, #151821, #0f1117); border: 2px solid #5eb0ff; box-shadow: 0 30px 70px -28px rgba(94,176,255,0.55), 0 0 0 4px rgba(94,176,255,0.12); transform: rotateY(-9deg) rotateX(5deg); display: flex; flex-direction: column; gap: 12px">
+            <div aria-hidden="true" style="position: absolute; inset: 0; background: linear-gradient(115deg, transparent 30%, rgba(255,255,255,0.10) 42%, rgba(196,140,255,0.10) 50%, rgba(94,176,255,0.10) 58%, transparent 70%); pointer-events: none"></div>
+            <div style="display: flex; justify-content: space-between; align-items: center">
+              <span style="font: 500 12px 'JetBrains Mono', monospace; letter-spacing: 0.12em; text-transform: uppercase; color: #5eb0ff">Rare</span>
+              <span style="font: 500 12px 'JetBrains Mono', monospace; color: #cdd2de">Lv 6</span>
+            </div>
+            <div aria-hidden="true" style="height: 270px; border-radius: 16px; background: radial-gradient(circle at 50% 42%, rgba(238,129,48,0.50), rgba(238,129,48,0.05) 70%), #1b1f2a; display: flex; align-items: center; justify-content: center">
+              <div style="width: 140px; height: 140px; border-radius: 50%; background: #ee8130; opacity: 0.92; box-shadow: 0 0 60px rgba(238,129,48,0.6)"></div>
+            </div>
+            <div style="display: flex; justify-content: space-between; align-items: center; gap: 8px">
+              <h2 style="margin: 0; font-family: 'Bricolage Grotesque', Inter, sans-serif; font-size: 26px; font-weight: 800">Charmander</h2>
+              <span role="img" aria-label="2 of 5 stars" style="display: inline-flex; gap: 2px">
+                <svg width="16" height="16" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2l3 6.6 7 .8-5.2 4.8 1.4 7L12 17.8 5.8 21.2l1.4-7L2 9.4l7-.8z" fill="#ffd23f"></path></svg>
+                <svg width="16" height="16" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2l3 6.6 7 .8-5.2 4.8 1.4 7L12 17.8 5.8 21.2l1.4-7L2 9.4l7-.8z" fill="#ffd23f"></path></svg>
+                <svg width="16" height="16" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2l3 6.6 7 .8-5.2 4.8 1.4 7L12 17.8 5.8 21.2l1.4-7L2 9.4l7-.8z" fill="none" stroke="#818a9e" stroke-width="1.6"></path></svg>
+                <svg width="16" height="16" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2l3 6.6 7 .8-5.2 4.8 1.4 7L12 17.8 5.8 21.2l1.4-7L2 9.4l7-.8z" fill="none" stroke="#818a9e" stroke-width="1.6"></path></svg>
+                <svg width="16" height="16" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2l3 6.6 7 .8-5.2 4.8 1.4 7L12 17.8 5.8 21.2l1.4-7L2 9.4l7-.8z" fill="none" stroke="#818a9e" stroke-width="1.6"></path></svg>
+              </span>
+            </div>
+            <div style="display: flex; gap: 6px"><span style="padding: 4px 10px; border-radius: 999px; background: #ee8130; color: #07080b; font: 600 12px Inter, sans-serif">Fire</span></div>
+          </article>
+        </div>
+
+        <section aria-labelledby="moves-h" style="border-radius: 16px; padding: 14px 16px; background: rgba(21,24,33,0.72); border: 1px solid rgba(255,255,255,0.08); display: flex; flex-direction: column; gap: 10px">
+          <h2 id="moves-h" style="margin: 0; font: 500 12px 'JetBrains Mono', monospace; letter-spacing: 0.14em; text-transform: uppercase; color: #818a9e">Moves</h2>
+          <ul style="list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: 6px">
+            <li style="padding: 6px 10px; border-radius: 10px; background: #1b1f2a; font: 500 13px Inter, sans-serif">Ember <span style="color: #818a9e">· 40</span></li>
+            <li style="padding: 6px 10px; border-radius: 10px; background: #1b1f2a; font: 500 13px Inter, sans-serif">Scratch <span style="color: #818a9e">· 40</span></li>
+            <li style="padding: 6px 10px; border-radius: 10px; background: #1b1f2a; font: 500 13px Inter, sans-serif">Growl <span style="color: #818a9e">· status</span></li>
+          </ul>
+        </section>
+      </div>
+
+      <!-- Right: progress, stats, talents -->
+      <div style="flex: 1 1 520px; min-width: 0; display: flex; flex-direction: column; gap: 16px">
+
+        <section aria-label="Level and stars" style="border-radius: 16px; padding: 16px 18px; background: rgba(21,24,33,0.72); border: 1px solid rgba(255,255,255,0.08); display: flex; flex-wrap: wrap; gap: 16px 32px; align-items: center">
+          <div style="flex: 1 1 260px; display: flex; flex-direction: column; gap: 8px">
+            <div style="display: flex; justify-content: space-between; align-items: baseline">
+              <span style="font-family: 'Bricolage Grotesque', Inter, sans-serif; font-weight: 800; font-size: 22px">Lv 6 <span style="color: #818a9e; font-weight: 600">/ 20</span></span>
+              <span style="font: 500 12px 'JetBrains Mono', monospace; color: #818a9e">96 / 150 XP</span>
+            </div>
+            <div role="progressbar" aria-label="Charmander XP to level 7" aria-valuenow="96" aria-valuemin="0" aria-valuemax="150" style="height: 8px; border-radius: 999px; background: #0f1117; overflow: hidden"><div style="width: 64%; height: 100%; background: #5eb0ff"></div></div>
+          </div>
+          <div style="flex: 1 1 220px; display: flex; flex-direction: column; gap: 8px">
+            <div style="display: flex; justify-content: space-between; align-items: baseline">
+              <span style="font: 600 14px Inter, sans-serif">★2 → ★3</span>
+              <span style="font: 500 12px 'JetBrains Mono', monospace; color: #818a9e">1 / 3 duplicates</span>
+            </div>
+            <div role="progressbar" aria-label="Duplicates to 3 stars" aria-valuenow="1" aria-valuemin="0" aria-valuemax="3" style="height: 8px; border-radius: 999px; background: #0f1117; overflow: hidden"><div style="width: 33%; height: 100%; background: #ffd23f"></div></div>
+            <span style="font-size: 13px; color: #aab1c2">2 more duplicates to ★3</span>
+          </div>
+        </section>
+
+        <section aria-labelledby="stats-h" style="border-radius: 16px; padding: 14px 18px; background: rgba(21,24,33,0.72); border: 1px solid rgba(255,255,255,0.08)">
+          <div style="display: flex; justify-content: space-between; align-items: baseline; gap: 12px; flex-wrap: wrap; margin-bottom: 6px">
+            <h2 id="stats-h" style="margin: 0; font: 500 12px 'JetBrains Mono', monospace; letter-spacing: 0.14em; text-transform: uppercase; color: #818a9e">Stats</h2>
+            <span style="font-size: 12px; color: #818a9e">base × level × ★ + talents</span>
+          </div>
+          <table style="width: 100%; border-collapse: collapse; font-size: 14px">
+            <thead>
+              <tr style="color: #818a9e; font: 500 12px 'JetBrains Mono', monospace; text-align: left">
+                <th scope="col" style="padding: 6px 0; font-weight: 500">Stat</th>
+                <th scope="col" style="padding: 6px 0; font-weight: 500; text-align: right">Base</th>
+                <th scope="col" style="padding: 6px 0; font-weight: 500; text-align: right">Current</th>
+                <th scope="col" style="padding: 6px 0 6px 16px; font-weight: 500">Talents</th>
+              </tr>
+            </thead>
+            <tbody style="font-family: 'JetBrains Mono', monospace">
+              <tr style="border-top: 1px solid rgba(255,255,255,0.06)"><th scope="row" style="padding: 6px 0; text-align: left; font: 500 14px Inter, sans-serif">HP</th><td style="text-align: right; color: #aab1c2">39</td><td style="text-align: right; color: #e7e9ef">→ 58</td><td style="padding-left: 16px; color: #818a9e">—</td></tr>
+              <tr style="border-top: 1px solid rgba(255,255,255,0.06)"><th scope="row" style="padding: 6px 0; text-align: left; font: 500 14px Inter, sans-serif">Attack</th><td style="text-align: right; color: #aab1c2">52</td><td style="text-align: right; color: #e7e9ef">→ 70</td><td style="padding-left: 16px; color: #5eb0ff">+6 Ember Edge</td></tr>
+              <tr style="border-top: 1px solid rgba(255,255,255,0.06)"><th scope="row" style="padding: 6px 0; text-align: left; font: 500 14px Inter, sans-serif">Defense</th><td style="text-align: right; color: #aab1c2">43</td><td style="text-align: right; color: #e7e9ef">→ 52</td><td style="padding-left: 16px; color: #818a9e">—</td></tr>
+              <tr style="border-top: 1px solid rgba(255,255,255,0.06)"><th scope="row" style="padding: 6px 0; text-align: left; font: 500 14px Inter, sans-serif">Sp. Atk</th><td style="text-align: right; color: #aab1c2">60</td><td style="text-align: right; color: #e7e9ef">→ 73</td><td style="padding-left: 16px; color: #818a9e">—</td></tr>
+              <tr style="border-top: 1px solid rgba(255,255,255,0.06)"><th scope="row" style="padding: 6px 0; text-align: left; font: 500 14px Inter, sans-serif">Sp. Def</th><td style="text-align: right; color: #aab1c2">50</td><td style="text-align: right; color: #e7e9ef">→ 61</td><td style="padding-left: 16px; color: #818a9e">—</td></tr>
+              <tr style="border-top: 1px solid rgba(255,255,255,0.06)"><th scope="row" style="padding: 6px 0; text-align: left; font: 500 14px Inter, sans-serif">Speed</th><td style="text-align: right; color: #aab1c2">65</td><td style="text-align: right; color: #e7e9ef">→ 79</td><td style="padding-left: 16px; color: #818a9e">—</td></tr>
+            </tbody>
+          </table>
+        </section>
+
+        <section aria-labelledby="talents-h" style="border-radius: 16px; padding: 14px 18px 16px; background: rgba(21,24,33,0.72); border: 1px solid rgba(255,255,255,0.08); display: flex; flex-direction: column; gap: 12px">
+          <div style="display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 10px">
+            <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap">
+              <h2 id="talents-h" style="margin: 0; font: 500 12px 'JetBrains Mono', monospace; letter-spacing: 0.14em; text-transform: uppercase; color: #818a9e">Talents</h2>
+              <span aria-live="polite" style="padding: 4px 10px; border-radius: 999px; background: rgba(94,227,154,0.12); color: #5ee39a; font: 600 13px Inter, sans-serif">1 point available</span>
+            </div>
+            <button type="button" style="display: inline-flex; align-items: center; gap: 6px; min-height: 44px; padding: 0 14px; border-radius: 12px; border: 1px solid #3a4152; background: transparent; color: #ff6b6b; font: 500 13px Inter, sans-serif; cursor: pointer">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"></path><path d="M3 3v5h5"></path></svg>Reset talents · free</button>
+          </div>
+
+          <div style="display: flex; flex-wrap: wrap; gap: 12px">
+            <!-- Offense -->
+            <div role="group" aria-labelledby="br-off" style="flex: 1 1 180px; display: flex; flex-direction: column; gap: 6px">
+              <h3 id="br-off" style="margin: 0 0 2px; font: 600 13px Inter, sans-serif; color: #ff9f6b">Offense</h3>
+              <button type="button" aria-pressed="true" style="min-height: 48px; display: flex; align-items: center; gap: 8px; padding: 6px 10px; border-radius: 12px; border: 1px solid #5eb0ff; background: rgba(94,176,255,0.14); color: #e7e9ef; text-align: left; font: 500 13px Inter, sans-serif; cursor: pointer">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#5eb0ff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6L9 17l-5-5"></path></svg>
+                <span style="display: flex; flex-direction: column"><span>Ember Edge</span><span style="font-size: 12px; color: #5eb0ff">Owned · Attack +6</span></span></button>
+              <button type="button" aria-pressed="false" style="min-height: 48px; display: flex; align-items: center; gap: 8px; padding: 6px 10px; border-radius: 12px; border: 1px dashed #ffd23f; background: rgba(255,210,63,0.06); color: #e7e9ef; text-align: left; font: 500 13px Inter, sans-serif; cursor: pointer; box-shadow: 0 0 18px -8px rgba(255,210,63,0.7)">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#ffd23f" stroke-width="2.5" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"></path></svg>
+                <span style="display: flex; flex-direction: column"><span>Kindle</span><span style="font-size: 12px; color: #ffd23f">Learn · Fire moves +10%</span></span></button>
+              <button type="button" aria-disabled="true" style="min-height: 48px; display: flex; align-items: center; gap: 8px; padding: 6px 10px; border-radius: 12px; border: 1px solid #3a4152; background: #0f1117; color: #aab1c2; text-align: left; font: 500 13px Inter, sans-serif; cursor: not-allowed">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#818a9e" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="11" width="14" height="10" rx="2"></rect><path d="M8 11V7a4 4 0 0 1 8 0v4"></path></svg>
+                <span style="display: flex; flex-direction: column"><span>Blaze Core</span><span style="font-size: 12px; color: #818a9e">Requires: Kindle</span></span></button>
+              <button type="button" aria-disabled="true" style="min-height: 48px; display: flex; align-items: center; gap: 8px; padding: 6px 10px; border-radius: 12px; border: 1px solid #3a4152; background: #0f1117; color: #aab1c2; text-align: left; font: 500 13px Inter, sans-serif; cursor: not-allowed">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#818a9e" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="11" width="14" height="10" rx="2"></rect><path d="M8 11V7a4 4 0 0 1 8 0v4"></path></svg>
+                <span style="display: flex; flex-direction: column"><span>Inferno</span><span style="font-size: 12px; color: #818a9e">Requires Lv 15</span></span></button>
+            </div>
+            <!-- Defense -->
+            <div role="group" aria-labelledby="br-def" style="flex: 1 1 180px; display: flex; flex-direction: column; gap: 6px">
+              <h3 id="br-def" style="margin: 0 0 2px; font: 600 13px Inter, sans-serif; color: #5eb0ff">Defense</h3>
+              <button type="button" aria-pressed="false" style="min-height: 48px; display: flex; align-items: center; gap: 8px; padding: 6px 10px; border-radius: 12px; border: 1px dashed #ffd23f; background: rgba(255,210,63,0.06); color: #e7e9ef; text-align: left; font: 500 13px Inter, sans-serif; cursor: pointer; box-shadow: 0 0 18px -8px rgba(255,210,63,0.7)">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#ffd23f" stroke-width="2.5" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"></path></svg>
+                <span style="display: flex; flex-direction: column"><span>Scale Guard</span><span style="font-size: 12px; color: #ffd23f">Learn · Defense +6</span></span></button>
+              <button type="button" aria-disabled="true" style="min-height: 48px; display: flex; align-items: center; gap: 8px; padding: 6px 10px; border-radius: 12px; border: 1px solid #3a4152; background: #0f1117; color: #aab1c2; text-align: left; font: 500 13px Inter, sans-serif; cursor: not-allowed">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#818a9e" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="11" width="14" height="10" rx="2"></rect><path d="M8 11V7a4 4 0 0 1 8 0v4"></path></svg>
+                <span style="display: flex; flex-direction: column"><span>Heat Shield</span><span style="font-size: 12px; color: #818a9e">Requires: Scale Guard</span></span></button>
+              <button type="button" aria-disabled="true" style="min-height: 48px; display: flex; align-items: center; gap: 8px; padding: 6px 10px; border-radius: 12px; border: 1px solid #3a4152; background: #0f1117; color: #aab1c2; text-align: left; font: 500 13px Inter, sans-serif; cursor: not-allowed">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#818a9e" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="11" width="14" height="10" rx="2"></rect><path d="M8 11V7a4 4 0 0 1 8 0v4"></path></svg>
+                <span style="display: flex; flex-direction: column"><span>Second Wind</span><span style="font-size: 12px; color: #818a9e">Requires: Heat Shield</span></span></button>
+              <button type="button" aria-disabled="true" style="min-height: 48px; display: flex; align-items: center; gap: 8px; padding: 6px 10px; border-radius: 12px; border: 1px solid #3a4152; background: #0f1117; color: #aab1c2; text-align: left; font: 500 13px Inter, sans-serif; cursor: not-allowed">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#818a9e" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="11" width="14" height="10" rx="2"></rect><path d="M8 11V7a4 4 0 0 1 8 0v4"></path></svg>
+                <span style="display: flex; flex-direction: column"><span>Ember Wall</span><span style="font-size: 12px; color: #818a9e">Requires Lv 15</span></span></button>
+            </div>
+            <!-- Tempo -->
+            <div role="group" aria-labelledby="br-tem" style="flex: 1 1 180px; display: flex; flex-direction: column; gap: 6px">
+              <h3 id="br-tem" style="margin: 0 0 2px; font: 600 13px Inter, sans-serif; color: #5ee39a">Tempo</h3>
+              <button type="button" aria-pressed="false" style="min-height: 48px; display: flex; align-items: center; gap: 8px; padding: 6px 10px; border-radius: 12px; border: 1px dashed #ffd23f; background: rgba(255,210,63,0.06); color: #e7e9ef; text-align: left; font: 500 13px Inter, sans-serif; cursor: pointer; box-shadow: 0 0 18px -8px rgba(255,210,63,0.7)">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#ffd23f" stroke-width="2.5" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"></path></svg>
+                <span style="display: flex; flex-direction: column"><span>Quick Draw</span><span style="font-size: 12px; color: #ffd23f">Learn · Speed +6</span></span></button>
+              <button type="button" aria-disabled="true" style="min-height: 48px; display: flex; align-items: center; gap: 8px; padding: 6px 10px; border-radius: 12px; border: 1px solid #3a4152; background: #0f1117; color: #aab1c2; text-align: left; font: 500 13px Inter, sans-serif; cursor: not-allowed">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#818a9e" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="11" width="14" height="10" rx="2"></rect><path d="M8 11V7a4 4 0 0 1 8 0v4"></path></svg>
+                <span style="display: flex; flex-direction: column"><span>Tailwind Step</span><span style="font-size: 12px; color: #818a9e">Requires: Quick Draw</span></span></button>
+              <button type="button" aria-disabled="true" style="min-height: 48px; display: flex; align-items: center; gap: 8px; padding: 6px 10px; border-radius: 12px; border: 1px solid #3a4152; background: #0f1117; color: #aab1c2; text-align: left; font: 500 13px Inter, sans-serif; cursor: not-allowed">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#818a9e" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="11" width="14" height="10" rx="2"></rect><path d="M8 11V7a4 4 0 0 1 8 0v4"></path></svg>
+                <span style="display: flex; flex-direction: column"><span>First Spark</span><span style="font-size: 12px; color: #818a9e">Requires: Tailwind Step</span></span></button>
+              <button type="button" aria-disabled="true" style="min-height: 48px; display: flex; align-items: center; gap: 8px; padding: 6px 10px; border-radius: 12px; border: 1px solid #3a4152; background: #0f1117; color: #aab1c2; text-align: left; font: 500 13px Inter, sans-serif; cursor: not-allowed">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#818a9e" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="11" width="14" height="10" rx="2"></rect><path d="M8 11V7a4 4 0 0 1 8 0v4"></path></svg>
+                <span style="display: flex; flex-direction: column"><span>Flash Fire</span><span style="font-size: 12px; color: #818a9e">Requires Lv 15</span></span></button>
+            </div>
+          </div>
+        </section>
+      </div>
+    </div>
+  </main>
+
+  <footer style="padding: 12px 40px 20px; font-size: 12px; color: #818a9e; text-align: center">Unofficial fan project, not affiliated with Nintendo, Game Freak or The Pokémon Company · Data: PokéAPI</footer>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1280,"height":1000}}'>
+class Component extends DCLogic {
+  renderVals() {
+    return {};
+  }
+}
+</script>
+</body>
+</html>

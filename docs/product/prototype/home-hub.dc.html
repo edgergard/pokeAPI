@@ -1,0 +1,236 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Trainer Studio — home hub</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&amp;family=Inter:wght@400;500;600&amp;family=JetBrains+Mono:wght@500&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0;background:#07080b}
+a{color:#ffd23f}a:hover{color:#ffe27a}
+button:focus-visible,a:focus-visible{outline:2px solid #ffd23f;outline-offset:3px}
+</style>
+</helmet>
+<div style="min-height: 1000px; box-sizing: border-box; background: radial-gradient(1200px 600px at 70% -10%, rgba(94,176,255,0.16), transparent 60%), radial-gradient(900px 500px at 10% 110%, rgba(255,210,63,0.10), transparent 60%), #07080b; color: #e7e9ef; font-family: Inter, system-ui, sans-serif; display: flex; flex-direction: column">
+  <a href="#content" style="position: absolute; left: -9999px; top: 8px; padding: 10px 16px; background: #ffd23f; color: #07080b; border-radius: 12px">Skip to content</a>
+
+  <header style="position: sticky; top: 0; z-index: 5; background: rgba(15,17,23,0.72); backdrop-filter: blur(14px); border-bottom: 1px solid rgba(255,255,255,0.08)">
+    <nav aria-label="Main" style="max-width: 1240px; margin: 0 auto; display: flex; flex-wrap: wrap; align-items: center; gap: 12px 20px; padding: 12px 24px; box-sizing: border-box">
+      <a href="Main.dc.html" aria-label="Trainer Studio, home" style="display: flex; align-items: center; gap: 10px; min-height: 44px; color: #e7e9ef; text-decoration: none">
+        <svg width="28" height="28" viewBox="0 0 28 28" aria-hidden="true"><rect x="3" y="3" width="22" height="22" rx="7" fill="none" stroke="#ffd23f" stroke-width="2.5"></rect><path d="M3 14h22" stroke="#ffd23f" stroke-width="2.5"></path><circle cx="14" cy="14" r="3.5" fill="#07080b" stroke="#ffd23f" stroke-width="2.5"></circle></svg>
+        <span style="font-family: 'Bricolage Grotesque', Inter, sans-serif; font-weight: 800; font-size: 20px; letter-spacing: -0.01em">Trainer Studio</span>
+      </a>
+      <ul style="list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: 4px; flex: 1 1 auto">
+        <li><a href="a-home-hub.dc.html" aria-current="page" style="display: inline-flex; align-items: center; min-height: 44px; padding: 0 14px; border-radius: 12px; background: #1b1f2a; color: #e7e9ef; font: 600 14px Inter, sans-serif; text-decoration: none; box-shadow: inset 0 -2px 0 #ffd23f">Home</a></li>
+        <li><a href="#ladder" style="display: inline-flex; align-items: center; min-height: 44px; padding: 0 14px; border-radius: 12px; color: #aab1c2; font: 500 14px Inter, sans-serif; text-decoration: none">Ladder</a></li>
+        <li><a href="#collection" style="display: inline-flex; align-items: center; min-height: 44px; padding: 0 14px; border-radius: 12px; color: #aab1c2; font: 500 14px Inter, sans-serif; text-decoration: none">Collection</a></li>
+        <li><a href="#capsules" style="display: inline-flex; align-items: center; gap: 8px; min-height: 44px; padding: 0 14px; border-radius: 12px; color: #aab1c2; font: 500 14px Inter, sans-serif; text-decoration: none">Capsules <span aria-label="2 unopened" style="min-width: 20px; height: 20px; padding: 0 6px; box-sizing: border-box; border-radius: 999px; background: #ffd23f; color: #07080b; font: 600 12px Inter, sans-serif; display: inline-flex; align-items: center; justify-content: center">2</span></a></li>
+        <li><a href="#trainer" style="display: inline-flex; align-items: center; gap: 8px; min-height: 44px; padding: 0 14px; border-radius: 12px; color: #aab1c2; font: 500 14px Inter, sans-serif; text-decoration: none">Trainer <span aria-hidden="true" style="width: 8px; height: 8px; border-radius: 50%; background: #5ee39a"></span><span style="position: absolute; left: -9999px">, unspent talent points</span></a></li>
+      </ul>
+      <div style="display: flex; flex-wrap: wrap; align-items: center; gap: 10px">
+        <div style="display: flex; align-items: center; gap: 8px; min-height: 44px; padding: 0 12px; border-radius: 999px; background: #0f1117; border: 1px solid #3a4152">
+          <span style="font: 500 12px 'JetBrains Mono', monospace; color: #ffd23f">Lv 3</span>
+          <div role="progressbar" aria-label="Trainer XP" aria-valuenow="180" aria-valuemin="0" aria-valuemax="300" style="width: 64px; height: 6px; border-radius: 999px; background: #1b1f2a; overflow: hidden"><div style="width: 60%; height: 100%; background: #ffd23f"></div></div>
+          <span style="font: 500 12px 'JetBrains Mono', monospace; color: #aab1c2">180/300</span>
+        </div>
+        <a href="a-battle.dc.html" style="display: inline-flex; align-items: center; min-height: 44px; padding: 0 18px; border-radius: 16px; background: #ffd23f; color: #07080b; font: 600 14px Inter, sans-serif; text-decoration: none; box-shadow: inset 0 0 0 1px rgba(255,255,255,0.15), 0 8px 24px -10px rgba(255,210,63,0.6)">Fight · Stage 2</a>
+        <button type="button" aria-label="Motion: Auto" style="min-height: 44px; padding: 0 14px; border-radius: 999px; border: 1px solid #3a4152; background: #0f1117; color: #cdd2de; font: 500 13px Inter, sans-serif; cursor: pointer">Motion · Auto</button>
+        <a href="#settings" aria-label="Settings" style="width: 44px; height: 44px; display: inline-flex; align-items: center; justify-content: center; border-radius: 12px; border: 1px solid #3a4152; background: #0f1117; color: #cdd2de">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="3"></circle><circle cx="12" cy="12" r="7.5"></circle><path d="M12 2v2.5M12 19.5V22M2 12h2.5M19.5 12H22M4.9 4.9l1.8 1.8M17.3 17.3l1.8 1.8M4.9 19.1l1.8-1.8M17.3 6.7l1.8-1.8"></path></svg>
+        </a>
+      </div>
+    </nav>
+  </header>
+
+  <main id="content" style="flex: 1; width: 100%; max-width: 1240px; margin: 0 auto; padding: 20px 24px 24px; box-sizing: border-box; display: flex; flex-direction: column; gap: 16px">
+    <sc-if value="{{ showHint }}" hint-placeholder-val="{{ true }}">
+      <div role="status" style="display: flex; flex-wrap: wrap; align-items: center; gap: 12px; padding: 4px 4px 4px 16px; border-radius: 16px; background: rgba(21,24,33,0.7); border: 1px solid rgba(255,255,255,0.10)">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#ffd23f" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M12 3v12M7 10l5 5 5-5M4 19h16"></path></svg>
+        <p style="margin: 0; flex: 1 1 260px; font-size: 14px; color: #cdd2de">Back up your progress. Your save lives only in this browser.</p>
+        <a href="#settings" style="display: inline-flex; align-items: center; min-height: 44px; padding: 0 14px; border-radius: 12px; font: 600 14px Inter, sans-serif; text-decoration: none">Export save</a>
+        <button type="button" aria-label="Dismiss backup hint" onClick="{{ dismiss }}" style="width: 44px; height: 44px; border-radius: 12px; border: 0; background: transparent; color: #aab1c2; cursor: pointer; display: inline-flex; align-items: center; justify-content: center">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"></path></svg>
+        </button>
+      </div>
+    </sc-if>
+
+    <section aria-label="Trainer" style="display: flex; flex-wrap: wrap; align-items: center; gap: 16px 24px; padding: 16px 20px; border-radius: 16px; background: rgba(21,24,33,0.7); backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,0.10)">
+      <div style="width: 48px; height: 48px; border-radius: 50%; background: radial-gradient(circle at 40% 35%, rgba(255,210,63,0.5), rgba(255,210,63,0.08) 70%), #1b1f2a; border: 2px solid #ffd23f; display: flex; align-items: center; justify-content: center" aria-hidden="true">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#ffd23f" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="8" r="4"></circle><path d="M4 21a8 8 0 0 1 16 0"></path></svg>
+      </div>
+      <div style="display: flex; flex-direction: column; gap: 2px">
+        <span style="font: 500 12px 'JetBrains Mono', monospace; letter-spacing: 0.14em; text-transform: uppercase; color: #818a9e">Trainer</span>
+        <h1 style="margin: 0; font-family: 'Bricolage Grotesque', Inter, sans-serif; font-weight: 800; font-size: 24px; letter-spacing: -0.01em">Rowan <span style="font: 500 14px 'JetBrains Mono', monospace; color: #ffd23f; vertical-align: middle">Lv 3</span></h1>
+      </div>
+      <div style="flex: 1 1 320px; display: flex; flex-direction: column; gap: 6px; min-width: 0">
+        <div style="display: flex; justify-content: space-between; gap: 12px; font-size: 13px">
+          <span style="color: #cdd2de">Next: Lv 5 · team slot 3</span>
+          <span style="font: 500 12px 'JetBrains Mono', monospace; color: #aab1c2">180 / 300 XP</span>
+        </div>
+        <div role="progressbar" aria-label="Trainer XP to level 4" aria-valuenow="180" aria-valuemin="0" aria-valuemax="300" style="height: 10px; border-radius: 999px; background: #0f1117; overflow: hidden"><div style="width: 60%; height: 100%; border-radius: 999px; background: linear-gradient(90deg, #ffd23f, #ffe27a)"></div></div>
+      </div>
+    </section>
+
+    <div style="display: flex; flex-wrap: wrap; gap: 16px; align-items: flex-start">
+      <div style="flex: 1 1 560px; min-width: 0; display: flex; flex-direction: column; gap: 16px">
+
+        <section aria-labelledby="next-stage" style="position: relative; overflow: hidden; padding: 22px 24px; border-radius: 16px; background: radial-gradient(500px 240px at 90% 0%, rgba(255,122,102,0.16), transparent 70%), linear-gradient(160deg, #151821, #0f1117); border: 1px solid rgba(255,255,255,0.12); display: flex; flex-wrap: wrap; gap: 20px 28px; align-items: center">
+          <div style="flex: 1 1 280px; display: flex; flex-direction: column; gap: 10px; min-width: 0">
+            <span style="font: 500 12px 'JetBrains Mono', monospace; letter-spacing: 0.16em; text-transform: uppercase; color: #ffd23f">Next stage</span>
+            <h2 id="next-stage" style="margin: 0; font-family: 'Bricolage Grotesque', Inter, sans-serif; font-weight: 800; font-size: 32px; line-height: 1.05; letter-spacing: -0.02em">Stage 2 · Rival Juniper Vale</h2>
+            <p style="margin: 0; font-size: 14px; color: #aab1c2">2 vs 2 · Recommended power 140 · Your team 152</p>
+            <div style="display: flex; flex-wrap: wrap; gap: 8px; align-items: center">
+              <span style="font-size: 13px; color: #818a9e">First clear:</span>
+              <span style="padding: 4px 10px; border-radius: 999px; background: #1b1f2a; border: 1px solid #3a4152; font: 600 12px Inter, sans-serif; color: #e7e9ef">+1 Capsule</span>
+              <span style="padding: 4px 10px; border-radius: 999px; background: #1b1f2a; border: 1px solid #3a4152; font: 600 12px Inter, sans-serif; color: #e7e9ef">+60 XP</span>
+              <span style="padding: 4px 10px; border-radius: 999px; background: #1b1f2a; border: 1px solid #3a4152; font: 600 12px Inter, sans-serif; color: #e7e9ef">+30 dust</span>
+            </div>
+          </div>
+          <div style="display: flex; flex-direction: column; align-items: flex-end; gap: 14px">
+            <ul aria-label="Rival team" style="list-style: none; margin: 0; padding: 0; display: flex; gap: 10px">
+              <li style="display: flex; flex-direction: column; align-items: center; gap: 4px">
+                <div aria-hidden="true" style="width: 64px; height: 64px; border-radius: 14px; background: radial-gradient(circle at 50% 45%, rgba(168,167,122,0.5), rgba(168,167,122,0.05) 70%), #1b1f2a; border: 2px solid #ff7a66; display: flex; align-items: center; justify-content: center"><div style="width: 32px; height: 32px; border-radius: 50%; background: #a8a77a"></div></div>
+                <span style="font: 500 12px 'JetBrains Mono', monospace; color: #cdd2de">Pidgey · Lv 6</span>
+              </li>
+              <li style="display: flex; flex-direction: column; align-items: center; gap: 4px">
+                <div aria-hidden="true" style="width: 64px; height: 64px; border-radius: 14px; background: radial-gradient(circle at 50% 45%, rgba(122,199,76,0.5), rgba(122,199,76,0.05) 70%), #1b1f2a; border: 2px solid #ff7a66; display: flex; align-items: center; justify-content: center"><div style="width: 30px; height: 30px; border-radius: 50%; background: #7ac74c"></div></div>
+                <span style="font: 500 12px 'JetBrains Mono', monospace; color: #cdd2de">Oddish · Lv 7</span>
+              </li>
+            </ul>
+            <a href="a-battle.dc.html" style="min-height: 56px; display: inline-flex; align-items: center; gap: 10px; padding: 0 36px; border-radius: 16px; background: #ffd23f; color: #07080b; font: 600 17px Inter, sans-serif; text-decoration: none; box-shadow: inset 0 0 0 1px rgba(255,255,255,0.15), 0 10px 30px -10px rgba(255,210,63,0.6)">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14.5 17.5L3 6V3h3l11.5 11.5M13 19l6-6M16 16l4 4M19 21l2-2"></path></svg>
+              Fight
+            </a>
+          </div>
+        </section>
+
+        <section aria-labelledby="team-title" style="padding: 18px 20px 20px; border-radius: 16px; background: rgba(21,24,33,0.7); border: 1px solid rgba(255,255,255,0.10); display: flex; flex-direction: column; gap: 14px">
+          <div style="display: flex; align-items: center; justify-content: space-between; gap: 12px">
+            <h2 id="team-title" style="margin: 0; font-family: 'Bricolage Grotesque', Inter, sans-serif; font-weight: 800; font-size: 20px">Team <span style="font: 500 13px 'JetBrains Mono', monospace; color: #818a9e">2 / 2</span></h2>
+            <a href="#team" style="display: inline-flex; align-items: center; min-height: 44px; padding: 0 16px; border-radius: 12px; background: #1b1f2a; border: 1px solid #3a4152; color: #e7e9ef; font: 600 14px Inter, sans-serif; text-decoration: none">Edit team</a>
+          </div>
+          <ul style="list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: 14px">
+            <li style="flex: 1 1 140px; max-width: 170px">
+              <a href="a-creature.dc.html" aria-label="Pikachu, level 7, 1 star, uncommon, 1 talent point available" style="display: flex; flex-direction: column; gap: 8px; padding: 10px; border-radius: 16px; background: linear-gradient(160deg, #151821, #0f1117); border: 2px solid #5ee39a; box-shadow: 0 16px 40px -22px rgba(94,227,154,0.6); color: #e7e9ef; text-decoration: none; position: relative">
+                <div style="display: flex; justify-content: space-between; align-items: center">
+                  <span style="font: 500 12px 'JetBrains Mono', monospace; color: #5ee39a">Uncommon</span>
+                  <span style="font: 500 12px 'JetBrains Mono', monospace; color: #cdd2de">Lv 7</span>
+                </div>
+                <div aria-hidden="true" style="height: 104px; border-radius: 12px; background: radial-gradient(circle at 50% 42%, rgba(247,208,44,0.45), rgba(247,208,44,0.05) 70%), #1b1f2a; display: flex; align-items: center; justify-content: center; position: relative">
+                  <div style="width: 58px; height: 58px; border-radius: 50%; background: #f7d02c; opacity: 0.9"></div>
+                  <span style="position: absolute; top: 8px; right: 8px; width: 10px; height: 10px; border-radius: 50%; background: #5ee39a; box-shadow: 0 0 0 3px #1b1f2a"></span>
+                </div>
+                <div style="display: flex; justify-content: space-between; align-items: baseline">
+                  <span style="font-family: 'Bricolage Grotesque', Inter, sans-serif; font-weight: 800; font-size: 17px">Pikachu</span>
+                  <span aria-hidden="true" style="font-size: 12px; color: #ffd23f">★<span style="color: #3a4152">★★★★</span></span>
+                </div>
+                <span style="align-self: flex-start; padding: 2px 8px; border-radius: 999px; background: #f7d02c; color: #07080b; font: 600 12px Inter, sans-serif">Electric</span>
+              </a>
+            </li>
+            <li style="flex: 1 1 140px; max-width: 170px">
+              <a href="a-creature.dc.html" aria-label="Charmander, level 6, 2 stars, rare" style="display: flex; flex-direction: column; gap: 8px; padding: 10px; border-radius: 16px; background: linear-gradient(160deg, #151821, #0f1117); border: 2px solid #5eb0ff; box-shadow: 0 16px 40px -22px rgba(94,176,255,0.6); color: #e7e9ef; text-decoration: none">
+                <div style="display: flex; justify-content: space-between; align-items: center">
+                  <span style="font: 500 12px 'JetBrains Mono', monospace; color: #5eb0ff">Rare</span>
+                  <span style="font: 500 12px 'JetBrains Mono', monospace; color: #cdd2de">Lv 6</span>
+                </div>
+                <div aria-hidden="true" style="height: 104px; border-radius: 12px; background: radial-gradient(circle at 50% 42%, rgba(238,129,48,0.45), rgba(238,129,48,0.05) 70%), #1b1f2a; display: flex; align-items: center; justify-content: center">
+                  <div style="width: 54px; height: 54px; border-radius: 50%; background: #ee8130; opacity: 0.9"></div>
+                </div>
+                <div style="display: flex; justify-content: space-between; align-items: baseline">
+                  <span style="font-family: 'Bricolage Grotesque', Inter, sans-serif; font-weight: 800; font-size: 17px">Charmander</span>
+                  <span aria-hidden="true" style="font-size: 12px; color: #ffd23f">★★<span style="color: #3a4152">★★★</span></span>
+                </div>
+                <span style="align-self: flex-start; padding: 2px 8px; border-radius: 999px; background: #ee8130; color: #07080b; font: 600 12px Inter, sans-serif">Fire</span>
+              </a>
+            </li>
+            <li aria-label="Slot 3, unlocks at Trainer level 5" style="flex: 1 1 140px; max-width: 170px; min-height: 196px; box-sizing: border-box; border-radius: 16px; border: 2px dashed #3a4152; background: repeating-linear-gradient(45deg, rgba(255,255,255,0.02) 0 10px, transparent 10px 20px); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px; padding: 12px; text-align: center">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#818a9e" stroke-width="2" stroke-linecap="round" aria-hidden="true"><rect x="5" y="11" width="14" height="10" rx="2"></rect><path d="M8 11V7a4 4 0 0 1 8 0v4"></path></svg>
+              <span style="font-size: 13px; color: #aab1c2">Unlocks at Trainer Lv 5</span>
+            </li>
+            <li aria-label="Slot 4, unlocks at Trainer level 10" style="flex: 1 1 140px; max-width: 170px; min-height: 196px; box-sizing: border-box; border-radius: 16px; border: 2px dashed #3a4152; background: repeating-linear-gradient(45deg, rgba(255,255,255,0.02) 0 10px, transparent 10px 20px); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px; padding: 12px; text-align: center">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#818a9e" stroke-width="2" stroke-linecap="round" aria-hidden="true"><rect x="5" y="11" width="14" height="10" rx="2"></rect><path d="M8 11V7a4 4 0 0 1 8 0v4"></path></svg>
+              <span style="font-size: 13px; color: #aab1c2">Unlocks at Trainer Lv 10</span>
+            </li>
+          </ul>
+        </section>
+      </div>
+
+      <div style="flex: 1 1 340px; min-width: 0; display: flex; flex-direction: column; gap: 16px">
+        <section aria-labelledby="quests-title" style="padding: 18px 20px; border-radius: 16px; background: rgba(21,24,33,0.7); border: 1px solid rgba(255,255,255,0.10); display: flex; flex-direction: column; gap: 12px">
+          <div style="display: flex; justify-content: space-between; align-items: baseline; gap: 12px">
+            <h2 id="quests-title" style="margin: 0; font-family: 'Bricolage Grotesque', Inter, sans-serif; font-weight: 800; font-size: 20px">Daily quests</h2>
+            <span style="font: 500 12px 'JetBrains Mono', monospace; color: #818a9e">Resets in 5 h</span>
+          </div>
+          <ul style="list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 6px">
+            <li>
+              <a href="#ladder" style="display: flex; flex-direction: column; gap: 6px; min-height: 44px; padding: 8px 10px; border-radius: 12px; background: #0f1117; color: #e7e9ef; text-decoration: none">
+                <span style="display: flex; justify-content: space-between; gap: 8px; font-size: 14px"><span>Win 3 battles</span><span style="font: 500 12px 'JetBrains Mono', monospace; color: #cdd2de">1/3</span></span>
+                <span role="progressbar" aria-label="Win 3 battles" aria-valuenow="1" aria-valuemin="0" aria-valuemax="3" style="display: block; height: 6px; border-radius: 999px; background: #1b1f2a; overflow: hidden"><span style="display: block; width: 33%; height: 100%; background: #ffd23f"></span></span>
+              </a>
+            </li>
+            <li>
+              <div style="display: flex; flex-direction: column; gap: 6px; min-height: 44px; padding: 8px 10px; border-radius: 12px; background: rgba(94,227,154,0.08); border: 1px solid rgba(94,227,154,0.3); box-sizing: border-box">
+                <span style="display: flex; justify-content: space-between; gap: 8px; font-size: 14px"><span>Open 2 capsules</span><span style="display: inline-flex; align-items: center; gap: 4px; font: 500 12px 'JetBrains Mono', monospace; color: #5ee39a"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" aria-hidden="true"><path d="M5 12l5 5 9-10"></path></svg>2/2 Done</span></span>
+                <span role="progressbar" aria-label="Open 2 capsules" aria-valuenow="2" aria-valuemin="0" aria-valuemax="2" style="display: block; height: 6px; border-radius: 999px; background: #1b1f2a; overflow: hidden"><span style="display: block; width: 100%; height: 100%; background: #5ee39a"></span></span>
+              </div>
+            </li>
+            <li>
+              <a href="#ladder" style="display: flex; flex-direction: column; gap: 6px; min-height: 44px; padding: 8px 10px; border-radius: 12px; background: #0f1117; color: #e7e9ef; text-decoration: none">
+                <span style="display: flex; justify-content: space-between; gap: 8px; font-size: 14px"><span>Deal 500 damage</span><span style="font: 500 12px 'JetBrains Mono', monospace; color: #cdd2de">320/500</span></span>
+                <span role="progressbar" aria-label="Deal 500 damage" aria-valuenow="320" aria-valuemin="0" aria-valuemax="500" style="display: block; height: 6px; border-radius: 999px; background: #1b1f2a; overflow: hidden"><span style="display: block; width: 64%; height: 100%; background: #ffd23f"></span></span>
+              </a>
+            </li>
+          </ul>
+        </section>
+
+        <section aria-labelledby="caps-title" style="padding: 18px 20px; border-radius: 16px; background: radial-gradient(300px 160px at 0% 0%, rgba(255,210,63,0.10), transparent 70%), rgba(21,24,33,0.7); border: 1px solid rgba(255,255,255,0.10); display: flex; flex-direction: column; gap: 12px">
+          <div style="display: flex; align-items: center; gap: 14px">
+            <div aria-hidden="true" style="position: relative; width: 56px; height: 56px; flex: 0 0 56px">
+              <div style="position: absolute; inset: 6px 0 0 6px; border-radius: 14px; background: #1b1f2a; border: 2px solid rgba(255,210,63,0.35)"></div>
+              <div style="position: absolute; inset: 0 6px 6px 0; border-radius: 14px; background: repeating-linear-gradient(45deg, rgba(255,210,63,0.16) 0 6px, rgba(94,176,255,0.14) 6px 12px), #151821; border: 2px solid #ffd23f"></div>
+            </div>
+            <div style="flex: 1; min-width: 0">
+              <h2 id="caps-title" style="margin: 0; font-family: 'Bricolage Grotesque', Inter, sans-serif; font-weight: 800; font-size: 20px">Capsules</h2>
+              <p style="margin: 2px 0 0; font-size: 14px; color: #cdd2de">2 unopened · <span style="color: #aab1c2">140 dust</span></p>
+            </div>
+            <a href="#capsules" style="display: inline-flex; align-items: center; min-height: 44px; padding: 0 18px; border-radius: 12px; background: #1b1f2a; border: 1px solid #ffd23f; color: #ffd23f; font: 600 14px Inter, sans-serif; text-decoration: none">Open</a>
+          </div>
+          <div style="display: flex; flex-direction: column; gap: 6px">
+            <span style="display: flex; justify-content: space-between; font-size: 13px"><span style="color: #c48cff">Epic guaranteed within 18 opens</span><span style="font: 500 12px 'JetBrains Mono', monospace; color: #aab1c2">22/40</span></span>
+            <div role="progressbar" aria-label="Epic pity" aria-valuenow="22" aria-valuemin="0" aria-valuemax="40" aria-valuetext="22 of 40, Epic guaranteed within 18 opens" style="height: 6px; border-radius: 999px; background: #0f1117; overflow: hidden"><div style="width: 55%; height: 100%; background: #c48cff"></div></div>
+          </div>
+        </section>
+
+        <a href="#collection" style="display: flex; align-items: center; gap: 14px; padding: 16px 20px; border-radius: 16px; background: rgba(21,24,33,0.7); border: 1px solid rgba(255,255,255,0.10); color: #e7e9ef; text-decoration: none">
+          <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#5eb0ff" stroke-width="2" stroke-linecap="round" aria-hidden="true"><rect x="3" y="3" width="7" height="7" rx="1.5"></rect><rect x="14" y="3" width="7" height="7" rx="1.5"></rect><rect x="3" y="14" width="7" height="7" rx="1.5"></rect><rect x="14" y="14" width="7" height="7" rx="1.5"></rect></svg>
+          <span style="flex: 1; display: flex; flex-direction: column; gap: 6px">
+            <span style="display: flex; justify-content: space-between; align-items: baseline"><span style="font-family: 'Bricolage Grotesque', Inter, sans-serif; font-weight: 800; font-size: 18px">Collection</span><span style="font: 500 13px 'JetBrains Mono', monospace; color: #cdd2de">4 / 1025 caught</span></span>
+            <span role="progressbar" aria-label="Collection progress" aria-valuenow="4" aria-valuemin="0" aria-valuemax="1025" style="display: block; height: 6px; border-radius: 999px; background: #0f1117; overflow: hidden"><span style="display: block; width: 1%; min-width: 4px; height: 100%; background: #5eb0ff"></span></span>
+          </span>
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#aab1c2" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M9 6l6 6-6 6"></path></svg>
+        </a>
+      </div>
+    </div>
+  </main>
+
+  <footer style="padding: 16px 40px 24px; font-size: 12px; color: #818a9e; text-align: center">Unofficial fan project, not affiliated with Nintendo, Game Freak or The Pokémon Company · Data: PokéAPI</footer>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1280,"height":1000}}'>
+class Component extends DCLogic {
+  constructor(props) { super(props); this.state = { hint: true }; }
+  renderVals() {
+    return {
+      showHint: this.state.hint,
+      dismiss: () => this.setState({ hint: false })
+    };
+  }
+}
+</script>
+</body>
+</html>

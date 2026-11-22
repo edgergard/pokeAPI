@@ -1,0 +1,175 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Trainer Studio — home hub (mobile)</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&amp;family=Inter:wght@400;500;600&amp;family=JetBrains+Mono:wght@500&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0;background:#07080b}
+a{color:#ffd23f}a:hover{color:#ffe27a}
+button:focus-visible,a:focus-visible{outline:2px solid #ffd23f;outline-offset:3px}
+</style>
+</helmet>
+<div style="width: 390px; height: 844px; overflow: hidden; box-sizing: border-box; background: radial-gradient(600px 400px at 80% -10%, rgba(94,176,255,0.16), transparent 60%), radial-gradient(500px 300px at 0% 110%, rgba(255,210,63,0.10), transparent 60%), #07080b; color: #e7e9ef; font-family: Inter, system-ui, sans-serif; display: flex; flex-direction: column">
+
+  <header style="flex: 0 0 auto; display: flex; align-items: center; gap: 8px; padding: 8px 12px 8px 16px; background: rgba(15,17,23,0.72); border-bottom: 1px solid rgba(255,255,255,0.08)">
+    <a href="Main.dc.html" aria-label="Trainer Studio, home" style="width: 44px; height: 44px; display: inline-flex; align-items: center; justify-content: flex-start">
+      <svg width="28" height="28" viewBox="0 0 28 28" aria-hidden="true"><rect x="3" y="3" width="22" height="22" rx="7" fill="none" stroke="#ffd23f" stroke-width="2.5"></rect><path d="M3 14h22" stroke="#ffd23f" stroke-width="2.5"></path><circle cx="14" cy="14" r="3.5" fill="#07080b" stroke="#ffd23f" stroke-width="2.5"></circle></svg>
+    </a>
+    <div style="display: flex; align-items: center; gap: 6px; min-height: 36px; padding: 0 10px; border-radius: 999px; background: #0f1117; border: 1px solid #3a4152">
+      <span style="font: 500 12px 'JetBrains Mono', monospace; color: #ffd23f">Lv 3</span>
+      <div role="progressbar" aria-label="Trainer XP" aria-valuenow="180" aria-valuemin="0" aria-valuemax="300" aria-valuetext="180 of 300 XP" style="width: 44px; height: 6px; border-radius: 999px; background: #1b1f2a; overflow: hidden"><div style="width: 60%; height: 100%; background: #ffd23f"></div></div>
+    </div>
+    <span style="flex: 1"></span>
+    <a href="a-battle.dc.html" style="display: inline-flex; align-items: center; min-height: 44px; padding: 0 18px; border-radius: 16px; background: #ffd23f; color: #07080b; font: 600 15px Inter, sans-serif; text-decoration: none; box-shadow: inset 0 0 0 1px rgba(255,255,255,0.15), 0 8px 24px -10px rgba(255,210,63,0.6)">Fight</a>
+    <a href="#settings" aria-label="Settings" style="width: 44px; height: 44px; display: inline-flex; align-items: center; justify-content: center; border-radius: 12px; color: #cdd2de">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="3"></circle><circle cx="12" cy="12" r="7.5"></circle><path d="M12 2v2.5M12 19.5V22M2 12h2.5M19.5 12H22M4.9 4.9l1.8 1.8M17.3 17.3l1.8 1.8M4.9 19.1l1.8-1.8M17.3 6.7l1.8-1.8"></path></svg>
+    </a>
+  </header>
+
+  <main id="content" style="flex: 1 1 auto; min-height: 0; padding: 12px 16px; box-sizing: border-box; display: flex; flex-direction: column; gap: 10px">
+
+    <section aria-label="Trainer" style="display: flex; align-items: center; gap: 12px; padding: 10px 14px; border-radius: 16px; background: rgba(21,24,33,0.7); border: 1px solid rgba(255,255,255,0.10)">
+      <h1 style="margin: 0; font-family: 'Bricolage Grotesque', Inter, sans-serif; font-weight: 800; font-size: 18px; white-space: nowrap">Rowan <span style="font: 500 12px 'JetBrains Mono', monospace; color: #ffd23f">Lv 3</span></h1>
+      <div style="flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 4px">
+        <span style="display: flex; justify-content: space-between; gap: 6px; font-size: 12px"><span style="color: #cdd2de">Next: Lv 5 · team slot 3</span><span style="font-family: 'JetBrains Mono', monospace; color: #aab1c2">180/300</span></span>
+        <div role="progressbar" aria-label="Trainer XP to level 4" aria-valuenow="180" aria-valuemin="0" aria-valuemax="300" style="height: 8px; border-radius: 999px; background: #0f1117; overflow: hidden"><div style="width: 60%; height: 100%; border-radius: 999px; background: linear-gradient(90deg, #ffd23f, #ffe27a)"></div></div>
+      </div>
+    </section>
+
+    <section aria-labelledby="m-next-stage" style="padding: 14px 16px; border-radius: 16px; background: radial-gradient(300px 160px at 100% 0%, rgba(255,122,102,0.16), transparent 70%), linear-gradient(160deg, #151821, #0f1117); border: 1px solid rgba(255,255,255,0.12); display: flex; flex-direction: column; gap: 10px">
+      <div style="display: flex; align-items: flex-start; gap: 10px">
+        <div style="flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 4px">
+          <span style="font: 500 12px 'JetBrains Mono', monospace; letter-spacing: 0.14em; text-transform: uppercase; color: #ffd23f">Next stage</span>
+          <h2 id="m-next-stage" style="margin: 0; font-family: 'Bricolage Grotesque', Inter, sans-serif; font-weight: 800; font-size: 22px; line-height: 1.1; letter-spacing: -0.01em">Stage 2 · Rival Juniper Vale</h2>
+        </div>
+        <ul aria-label="Rival team: Pidgey level 6, Oddish level 7" style="list-style: none; margin: 0; padding: 0; display: flex; gap: 6px">
+          <li aria-hidden="true" style="width: 44px; height: 44px; border-radius: 12px; background: radial-gradient(circle at 50% 45%, rgba(168,167,122,0.5), rgba(168,167,122,0.05) 70%), #1b1f2a; border: 2px solid #ff7a66; display: flex; align-items: center; justify-content: center"><div style="width: 22px; height: 22px; border-radius: 50%; background: #a8a77a"></div></li>
+          <li aria-hidden="true" style="width: 44px; height: 44px; border-radius: 12px; background: radial-gradient(circle at 50% 45%, rgba(122,199,76,0.5), rgba(122,199,76,0.05) 70%), #1b1f2a; border: 2px solid #ff7a66; display: flex; align-items: center; justify-content: center"><div style="width: 20px; height: 20px; border-radius: 50%; background: #7ac74c"></div></li>
+        </ul>
+      </div>
+      <div style="display: flex; align-items: center; gap: 10px">
+        <span style="flex: 1; font-size: 12px; color: #aab1c2">First clear: <span style="color: #e7e9ef">+1 Capsule · +60 XP · +30 dust</span></span>
+        <a href="a-battle.dc.html" style="display: inline-flex; align-items: center; gap: 8px; min-height: 48px; padding: 0 22px; border-radius: 16px; background: #ffd23f; color: #07080b; font: 600 16px Inter, sans-serif; text-decoration: none; box-shadow: inset 0 0 0 1px rgba(255,255,255,0.15), 0 10px 30px -10px rgba(255,210,63,0.6)">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14.5 17.5L3 6V3h3l11.5 11.5M13 19l6-6M16 16l4 4M19 21l2-2"></path></svg>
+          Fight
+        </a>
+      </div>
+    </section>
+
+    <section aria-labelledby="m-team" style="padding: 10px 0 12px; border-radius: 16px; background: rgba(21,24,33,0.7); border: 1px solid rgba(255,255,255,0.10); display: flex; flex-direction: column; gap: 6px">
+      <div style="display: flex; align-items: center; justify-content: space-between; padding: 0 8px 0 14px">
+        <h2 id="m-team" style="margin: 0; font-family: 'Bricolage Grotesque', Inter, sans-serif; font-weight: 800; font-size: 17px">Team <span style="font: 500 12px 'JetBrains Mono', monospace; color: #818a9e">2 / 2</span></h2>
+        <a href="#team" style="display: inline-flex; align-items: center; min-height: 44px; padding: 0 12px; border-radius: 12px; font: 600 14px Inter, sans-serif; text-decoration: none">Edit team</a>
+      </div>
+      <ul style="list-style: none; margin: 0; padding: 0 14px; display: flex; gap: 10px; overflow-x: auto">
+        <li style="flex: 0 0 132px">
+          <a href="a-creature.dc.html" aria-label="Pikachu, level 7, 1 star, uncommon, 1 talent point available" style="display: flex; flex-direction: column; gap: 6px; padding: 8px; border-radius: 14px; background: linear-gradient(160deg, #151821, #0f1117); border: 2px solid #5ee39a; color: #e7e9ef; text-decoration: none">
+            <span style="display: flex; justify-content: space-between; font: 500 12px 'JetBrains Mono', monospace"><span style="color: #5ee39a">Uncommon</span><span style="color: #cdd2de">Lv 7</span></span>
+            <span aria-hidden="true" style="height: 70px; border-radius: 10px; background: radial-gradient(circle at 50% 42%, rgba(247,208,44,0.45), rgba(247,208,44,0.05) 70%), #1b1f2a; display: flex; align-items: center; justify-content: center; position: relative">
+              <span style="width: 40px; height: 40px; border-radius: 50%; background: #f7d02c; opacity: 0.9"></span>
+              <span style="position: absolute; top: 6px; right: 6px; width: 8px; height: 8px; border-radius: 50%; background: #5ee39a"></span>
+            </span>
+            <span style="display: flex; justify-content: space-between; align-items: baseline"><span style="font-family: 'Bricolage Grotesque', Inter, sans-serif; font-weight: 800; font-size: 15px">Pikachu</span><span aria-hidden="true" style="font-size: 12px; color: #ffd23f">★</span></span>
+          </a>
+        </li>
+        <li style="flex: 0 0 132px">
+          <a href="a-creature.dc.html" aria-label="Charmander, level 6, 2 stars, rare" style="display: flex; flex-direction: column; gap: 6px; padding: 8px; border-radius: 14px; background: linear-gradient(160deg, #151821, #0f1117); border: 2px solid #5eb0ff; color: #e7e9ef; text-decoration: none">
+            <span style="display: flex; justify-content: space-between; font: 500 12px 'JetBrains Mono', monospace"><span style="color: #5eb0ff">Rare</span><span style="color: #cdd2de">Lv 6</span></span>
+            <span aria-hidden="true" style="height: 70px; border-radius: 10px; background: radial-gradient(circle at 50% 42%, rgba(238,129,48,0.45), rgba(238,129,48,0.05) 70%), #1b1f2a; display: flex; align-items: center; justify-content: center">
+              <span style="width: 38px; height: 38px; border-radius: 50%; background: #ee8130; opacity: 0.9"></span>
+            </span>
+            <span style="display: flex; justify-content: space-between; align-items: baseline"><span style="font-family: 'Bricolage Grotesque', Inter, sans-serif; font-weight: 800; font-size: 15px">Charmander</span><span aria-hidden="true" style="font-size: 12px; color: #ffd23f">★★</span></span>
+          </a>
+        </li>
+        <li aria-label="Slot 3, unlocks at Trainer level 5" style="flex: 0 0 110px; box-sizing: border-box; border-radius: 14px; border: 2px dashed #3a4152; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px; padding: 8px; text-align: center">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#818a9e" stroke-width="2" stroke-linecap="round" aria-hidden="true"><rect x="5" y="11" width="14" height="10" rx="2"></rect><path d="M8 11V7a4 4 0 0 1 8 0v4"></path></svg>
+          <span style="font-size: 12px; color: #aab1c2">Unlocks at Trainer Lv 5</span>
+        </li>
+      </ul>
+    </section>
+
+    <section aria-labelledby="m-quests" style="padding: 10px 14px 12px; border-radius: 16px; background: rgba(21,24,33,0.7); border: 1px solid rgba(255,255,255,0.10); display: flex; flex-direction: column; gap: 6px">
+      <div style="display: flex; justify-content: space-between; align-items: baseline">
+        <h2 id="m-quests" style="margin: 0; font-family: 'Bricolage Grotesque', Inter, sans-serif; font-weight: 800; font-size: 17px">Daily quests</h2>
+        <span style="font: 500 12px 'JetBrains Mono', monospace; color: #818a9e">Resets in 5 h</span>
+      </div>
+      <ul style="list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 4px">
+        <li>
+          <a href="#ladder" style="display: flex; align-items: center; gap: 10px; min-height: 44px; padding: 0 10px; border-radius: 12px; background: #0f1117; color: #e7e9ef; text-decoration: none">
+            <span style="flex: 0 0 132px; font-size: 13px">Win 3 battles</span>
+            <span role="progressbar" aria-label="Win 3 battles" aria-valuenow="1" aria-valuemin="0" aria-valuemax="3" style="flex: 1; height: 6px; border-radius: 999px; background: #1b1f2a; overflow: hidden"><span style="display: block; width: 33%; height: 100%; background: #ffd23f"></span></span>
+            <span style="flex: 0 0 56px; text-align: right; font: 500 12px 'JetBrains Mono', monospace; color: #cdd2de">1/3</span>
+          </a>
+        </li>
+        <li>
+          <div style="display: flex; align-items: center; gap: 10px; min-height: 44px; padding: 0 10px; border-radius: 12px; background: rgba(94,227,154,0.08); border: 1px solid rgba(94,227,154,0.3); box-sizing: border-box">
+            <span style="flex: 0 0 132px; font-size: 13px">Open 2 capsules</span>
+            <span role="progressbar" aria-label="Open 2 capsules" aria-valuenow="2" aria-valuemin="0" aria-valuemax="2" style="flex: 1; height: 6px; border-radius: 999px; background: #1b1f2a; overflow: hidden"><span style="display: block; width: 100%; height: 100%; background: #5ee39a"></span></span>
+            <span style="flex: 0 0 56px; display: inline-flex; justify-content: flex-end; align-items: center; gap: 4px; font: 500 12px 'JetBrains Mono', monospace; color: #5ee39a"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" aria-hidden="true"><path d="M5 12l5 5 9-10"></path></svg>2/2</span>
+          </div>
+        </li>
+        <li>
+          <a href="#ladder" style="display: flex; align-items: center; gap: 10px; min-height: 44px; padding: 0 10px; border-radius: 12px; background: #0f1117; color: #e7e9ef; text-decoration: none">
+            <span style="flex: 0 0 132px; font-size: 13px">Deal 500 damage</span>
+            <span role="progressbar" aria-label="Deal 500 damage" aria-valuenow="320" aria-valuemin="0" aria-valuemax="500" style="flex: 1; height: 6px; border-radius: 999px; background: #1b1f2a; overflow: hidden"><span style="display: block; width: 64%; height: 100%; background: #ffd23f"></span></span>
+            <span style="flex: 0 0 56px; text-align: right; font: 500 12px 'JetBrains Mono', monospace; color: #cdd2de">320/500</span>
+          </a>
+        </li>
+      </ul>
+    </section>
+  </main>
+
+  <nav aria-label="Main" style="flex: 0 0 auto; padding: 6px 4px 10px; background: rgba(15,17,23,0.92); border-top: 1px solid rgba(255,255,255,0.08)">
+    <ul style="list-style: none; margin: 0; padding: 0; display: flex">
+      <li style="flex: 1">
+        <a href="a-home-hub-mobile.dc.html" aria-current="page" style="display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; min-height: 48px; border-radius: 12px; color: #ffd23f; font: 600 12px Inter, sans-serif; text-decoration: none">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 10l9-7 9 7v10a1 1 0 0 1-1 1h-5v-6h-6v6H4a1 1 0 0 1-1-1z"></path></svg>
+          Home
+        </a>
+      </li>
+      <li style="flex: 1">
+        <a href="#ladder" style="display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; min-height: 48px; border-radius: 12px; color: #aab1c2; font: 500 12px Inter, sans-serif; text-decoration: none">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 13v8M12 3v3M4 6h13l3 3.5-3 3.5H4z"></path></svg>
+          Ladder
+        </a>
+      </li>
+      <li style="flex: 1">
+        <a href="#collection" style="display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; min-height: 48px; border-radius: 12px; color: #aab1c2; font: 500 12px Inter, sans-serif; text-decoration: none">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><rect x="3" y="3" width="7" height="7" rx="1.5"></rect><rect x="14" y="3" width="7" height="7" rx="1.5"></rect><rect x="3" y="14" width="7" height="7" rx="1.5"></rect><rect x="14" y="14" width="7" height="7" rx="1.5"></rect></svg>
+          Collection
+        </a>
+      </li>
+      <li style="flex: 1">
+        <a href="#capsules" aria-label="Capsules, 2 unopened" style="position: relative; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; min-height: 48px; border-radius: 12px; color: #aab1c2; font: 500 12px Inter, sans-serif; text-decoration: none">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 9l9-5 9 5v8l-9 5-9-5z"></path><path d="M3 9l9 5 9-5M12 14v8"></path></svg>
+          Capsules
+          <span aria-hidden="true" style="position: absolute; top: 2px; left: 50%; margin-left: 6px; min-width: 18px; height: 18px; padding: 0 5px; box-sizing: border-box; border-radius: 999px; background: #ffd23f; color: #07080b; font: 600 12px Inter, sans-serif; display: inline-flex; align-items: center; justify-content: center">2</span>
+        </a>
+      </li>
+      <li style="flex: 1">
+        <a href="#trainer" aria-label="Trainer, unspent talent points" style="position: relative; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; min-height: 48px; border-radius: 12px; color: #aab1c2; font: 500 12px Inter, sans-serif; text-decoration: none">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="8" r="4"></circle><path d="M4 21a8 8 0 0 1 16 0"></path></svg>
+          Trainer
+          <span aria-hidden="true" style="position: absolute; top: 6px; left: 50%; margin-left: 8px; width: 8px; height: 8px; border-radius: 50%; background: #5ee39a"></span>
+        </a>
+      </li>
+    </ul>
+  </nav>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  renderVals() {
+    return {};
+  }
+}
+</script>
+</body>
+</html>
