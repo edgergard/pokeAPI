@@ -1,7 +1,8 @@
 import type { NextConfig } from 'next';
+import { BASE_PATH } from './src/shared/config/site';
 
-// GitHub Pages serves the site under /pokeAPI/. `next dev` runs at the root so local URLs stay short.
-const basePath = process.env.NODE_ENV === 'production' ? '/pokeAPI' : '';
+// GitHub Pages serves the site under /pokeAPI/; Vercel and `next dev` serve it at the root.
+const basePath = BASE_PATH;
 
 const nextConfig: NextConfig = {
   // Fully static site: every route is prerendered to HTML at build time and served from Pages' CDN.

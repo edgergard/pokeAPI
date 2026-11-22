@@ -29,3 +29,7 @@ dist-ssr
 out
 next-env.d.ts
 *.tsbuildinfo
+
+# Vercel (project link + pulled env, e.g. the OIDC token in .env.local)
+.vercel
+.env*
