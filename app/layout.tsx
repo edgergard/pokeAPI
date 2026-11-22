@@ -3,6 +3,7 @@ import type { ReactNode } from 'react';
 import { Bricolage_Grotesque, Inter, JetBrains_Mono } from 'next/font/google';
 import { QueryProvider } from '@/app/providers/QueryProvider';
 import { motionScript } from '@/app/motionScript';
+import { SITE_URL } from '@/shared/config/site';
 import '@/app/styles.css';
 
 // Fonts are downloaded at build time and served from the site itself: no render-blocking request
@@ -24,7 +25,7 @@ const jetbrains = JetBrains_Mono({
 });
 
 export const metadata: Metadata = {
-  metadataBase: new URL('https://edgergard.github.io/pokeAPI/'),
+  metadataBase: new URL(SITE_URL),
   title: { default: 'Trainer Studio · PokeAPI', template: '%s · Trainer Studio' },
   description: 'Build your Pokémon team of four and watch two teams battle as 3D cards — powered by PokeAPI.',
   openGraph: {
