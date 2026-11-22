@@ -31,9 +31,14 @@ export type DecodeResult =
   | {
       ok: true;
       save: Save;
-      /** Version the file was upgraded from, or null. */ migratedFrom: number | null;
+      /** Version the file was upgraded from, or null. */
+      migratedFrom: number | null;
     }
-  | { ok: false; error: 'damaged' | 'newer' };
+  | {
+      ok: false;
+      /** unavailable: the upgrade code for an older file couldn't be loaded (offline); try again. */
+      error: 'damaged' | 'newer' | 'unavailable';
+    };
 
 /** Builds the file text for any document version (exported for tests and future formats). */
 export async function encodeEnvelope({
@@ -91,7 +96,12 @@ export async function decodeSaveFile(
   if (actual !== checksum) return { ok: false, error: 'damaged' };
 
   const result = await migrateSave(schemaVersion, data, { now });
-  if (!result.ok) return { ok: false, error: result.reason === 'newer' ? 'newer' : 'damaged' };
+  if (!result.ok) {
+    if (result.reason === 'newer' || result.reason === 'unavailable') {
+      return { ok: false, error: result.reason };
+    }
+    return { ok: false, error: 'damaged' };
+  }
   return { ok: true, save: result.save, migratedFrom: result.migratedFrom };
 }
 

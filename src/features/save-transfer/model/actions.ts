@@ -1,10 +1,10 @@
 import {
+  commitSave,
   createNewSave,
   getSave,
   readBackup,
   replaceSave,
   updateSave,
-  writeBackup,
   type Save,
 } from '@/entities/save';
 import { downloadTextFile } from '../lib/downloadTextFile';
@@ -52,12 +52,13 @@ export async function readSaveFile(file: Blob, now: number = Date.now()): Promis
 }
 
 /**
- * Moves the current save (if any) to the backup slot, then makes `next` the current save.
- * Resolves false — and changes nothing — when the backup can't be written.
+ * Moves the current save (if any) to the backup slot and makes `next` the current save. Both keys are
+ * stored in one transaction before memory changes, so a closed tab never keeps only half of it.
+ * Resolves false — and changes nothing — when they can't be stored.
  */
 async function replaceKeepingBackup(next: Save, now: number): Promise<boolean> {
   const current = getSave();
-  if (current && !(await writeBackup(current, now))) return false;
+  if (!(await commitSave(next, current ? { savedAt: now, save: current } : null))) return false;
   replaceSave(next);
   return true;
 }

@@ -19,12 +19,13 @@ export async function migrateSave(
       : { ok: false, reason: 'invalid' };
   }
   if (Number.isInteger(version) && version > SAVE_VERSION) return { ok: false, reason: 'newer' };
+  let chain: typeof import('./migrations');
   try {
-    const { runMigrations } = await import('./migrations');
-    return runMigrations(version, doc, ctx);
+    chain = await import('./migrations');
   } catch {
-    return { ok: false, reason: 'invalid' }; // the chunk failed to load
+    return { ok: false, reason: 'unavailable' }; // the chunk failed to load: not the document's fault
   }
+  return chain.runMigrations(version, doc, ctx);
 }
 
 /** The `version` of a stored save document, or null when it doesn't look like one. */

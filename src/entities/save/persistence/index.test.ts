@@ -2,20 +2,33 @@ import 'fake-indexeddb/auto';
 import { IDBFactory } from 'fake-indexeddb';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { createNewSave, type Save } from '../model/schema';
-import { __resetSaveStoreForTests, getSave, getState, initSave, updateSave } from '../model/store';
+import {
+  __resetSaveStoreForTests,
+  getSave,
+  getState,
+  initSave,
+  replaceSave,
+  updateSave,
+} from '../model/store';
 import { BACKUP_KEY, SAVE_KEY, V1_ROSTER_KEY } from './keys';
 import { createIdbKeyValue, type KeyValueStore } from './kv';
 import {
   LOAD_ERROR_DAMAGED,
   LOAD_ERROR_NEWER,
+  commitSave,
   createDefaultPersistence,
   type PersistenceOptions,
 } from '.';
 
 const fresh = (name = 'Rowan'): Save => createNewSave({ seed: 1, now: 0, name });
 
-/** No DOM lifecycle, no localStorage unless a test passes one. */
-const base: PersistenceOptions = { window: null, document: null, localStorage: null };
+/** No DOM lifecycle, no other tabs, no localStorage unless a test passes one. */
+const base: PersistenceOptions = {
+  window: null,
+  document: null,
+  localStorage: null,
+  channel: null,
+};
 
 /** In-memory key-value store that counts writes; `fail` makes calls reject. */
 function memoryKv(initial: Record<string, unknown> = {}) {
@@ -33,6 +46,13 @@ function memoryKv(initial: Record<string, unknown> = {}) {
       if (kv.failSet) throw new DOMException('full', 'QuotaExceededError');
       kv.sets.push([key, value]);
       data.set(key, value);
+    },
+    /** One transaction: recorded as a single batch. */
+    batches: [] as [string, unknown][][],
+    async setMany(entries: [string, unknown][]) {
+      if (kv.failSet) throw new DOMException('full', 'QuotaExceededError');
+      kv.batches.push(entries);
+      for (const [key, value] of entries) data.set(key, value);
     },
   };
   return kv;
@@ -128,6 +148,180 @@ describe('stored document checks', () => {
     await adapter.flush();
     expect(getState()).toMatchObject({ status: 'error', error: LOAD_ERROR_NEWER });
     expect(kv.sets).toEqual([]);
+  });
+
+  it('never overwrites a newer save, even when the player starts over', async () => {
+    __resetSaveStoreForTests();
+    const newer = { ...fresh(), version: 3 };
+    const kv = memoryKv({ [SAVE_KEY]: newer });
+    const adapter = createDefaultPersistence({ ...base, kv, debounceMs: 0 });
+    await initSave(adapter, () => fresh());
+    expect(adapter.durable).toBe(false);
+    replaceSave(fresh('Fresh start')); // e.g. "Start fresh" on the home error screen
+    await adapter.flush();
+    await expect(adapter.write(fresh())).resolves.toBe(false);
+    await expect(adapter.commit(fresh(), null)).resolves.toBe(false);
+    expect(kv.sets).toEqual([]);
+    expect(kv.batches).toEqual([]);
+    expect(kv.data.get(SAVE_KEY)).toBe(newer);
+  });
+
+  it('lets a damaged save be replaced (start fresh / import)', async () => {
+    const kv = memoryKv({ [SAVE_KEY]: 'garbage' });
+    const adapter = createDefaultPersistence({ ...base, kv });
+    expect(await adapter.load()).toEqual({ kind: 'error', reason: LOAD_ERROR_DAMAGED });
+    await expect(adapter.commit(fresh('New'), null)).resolves.toBe(true);
+    expect(kv.data.get(SAVE_KEY)).toMatchObject({ trainer: { name: 'New' } });
+  });
+});
+
+describe('commit (save + backup in one transaction)', () => {
+  beforeEach(() => {
+    vi.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout', 'Date'] });
+  });
+  afterEach(() => {
+    vi.useRealTimers();
+  });
+
+  it('writes both keys at once and drops the older pending write', async () => {
+    const kv = memoryKv();
+    const adapter = createDefaultPersistence({ ...base, kv, debounceMs: 100 });
+    const older = adapter.write({ ...fresh(), dust: 1 });
+    const next = { ...fresh('Next'), dust: 2 };
+    const backup = { savedAt: 5, save: { ...fresh('Old'), dust: 1 } };
+
+    await expect(adapter.commit(next, backup)).resolves.toBe(true);
+    await expect(older).resolves.toBe(true); // superseded by what was stored
+    await vi.advanceTimersByTimeAsync(1000);
+    expect(kv.batches).toEqual([
+      [
+        [SAVE_KEY, next],
+        [BACKUP_KEY, backup],
+      ],
+    ]);
+    expect(kv.sets).toEqual([]); // the older debounced write never landed after the commit
+    expect(kv.data.get(SAVE_KEY)).toBe(next);
+  });
+
+  it('leaves the backup slot alone when there is nothing to back up', async () => {
+    const kv = memoryKv({ [BACKUP_KEY]: 'keep me' });
+    const adapter = createDefaultPersistence({ ...base, kv });
+    await adapter.commit(fresh(), null);
+    expect(kv.batches).toEqual([[[SAVE_KEY, fresh()]]]);
+    expect(kv.data.get(BACKUP_KEY)).toBe('keep me');
+  });
+
+  it('stores nothing on failure and puts the cancelled write back', async () => {
+    const kv = memoryKv();
+    const adapter = createDefaultPersistence({ ...base, kv, debounceMs: 100 });
+    const older = adapter.write({ ...fresh(), dust: 1 });
+    kv.failSet = true;
+    await expect(adapter.commit(fresh('Next'), null)).resolves.toBe(false);
+    expect(kv.data.has(SAVE_KEY)).toBe(false);
+    kv.failSet = false;
+    await vi.advanceTimersByTimeAsync(100);
+    await expect(older).resolves.toBe(true);
+    expect(kv.data.get(SAVE_KEY)).toMatchObject({ dust: 1 });
+  });
+});
+
+describe('commitSave', () => {
+  beforeEach(() => {
+    globalThis.indexedDB = new IDBFactory();
+  });
+
+  it('survives closing the page right after a replace (no debounce window)', async () => {
+    __resetSaveStoreForTests();
+    const kv = createIdbKeyValue();
+    const adapter = createDefaultPersistence({ ...base, kv, debounceMs: 60_000 });
+    await initSave(adapter, () => fresh('Current'));
+    await adapter.flush();
+
+    const restored = fresh('Restored');
+    await expect(commitSave(restored, { savedAt: 9, save: fresh('Current') })).resolves.toBe(true);
+    replaceSave(restored);
+    adapter.dispose(); // the tab closes before the 60 s debounce fires
+
+    const reloaded = createDefaultPersistence({ ...base, kv: createIdbKeyValue() });
+    expect(await reloaded.load()).toEqual({ kind: 'loaded', save: restored });
+    expect(await kv.get(BACKUP_KEY)).toEqual({ savedAt: 9, save: fresh('Current') });
+  });
+});
+
+describe('cross-tab guard', () => {
+  let channelName: string;
+  const opened: { dispose(): void }[] = [];
+  const tab = (kv: KeyValueStore) => {
+    const adapter = createDefaultPersistence({ ...base, kv, channel: channelName, debounceMs: 0 });
+    opened.push(adapter);
+    return adapter;
+  };
+
+  beforeEach(() => {
+    globalThis.indexedDB = new IDBFactory();
+    channelName = `trainer-studio-save-test-${Math.round(performance.now() * 1000)}`;
+  });
+  afterEach(() => {
+    for (const adapter of opened.splice(0)) adapter.dispose();
+  });
+
+  it('stops a stale tab from writing over newer progress', async () => {
+    const a = tab(createIdbKeyValue());
+    const b = tab(createIdbKeyValue());
+    await a.load();
+    await b.load();
+
+    await expect(a.write({ ...fresh('A'), dust: 50 })).resolves.toBe(true);
+    await vi.waitFor(() => expect(b.durable).toBe(false));
+    expect(a.durable).toBe(true);
+
+    await expect(b.write({ ...fresh('B'), dust: 1 })).resolves.toBe(false);
+    await expect(b.commit(fresh('B'), null)).resolves.toBe(false);
+    const reloaded = createDefaultPersistence({ ...base, kv: createIdbKeyValue() });
+    expect(await reloaded.load()).toMatchObject({ kind: 'loaded', save: { dust: 50 } });
+  });
+
+  it('drops the stale tab’s pending write', async () => {
+    const a = tab(createIdbKeyValue());
+    const b = createDefaultPersistence({
+      ...base,
+      kv: createIdbKeyValue(),
+      channel: channelName,
+      debounceMs: 60_000,
+    });
+    opened.push(b);
+    await a.load();
+    await b.load();
+    const pending = b.write(fresh('B'));
+    await a.write(fresh('A'));
+    await expect(pending).resolves.toBe(false);
+  });
+
+  it('keeps a tab that loaded after the other tab’s write', async () => {
+    const a = tab(createIdbKeyValue());
+    await a.load();
+    await a.write(fresh('A'));
+    await new Promise((resolve) => setTimeout(resolve, 5));
+    const b = tab(createIdbKeyValue());
+    await b.load();
+    await new Promise((resolve) => setTimeout(resolve, 20)); // any late message would have arrived
+    expect(b.durable).toBe(true);
+
+    // Now b writes: a is the stale one.
+    await b.write(fresh('B'));
+    await vi.waitFor(() => expect(a.durable).toBe(false));
+    expect(b.durable).toBe(true);
+  });
+
+  it('ignores messages about writes older than its own last read', async () => {
+    const a = tab(createIdbKeyValue());
+    await a.load();
+    const other = new BroadcastChannel(channelName);
+    other.postMessage({ type: 'saved', tab: 'zzz', at: 0 });
+    other.postMessage({ type: 'something else' });
+    await new Promise((resolve) => setTimeout(resolve, 20));
+    other.close();
+    expect(a.durable).toBe(true);
   });
 });
 
@@ -245,7 +439,11 @@ describe('blocked storage', () => {
   });
 
   it('treats a hung open as blocked', async () => {
-    const kv: KeyValueStore = { get: () => new Promise(() => {}), set: async () => {} };
+    const kv: KeyValueStore = {
+      get: () => new Promise(() => {}),
+      set: async () => {},
+      setMany: async () => {},
+    };
     const adapter = createDefaultPersistence({ ...base, kv, openTimeoutMs: 20 });
     expect(await adapter.load()).toEqual({ kind: 'empty' });
     expect(adapter.durable).toBe(false);

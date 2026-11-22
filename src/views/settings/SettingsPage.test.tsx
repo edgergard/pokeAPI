@@ -1,11 +1,13 @@
 // @vitest-environment jsdom
 import '@testing-library/jest-dom/vitest';
 import 'fake-indexeddb/auto';
-import { act, render, screen, waitFor, within } from '@testing-library/react';
+import { act, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { clear, createStore } from 'idb-keyval';
 import { afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
 import {
+  LOAD_ERROR_DAMAGED,
+  LOAD_ERROR_NEWER,
   SAVE_VERSION,
   createNewSave,
   getSave,
@@ -25,12 +27,17 @@ const theirs: Save = {
 };
 
 beforeAll(() => {
-  // jsdom has no modal dialogs: enough of the API for shared/ui/Dialog.
+  // jsdom has no modal dialogs: enough of the API for shared/ui/Dialog, including the native
+  // behaviour of returning focus to the element that had it when the dialog opened.
+  const opener = new WeakMap<HTMLDialogElement, Element | null>();
   HTMLDialogElement.prototype.showModal ??= function (this: HTMLDialogElement) {
+    opener.set(this, document.activeElement);
     this.setAttribute('open', '');
   };
   HTMLDialogElement.prototype.close ??= function (this: HTMLDialogElement) {
     this.removeAttribute('open');
+    const previous = opener.get(this);
+    if (previous instanceof HTMLElement) previous.focus();
   };
 });
 
@@ -41,15 +48,22 @@ function stubPersisted(persisted: boolean) {
   });
 }
 
-async function renderWith(save: Save, { durable = true } = {}) {
+/** Renders Settings over an in-memory store holding `save`, or in the load-error state `loadError`. */
+async function renderWith(
+  save: Save | null,
+  {
+    durable = true,
+    loadError = LOAD_ERROR_DAMAGED,
+  }: { durable?: boolean; loadError?: string } = {},
+) {
   await act(() =>
     initSave(
       {
         durable,
-        load: async () => ({ kind: 'loaded', save }),
+        load: async () => (save ? { kind: 'loaded', save } : { kind: 'error', reason: loadError }),
         write: async () => durable,
       },
-      () => save,
+      () => createNewSave({ seed: 9, now: 9, name: 'Unused' }),
     ),
   );
   const view = render(<SettingsPage />);
@@ -58,9 +72,25 @@ async function renderWith(save: Save, { durable = true } = {}) {
 }
 
 const status = () => screen.getByRole('status');
-const fileInput = (container: HTMLElement) =>
-  container.querySelector<HTMLInputElement>('input[type="file"]')!;
-const saveFile = async (text: string) => new File([text], 'save.txt', { type: 'text/plain' });
+const button = (name: RegExp | string) => screen.getByRole('button', { name });
+function fileInput(container: HTMLElement): HTMLInputElement {
+  const input = container.querySelector<HTMLInputElement>('input[type="file"]');
+  if (!input) throw new Error('no file input');
+  return input;
+}
+const saveFile = (text: string) => new File([text], 'save.txt', { type: 'text/plain' });
+const exportFile = async (save: Save) =>
+  saveFile(await encodeSaveFile(save, { now: 1, gameVersion: 'x' }));
+
+/** Unavailable but still focusable: `aria-disabled`, never `disabled`. */
+function expectOff(element: HTMLElement) {
+  expect(element).toHaveAttribute('aria-disabled', 'true');
+  expect(element).not.toBeDisabled();
+}
+function expectOn(element: HTMLElement) {
+  expect(element).not.toHaveAttribute('aria-disabled');
+  expect(element).not.toBeDisabled();
+}
 
 describe('SettingsPage', () => {
   beforeEach(async () => {
@@ -99,7 +129,7 @@ describe('SettingsPage', () => {
   it('warns while storage may be cleared', async () => {
     await renderWith(mine);
     expect(await screen.findByText('Browser may clear data. Export often.')).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: /import save/i })).toBeEnabled();
+    expectOn(button(/import save/i));
   });
 
   it('offers only Export when storage is blocked', async () => {
@@ -107,25 +137,25 @@ describe('SettingsPage', () => {
     await renderWith(mine, { durable: false });
     expect(screen.getByText('Browser may clear data. Export often.')).toBeInTheDocument();
     expect(screen.getAllByText(/only Export works/).length).toBeGreaterThan(0);
-    expect(screen.getByRole('button', { name: /export save/i })).toBeEnabled();
-    expect(screen.getByRole('button', { name: /import save/i })).toBeDisabled();
-    expect(screen.getByRole('button', { name: /restore backup/i })).toBeDisabled();
-    expect(screen.getByRole('button', { name: /reset progress/i })).toBeDisabled();
+    expectOn(button(/export save/i));
+    expectOff(button(/import save/i));
+    expectOff(button(/restore backup/i));
+    expectOff(button(/reset progress/i));
+    expect(button(/import save/i)).toHaveAccessibleDescription(/only Export works/);
     expect(screen.getByLabelText(/type reset to confirm/i)).toBeDisabled();
   });
 
-  it('shows "No backup yet" with Restore disabled', async () => {
+  it('shows "No backup yet" with Restore unavailable', async () => {
     await renderWith(mine);
     expect(await screen.findByText('No backup yet')).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: /restore backup/i })).toBeDisabled();
+    expectOff(button(/restore backup/i));
   });
 
   it('imports a file after the confirm dialog and keeps the old save as backup', async () => {
     const user = userEvent.setup();
     const { container } = await renderWith(mine);
-    const file = await saveFile(await encodeSaveFile(theirs, { now: 1, gameVersion: 'x' }));
 
-    await user.upload(fileInput(container), file);
+    await user.upload(fileInput(container), await exportFile(theirs));
     const dialog = await screen.findByRole('dialog', { name: 'Replace current progress?' });
     expect(
       within(dialog).getByText('Your current save moves to the backup slot.'),
@@ -139,19 +169,71 @@ describe('SettingsPage', () => {
     expect(screen.getByRole('link', { name: /go to home/i })).toBeInTheDocument();
     await expect(readBackup()).resolves.toMatchObject({ save: mine });
     expect(await screen.findByText(/^Backup from /)).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: /restore backup/i })).toBeEnabled();
+    expectOn(button(/restore backup/i));
   });
 
   it('changes nothing when the import is cancelled', async () => {
     const user = userEvent.setup();
     const { container } = await renderWith(mine);
-    const file = await saveFile(await encodeSaveFile(theirs, { now: 1, gameVersion: 'x' }));
-    await user.upload(fileInput(container), file);
+    await user.upload(fileInput(container), await exportFile(theirs));
     const dialog = await screen.findByRole('dialog', { name: 'Replace current progress?' });
     await user.click(within(dialog).getByRole('button', { name: 'Cancel' }));
     await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
     expect(getSave()).toEqual(mine);
     await expect(readBackup()).resolves.toBeNull();
+  });
+
+  it('ignores Cancel, Esc and the close button while the replace is running', async () => {
+    const { container } = await renderWith(mine);
+    await userEvent.setup().upload(fileInput(container), await exportFile(theirs));
+    const dialog = await screen.findByRole('dialog', { name: 'Replace current progress?' });
+
+    fireEvent.click(within(dialog).getByRole('button', { name: 'Replace' }));
+    const cancel = within(dialog).getByRole('button', { name: 'Cancel' });
+    expectOff(cancel);
+    fireEvent.click(cancel);
+    fireEvent(dialog, new Event('cancel', { cancelable: true })); // Esc
+    fireEvent.click(within(dialog).getByRole('button', { name: 'Close dialog' }));
+    expect(dialog).toHaveAttribute('open');
+
+    await waitFor(() => expect(status()).toHaveTextContent('Save imported'));
+    expect(getSave()).toEqual(theirs);
+    await expect(readBackup()).resolves.toMatchObject({ save: mine });
+  });
+
+  it('returns focus to Import after the confirm dialog closes', async () => {
+    const user = userEvent.setup();
+    const { container } = await renderWith(mine);
+    const importButton = button(/import save/i);
+    importButton.focus();
+    await user.upload(fileInput(container), await exportFile(theirs));
+    const dialog = await screen.findByRole('dialog', { name: 'Replace current progress?' });
+    await user.click(within(dialog).getByRole('button', { name: 'Replace' }));
+    await waitFor(() => expect(status()).toHaveTextContent('Save imported'));
+    await waitFor(() => expect(importButton).toHaveFocus());
+    expectOn(importButton);
+  });
+
+  it.each([
+    ['Export', /export save/i],
+    ['Restore', /restore backup/i],
+  ])('keeps focus on %s while it works', async (_label, name) => {
+    vi.stubGlobal(
+      'URL',
+      Object.assign(URL, { createObjectURL: () => 'blob:x', revokeObjectURL() {} }),
+    );
+    vi.spyOn(HTMLAnchorElement.prototype, 'click').mockImplementation(() => {});
+    await writeBackup(theirs, 1);
+    await renderWith(mine);
+    const target = button(name);
+    await waitFor(() => expectOn(target));
+    target.focus();
+
+    fireEvent.click(target);
+    expectOff(target); // busy: unavailable, yet still focused and focusable
+    expect(target).toHaveFocus();
+    await waitFor(() => expect(button(/export save/i)).not.toHaveAttribute('aria-disabled'));
+    expect(target).toHaveFocus();
   });
 
   it.each([
@@ -179,7 +261,7 @@ describe('SettingsPage', () => {
   ])('reports %s and changes nothing', async (_label, makeText, message) => {
     const user = userEvent.setup();
     const { container } = await renderWith(mine);
-    await user.upload(fileInput(container), await saveFile(await makeText()));
+    await user.upload(fileInput(container), saveFile(await makeText()));
     await waitFor(() => expect(status()).toHaveTextContent(message));
     expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
     expect(getSave()).toEqual(mine);
@@ -195,7 +277,7 @@ describe('SettingsPage', () => {
       gameVersion: '3.0.0',
       createdAt: 1,
     });
-    await user.upload(fileInput(container), await saveFile(text));
+    await user.upload(fileInput(container), saveFile(text));
     const dialog = await screen.findByRole('dialog', { name: 'Replace current progress?' });
     await user.click(within(dialog).getByRole('button', { name: 'Replace' }));
     await waitFor(() => expect(status()).toHaveTextContent('Upgraded from v1'));
@@ -206,22 +288,24 @@ describe('SettingsPage', () => {
     const user = userEvent.setup();
     await renderWith({ ...mine, onboarding: { ...mine.onboarding, step: 'done' } });
     const field = screen.getByLabelText(/type reset to confirm/i);
-    const button = screen.getByRole('button', { name: /reset progress/i });
+    const reset = button(/reset progress/i);
 
-    expect(button).toBeDisabled();
+    expectOff(reset);
     await user.type(field, 'reset');
-    expect(button).toBeDisabled();
+    expectOff(reset);
+    await user.click(reset); // unarmed: ignored
+    expect(getSave()?.trainer.name).toBe('Mine');
     await user.clear(field);
     await user.type(field, 'RESET');
-    expect(button).toBeEnabled();
+    expectOn(reset);
 
-    await user.click(button);
+    await user.click(reset);
     await waitFor(() => expect(status()).toHaveTextContent('Progress reset'));
     expect(getSave()?.onboarding.step).toBe('hero');
     expect(getSave()?.trainer.name).toMatch(/^Trainer \d{4}$/);
     expect(field).toHaveValue('');
     await expect(readBackup()).resolves.toMatchObject({ save: { trainer: { name: 'Mine' } } });
-    expect(screen.getByRole('button', { name: /export save/i })).toHaveFocus();
+    expect(button(/export save/i)).toHaveFocus();
   });
 
   it('exports the save and records it', async () => {
@@ -232,7 +316,7 @@ describe('SettingsPage', () => {
     await renderWith({ ...mine, meta: { ...mine.meta, battlesSinceExport: 11 } });
     expect(screen.getByText('Not exported yet')).toBeInTheDocument();
 
-    await user.click(screen.getByRole('button', { name: /export save/i }));
+    await user.click(button(/export save/i));
     await waitFor(() =>
       expect(status()).toHaveTextContent(
         /Exported just now · trainer-studio-\d{4}-\d{2}-\d{2}\.txt/,
@@ -249,11 +333,60 @@ describe('SettingsPage', () => {
     const user = userEvent.setup();
     await writeBackup(theirs, Date.UTC(2026, 0, 2));
     await renderWith(mine);
-    const restore = await screen.findByRole('button', { name: /restore backup/i });
-    await waitFor(() => expect(restore).toBeEnabled());
+    const restore = button(/restore backup/i);
+    await waitFor(() => expectOn(restore));
     await user.click(restore);
     await waitFor(() => expect(status()).toHaveTextContent('Backup restored'));
     expect(getSave()).toEqual(theirs);
     await expect(readBackup()).resolves.toMatchObject({ save: mine });
+  });
+
+  describe('when the stored save can’t be loaded', () => {
+    it('locks Import, Restore and Reset for a save made by a newer version', async () => {
+      const user = userEvent.setup();
+      await writeBackup(theirs, 1);
+      const { container } = await renderWith(null, { loadError: LOAD_ERROR_NEWER });
+
+      expect(
+        screen.getAllByText('Made by a newer version. Update the page and try again').length,
+      ).toBeGreaterThan(0);
+      await screen.findByText(/^Backup from /);
+      expectOff(button(/export save/i)); // nothing loaded to export
+      expectOff(button(/import save/i));
+      expectOff(button(/restore backup/i));
+      expectOff(button(/reset progress/i));
+      expect(button(/import save/i)).toHaveAccessibleDescription(/Made by a newer version/);
+      expect(screen.getByLabelText(/type reset to confirm/i)).toBeDisabled();
+
+      await user.click(button(/restore backup/i));
+      await user.upload(fileInput(container), await exportFile(theirs));
+      await new Promise((resolve) => setTimeout(resolve, 50));
+      expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+      expect(getSave()).toBeNull();
+      await expect(readBackup()).resolves.toMatchObject({ save: theirs });
+    });
+
+    it('says a damaged save is replaced without a backup', async () => {
+      const user = userEvent.setup();
+      const { container } = await renderWith(null, { loadError: LOAD_ERROR_DAMAGED });
+      expect(screen.getByText(LOAD_ERROR_DAMAGED)).toBeInTheDocument();
+      expect(
+        screen.getByText(/can’t be read, so it will be replaced without a backup/),
+      ).toBeInTheDocument();
+
+      await user.upload(fileInput(container), await exportFile(theirs));
+      const dialog = await screen.findByRole('dialog', { name: 'Replace current progress?' });
+      expect(
+        within(dialog).getByText(
+          'Your current save can’t be read, so it will be replaced and can’t be kept as a backup.',
+        ),
+      ).toBeInTheDocument();
+      expect(within(dialog).queryByText(/moves to the backup slot/)).not.toBeInTheDocument();
+
+      await user.click(within(dialog).getByRole('button', { name: 'Replace' }));
+      await waitFor(() => expect(status()).toHaveTextContent('Save imported'));
+      expect(getSave()).toEqual(theirs);
+      await expect(readBackup()).resolves.toBeNull();
+    });
   });
 });

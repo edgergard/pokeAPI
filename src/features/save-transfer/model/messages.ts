@@ -4,5 +4,7 @@ export const TRANSFER_COPY = {
   newer: 'Made by a newer version. Update the page and try again',
   imported: 'Save imported',
   upgraded: (fromVersion: number) => `Upgraded from v${fromVersion}`,
+  unavailable:
+    'Couldn’t load what’s needed to upgrade this file. Check your connection and try again.',
   backupFailed: 'Couldn’t move your current save to the backup slot. Nothing was changed.',
 } as const;

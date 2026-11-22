@@ -27,8 +27,12 @@ export type MigrateResult =
     }
   | {
       ok: false;
-      /** newer: made by a later game; empty: an old document with nothing to import; invalid: anything else. */
-      reason: 'newer' | 'empty' | 'invalid';
+      /**
+       * newer: made by a later game; empty: an old document with nothing to import;
+       * unavailable: the migration code couldn't be loaded (offline, stale chunk) — try again later;
+       * invalid: anything else.
+       */
+      reason: 'newer' | 'empty' | 'unavailable' | 'invalid';
     };
 
 /** Walks a document of `version` up the chain to SAVE_VERSION and validates the result. Never throws. */

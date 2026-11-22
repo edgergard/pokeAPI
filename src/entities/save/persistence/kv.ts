@@ -1,10 +1,12 @@
-import { createStore, get, set, type UseStore } from 'idb-keyval';
+import { createStore, get, set, setMany, type UseStore } from 'idb-keyval';
 import { DB_NAME, STORE_NAME } from './keys';
 
-/** The two IndexedDB calls the save needs. Both reject when IndexedDB is missing, blocked or full. */
+/** The IndexedDB calls the save needs. All reject when IndexedDB is missing, blocked or full. */
 export interface KeyValueStore {
   get(key: string): Promise<unknown>;
   set(key: string, value: unknown): Promise<void>;
+  /** Writes every entry in one transaction: all of them land or none does. */
+  setMany(entries: [string, unknown][]): Promise<void>;
 }
 
 /**
@@ -20,6 +22,9 @@ export function createIdbKeyValue(store?: UseStore): KeyValueStore {
     },
     async set(key, value) {
       await set(key, value, idbStore());
+    },
+    async setMany(entries) {
+      await setMany(entries, idbStore());
     },
   };
 }

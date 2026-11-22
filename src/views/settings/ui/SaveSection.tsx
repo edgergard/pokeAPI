@@ -1,5 +1,5 @@
 import { useRef, useState, type ChangeEvent, type Ref } from 'react';
-import { Download, History, ShieldCheck, TriangleAlert, Upload } from 'lucide-react';
+import { Download, History, RefreshCw, ShieldCheck, TriangleAlert, Upload } from 'lucide-react';
 import { useSave, usePersistState, type Save, type SaveBackup } from '@/entities/save';
 import {
   TRANSFER_COPY,
@@ -10,18 +10,36 @@ import {
 } from '@/features/save-transfer';
 import { Button } from '@/shared/ui/Button';
 import { Dialog } from '@/shared/ui/Dialog';
-import { SETTINGS_COPY, formatDate, formatDateTime, type Announce } from '../model/notice';
+import {
+  SETTINGS_COPY,
+  formatDate,
+  formatDateTime,
+  type Announce,
+  type SaveLock,
+} from '../model/notice';
 import { Panel } from './Panel';
+import { unavailableClass } from './unavailable';
 
 type Busy = 'export' | 'import' | 'restore' | null;
 type PendingImport = { save: Save; migratedFrom: number | null };
 
-const BLOCKED_ID = 'settings-storage-blocked';
+const LOCK_ID = 'settings-save-lock';
 const RESTORE_HINT_ID = 'settings-restore-hint';
 
-/** Storage status, last export, Export / Import / Restore backup (design.md screen `settings`). */
+const fileErrorCopy = {
+  damaged: TRANSFER_COPY.damaged,
+  newer: TRANSFER_COPY.newer,
+  unavailable: TRANSFER_COPY.unavailable,
+} as const;
+
+/**
+ * Storage status, last export, Export / Import / Restore backup (design.md screen `settings`).
+ * Buttons never use `disabled` for states their own action causes: they stay focusable with
+ * `aria-disabled` (and ignore presses), so keyboard and screen-reader focus never drops to <body>.
+ */
 export function SaveSection({
-  blocked,
+  lock,
+  unreadable,
   loadError,
   announce,
   clearNotice,
@@ -29,9 +47,11 @@ export function SaveSection({
   onBackupChange,
   exportRef,
 }: {
-  /** Storage isn't durable: only Export is offered. */
-  blocked: boolean;
-  /** The stored save couldn't be read (the store is in `error`). */
+  /** Why Import / Restore can't be used right now (storage blocked, newer save, another tab), or null. */
+  lock: SaveLock | null;
+  /** The stored save can't be read: replacing it won't keep a backup. */
+  unreadable: boolean;
+  /** The store's load error, shown as is. */
   loadError: string | null;
   announce: Announce;
   clearNotice: () => void;
@@ -42,15 +62,28 @@ export function SaveSection({
   const lastExportAt = useSave((s) => s.meta.lastExportAt);
   const hasSave = lastExportAt !== undefined;
   const persist = usePersistState();
-  const [busy, setBusy] = useState<Busy>(null);
+  const [busy, setBusyState] = useState<Busy>(null);
+  /** Source of truth for the guards: two presses in the same tick both see the first one. */
+  const busyRef = useRef<Busy>(null);
   const [justExportedAt, setJustExportedAt] = useState<number | null>(null);
   const [pending, setPending] = useState<PendingImport | null>(null);
   const fileRef = useRef<HTMLInputElement>(null);
+  const importRef = useRef<HTMLButtonElement>(null);
 
-  const persistent = !blocked && persist === 'persisted';
-  const storageKnown = blocked || persist !== 'unknown';
+  const setBusy = (next: Busy) => {
+    busyRef.current = next;
+    setBusyState(next);
+  };
+
+  const locked = lock !== null;
+  const persistent = !locked && persist === 'persisted';
+  const storageKnown = locked || persist !== 'unknown';
+  const exportOff = !hasSave || busy !== null;
+  const importOff = locked || busy !== null;
+  const restoreOff = !backup || locked || busy !== null;
 
   async function onExport() {
+    if (exportOff || busyRef.current) return;
     setBusy('export');
     try {
       const now = Date.now();
@@ -66,24 +99,38 @@ export function SaveSection({
     }
   }
 
+  function onPickFile() {
+    if (importOff || busyRef.current) return;
+    fileRef.current?.click();
+  }
+
   async function onFileChange(event: ChangeEvent<HTMLInputElement>) {
     const file = event.target.files?.[0];
     event.target.value = ''; // picking the same file again still fires change
-    if (!file) return;
+    if (!file || locked || busyRef.current) return;
     setBusy('import');
     announce(SETTINGS_COPY.importing, 'info');
     const result = await readSaveFile(file);
     setBusy(null);
     if (!result.ok) {
-      announce(result.error === 'newer' ? TRANSFER_COPY.newer : TRANSFER_COPY.damaged, 'error');
+      announce(fileErrorCopy[result.error], 'error');
       return;
     }
     clearNotice();
+    // The native dialog returns focus to whatever had it when it opened: make that the Import button
+    // (the file picker may have left focus elsewhere).
+    importRef.current?.focus({ preventScroll: true });
     setPending({ save: result.save, migratedFrom: result.migratedFrom });
   }
 
+  /** Cancel, Esc, the close button and the backdrop: ignored while the replace is running. */
+  function onCloseDialog() {
+    if (busyRef.current === 'import') return;
+    setPending(null);
+  }
+
   async function onConfirmImport() {
-    if (!pending) return;
+    if (!pending || busyRef.current) return;
     const { save, migratedFrom } = pending;
     setBusy('import');
     const ok = await applyImport(save);
@@ -102,6 +149,7 @@ export function SaveSection({
   }
 
   async function onRestore() {
+    if (restoreOff || busyRef.current) return;
     setBusy('restore');
     const result = await restoreBackup();
     setBusy(null);
@@ -153,30 +201,43 @@ export function SaveSection({
         {loadError && <p className="text-sm text-destructive">{loadError}</p>}
       </div>
 
-      {blocked && (
-        <p id={BLOCKED_ID} className="mt-4 text-sm text-muted-foreground">
-          {SETTINGS_COPY.blocked}
-        </p>
+      {lock && (
+        <div className="mt-4 flex flex-wrap items-center gap-x-4 gap-y-2">
+          <p id={LOCK_ID} className="text-sm text-muted-foreground">
+            {lock.reason}
+          </p>
+          {lock.reload && (
+            <Button
+              variant="outline"
+              onClick={() => window.location.reload()}
+              className="cursor-pointer"
+            >
+              <RefreshCw aria-hidden className="size-4" />
+              {SETTINGS_COPY.reload}
+            </Button>
+          )}
+        </div>
       )}
 
       <div className="mt-5 flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-start">
         <Button
           ref={exportRef}
           onClick={onExport}
-          disabled={!hasSave || busy !== null}
-          className="cursor-pointer justify-center"
+          aria-disabled={exportOff || undefined}
+          className={`cursor-pointer justify-center ${unavailableClass}`}
         >
           <Download aria-hidden className="size-4" />
           Export save
         </Button>
 
         <Button
+          ref={importRef}
           variant="outline"
-          onClick={() => fileRef.current?.click()}
-          disabled={blocked || busy !== null}
-          aria-describedby={blocked ? BLOCKED_ID : undefined}
+          onClick={onPickFile}
+          aria-disabled={importOff || undefined}
+          aria-describedby={lock ? LOCK_ID : undefined}
           aria-busy={busy === 'import' || undefined}
-          className="cursor-pointer justify-center"
+          className={`cursor-pointer justify-center ${unavailableClass}`}
         >
           <Upload aria-hidden className="size-4" />
           {busy === 'import' ? SETTINGS_COPY.importing : 'Import save'}
@@ -195,9 +256,9 @@ export function SaveSection({
           <Button
             variant="outline"
             onClick={onRestore}
-            disabled={!backup || blocked || busy !== null}
-            aria-describedby={joinIds(RESTORE_HINT_ID, blocked && BLOCKED_ID)}
-            className="cursor-pointer justify-center"
+            aria-disabled={restoreOff || undefined}
+            aria-describedby={joinIds(RESTORE_HINT_ID, lock !== null && LOCK_ID)}
+            className={`cursor-pointer justify-center ${unavailableClass}`}
           >
             <History aria-hidden className="size-4" />
             Restore backup
@@ -210,15 +271,27 @@ export function SaveSection({
 
       <Dialog
         open={pending !== null}
-        onClose={() => setPending(null)}
+        onClose={onCloseDialog}
         title="Replace current progress?"
-        description="Your current save moves to the backup slot."
+        description={
+          unreadable ? SETTINGS_COPY.replaceUnreadable : SETTINGS_COPY.replaceKeepsBackup
+        }
         footer={
           <>
-            <Button variant="ghost" onClick={() => setPending(null)} className="cursor-pointer">
+            <Button
+              variant="ghost"
+              onClick={onCloseDialog}
+              aria-disabled={busy === 'import' || undefined}
+              className={`cursor-pointer ${unavailableClass}`}
+            >
               Cancel
             </Button>
-            <Button onClick={onConfirmImport} disabled={busy !== null} className="cursor-pointer">
+            <Button
+              onClick={onConfirmImport}
+              aria-disabled={busy !== null || undefined}
+              aria-busy={busy === 'import' || undefined}
+              className={`cursor-pointer ${unavailableClass}`}
+            >
               Replace
             </Button>
           </>

@@ -46,6 +46,7 @@ describe('backup slot', () => {
     const blocked: KeyValueStore = {
       get: () => Promise.reject(new Error('blocked')),
       set: () => Promise.reject(new Error('blocked')),
+      setMany: () => Promise.reject(new Error('blocked')),
     };
     await expect(readBackup(blocked)).resolves.toBeNull();
     await expect(writeBackup(save, 1, blocked)).resolves.toBe(false);

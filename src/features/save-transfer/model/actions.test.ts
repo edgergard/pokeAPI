@@ -1,7 +1,8 @@
 import 'fake-indexeddb/auto';
-import { clear, createStore } from 'idb-keyval';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { clear, createStore, get, set } from 'idb-keyval';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import {
+  createDefaultPersistence,
   createNewSave,
   getSave,
   initSave,
@@ -121,5 +122,54 @@ describe('save-transfer actions', () => {
     await expect(readSaveFile(new Blob([text]))).resolves.toMatchObject({ ok: true, save: theirs });
     const huge = new Blob([new Uint8Array(6 * 1024 * 1024)]);
     await expect(readSaveFile(huge)).resolves.toEqual({ ok: false, error: 'damaged' });
+  });
+});
+
+describe('save-transfer actions with the page’s IndexedDB adapter', () => {
+  const store = createStore('trainer-studio', 'keyval');
+  const opened: { dispose(): void }[] = [];
+
+  /** The page's adapter, loaded with `current`. Its debounce outlasts the test, so anything stored
+   * must come from the replace itself. */
+  async function page(current: Save) {
+    const adapter = createDefaultPersistence({
+      window: null,
+      document: null,
+      localStorage: null,
+      channel: null,
+      debounceMs: 60_000,
+    });
+    opened.push(adapter);
+    await initSave(adapter, () => current);
+    await adapter.flush();
+    return adapter;
+  }
+
+  beforeEach(async () => {
+    await clear(store);
+  });
+  afterEach(() => {
+    for (const adapter of opened.splice(0)) adapter.dispose();
+  });
+
+  it.each([
+    ['restore', () => restoreBackup(10)],
+    ['import', () => applyImport(theirs, 10)],
+  ])('%s stores the new save and the backup together, right away', async (_label, act) => {
+    await set('save:backup', { savedAt: 1, save: theirs }, store);
+    await page(mine);
+    expect(await get('save:v2', store)).toEqual(mine);
+
+    await act();
+    // No debounce wait: closing the tab now keeps both keys consistent.
+    expect(await get('save:v2', store)).toEqual(theirs);
+    expect(await get('save:backup', store)).toEqual({ savedAt: 10, save: mine });
+  });
+
+  it('reset stores the fresh save right away', async () => {
+    await page(mine);
+    await resetProgress(20, 777);
+    expect(await get('save:v2', store)).toMatchObject({ meta: { seed: 777 } });
+    expect(await get('save:backup', store)).toEqual({ savedAt: 20, save: mine });
   });
 });
