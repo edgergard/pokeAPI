@@ -7,14 +7,20 @@ import { QuestList } from '@/widgets/quest-list';
 import { claimAnnouncement } from '../model/quests';
 import { panel } from './styles';
 
-/** Daily quests on the hub: the board at `now` and Claim (committed with its level-ups in one update). */
+/**
+ * Daily quests on the hub: the board at `now` and Claim (committed with its level-ups in one update).
+ * The claim result is spoken by the page's live region (`announce`), which exists from the first paint;
+ * the line under the list only repeats it for sighted players.
+ */
 export function HubQuests({
   save,
   now,
+  announce,
 }: {
   save: Pick<Save, 'quests' | 'trainer' | 'meta'>;
   /** `Date.now()` of this render. */
   now: number;
+  announce: (text: string) => void;
 }) {
   const board = questBoard(save, now);
   const [message, setMessage] = useState({ id: 0, text: '' });
@@ -31,7 +37,9 @@ export function HubQuests({
     const { result } = out;
     if (!result?.ok) return;
     // TODO(2-play): open widgets/level-up on levelsGained
-    setMessage((m) => ({ id: m.id + 1, text: claimAnnouncement(result) }));
+    const text = claimAnnouncement(result);
+    setMessage((m) => ({ id: m.id + 1, text }));
+    announce(text);
     // The Claim button is gone with the claimed row: keep keyboard focus in the section.
     headingRef.current?.focus({ preventScroll: true });
   };
@@ -47,9 +55,16 @@ export function HubQuests({
         Daily quests
       </h2>
       <QuestList board={board} now={now} onClaim={claim} playHref="/ladder/" />
-      <p role="status" className="text-sm font-semibold text-rarity-uncommon empty:hidden">
-        {message.text && <span key={message.id}>{message.text}</span>}
-      </p>
+      {message.text && (
+        <p
+          key={message.id}
+          aria-hidden
+          data-testid="quest-claim-result"
+          className="text-sm font-semibold text-rarity-uncommon"
+        >
+          {message.text}
+        </p>
+      )}
     </section>
   );
 }

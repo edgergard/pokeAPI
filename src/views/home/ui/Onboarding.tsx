@@ -46,7 +46,7 @@ export function Onboarding({ view, announce }: { view: OnboardingView; announce:
   return (
     <div className="relative flex flex-1 flex-col items-center justify-center">
       {view === 'loading' || view === 'hero' ? (
-        <Hero loading={view === 'loading'} announce={announce} />
+        <Hero loading={view === 'loading'} />
       ) : (
         <div className="flex w-full max-w-5xl flex-col items-center gap-8 pt-6 text-center">
           <h1 className={cn(eyebrow, 'text-primary')}>Trainer Studio</h1>
@@ -81,7 +81,7 @@ export function Onboarding({ view, announce }: { view: OnboardingView; announce:
   );
 }
 
-function Hero({ loading, announce }: { loading: boolean; announce: Announce }) {
+function Hero({ loading }: { loading: boolean }) {
   const [busy, setBusy] = useState(false);
   const [failed, setFailed] = useState(false);
   const busyRef = useRef(false);
@@ -96,8 +96,8 @@ function Hero({ loading, announce }: { loading: boolean; announce: Announce }) {
       const save = getSave();
       if (!save) throw new Error('save not loaded');
       const picked = dealOnboarding(save, movesets);
+      // Dealt announces the loaner when it mounts (also after a reload into 'dealt').
       updateSave((s) => commitDeal(s, picked));
-      announce(`Loaner ${speciesName(picked.loanerSpeciesId)} joined your team`);
     } catch {
       setFailed(true);
     } finally {

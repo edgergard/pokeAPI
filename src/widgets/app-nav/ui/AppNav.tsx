@@ -222,7 +222,7 @@ function SectionLink({
         aria-current={current ? 'page' : undefined}
         data-nav={linkKey}
         className={cn(
-          'relative flex min-h-14 flex-col items-center justify-center gap-0.5 text-xs font-semibold text-muted-foreground transition-colors hover:text-foreground aria-[current=page]:text-primary',
+          'relative flex min-h-11 flex-col items-center justify-center gap-0.5 text-xs font-semibold text-muted-foreground transition-colors hover:text-foreground aria-[current=page]:text-primary',
           focusRing,
           'focus-visible:outline-offset-[-2px]',
         )}

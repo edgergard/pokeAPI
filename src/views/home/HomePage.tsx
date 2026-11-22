@@ -71,7 +71,7 @@ export function HomePage() {
         className="relative mx-auto flex min-h-[calc(100dvh-8rem)] w-full max-w-6xl flex-col px-4 py-8 sm:px-6 lg:px-8 lg:py-10"
       >
         {hub ? (
-          <Hub />
+          <Hub announce={announce} />
         ) : view === 'error' ? (
           <div className="flex flex-1 flex-col items-center justify-center gap-6 pt-6">
             <h1 className={`${eyebrow} text-primary`}>Trainer Studio</h1>
@@ -81,11 +81,16 @@ export function HomePage() {
           <Onboarding view={view} announce={announce} />
         )}
 
-        <p role="status" data-testid="home-announcer" className="sr-only">
+        <p
+          role="status"
+          data-testid="home-announcer"
+          data-announcements={announcement.id}
+          className="sr-only"
+        >
           {announcement.text && <span key={announcement.id}>{announcement.text}</span>}
         </p>
       </main>
-      <footer className="px-4 pt-4 pb-24 text-center text-xs text-muted-foreground lg:pb-8">
+      <footer className="px-4 pt-4 pb-[calc(4rem+env(safe-area-inset-bottom))] text-center text-xs text-muted-foreground lg:pb-8">
         {FOOTER_TEXT}
       </footer>
     </div>

@@ -19,7 +19,7 @@ const refreshNow = () => updateSave((s) => refreshQuests(s, Date.now()));
  * The hub (design.md screen `home`, step `done`): the player's daily starting point. Top to bottom:
  * notices, trainer strip, next stage, team, daily quests, capsules and the collection tile.
  */
-export function Hub() {
+export function Hub({ announce }: { announce: (text: string) => void }) {
   const save = useSave((s) => s);
   const { atRisk } = useSaveStatus();
   const persist = usePersistState();
@@ -59,7 +59,7 @@ export function Hub() {
           <TeamStrip save={save} />
         </div>
         <div className="flex min-w-0 flex-col gap-6">
-          <HubQuests save={save} now={now} />
+          <HubQuests save={save} now={now} announce={announce} />
           <CapsuleTray save={save} />
           <CollectionTile count={owned} />
         </div>

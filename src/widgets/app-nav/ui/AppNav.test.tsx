@@ -148,7 +148,7 @@ describe('AppNav', () => {
     expect(
       within(tabs)
         .getAllByRole('link')
-        .every((l) => l.className.includes('min-h-14')),
+        .every((l) => l.className.includes('min-h-11')),
     ).toBe(true);
     expect(within(tabs).getByRole('link', { name: 'Collection' })).toHaveAttribute(
       'aria-current',

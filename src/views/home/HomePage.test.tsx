@@ -150,6 +150,8 @@ describe('HomePage', () => {
       ).toBeInTheDocument();
       expect(screen.getByText('VS')).toBeInTheDocument();
       expect(announcer()).toHaveTextContent(`Loaner ${loaner} joined your team`);
+      // Announced once: by the dealt step, not also by the deal click.
+      expect(announcer()).toHaveAttribute('data-announcements', '1');
       expect(screen.getAllByRole('heading', { level: 1 })).toHaveLength(1);
     });
 
@@ -178,6 +180,7 @@ describe('HomePage', () => {
       expect(screen.getByRole('img', { name: /^Rattata, rival/ })).toBeInTheDocument();
       expect(getSave()?.onboarding).toEqual(save.onboarding);
       expect(announcer()).toHaveTextContent('Loaner Pikachu joined your team');
+      expect(announcer()).toHaveAttribute('data-announcements', '1');
     });
 
     it('fought: opens the capsule (committed before the reveal), steps to capsule, then Add to team ends onboarding', async () => {
@@ -470,12 +473,23 @@ describe('HomePage', () => {
             },
           })),
         );
+        // The live region is in the page (and the accessibility tree) before anything is claimed.
+        const region = announcer();
+        expect(region).toBeEmptyDOMElement();
+        expect(region).not.toHaveClass('hidden');
+        expect(within(quests).queryByRole('status')).not.toBeInTheDocument();
+
         fireEvent.click(within(quests).getByRole('button', { name: /^Claim / }));
         const claimed = getSave()?.quests.active[0];
         expect(claimed?.claimed).toBe(true);
-        expect(within(quests).getByRole('status')).toHaveTextContent(
-          new RegExp(`\\+${economy.quests.trainerXp} Trainer XP$`),
-        );
+        const spoken = new RegExp(`\\+${economy.quests.trainerXp} Trainer XP$`);
+        expect(announcer()).toBe(region);
+        expect(region).toHaveTextContent(spoken);
+        expect(region).toHaveAttribute('data-announcements', '1');
+        // Sighted players see the same line; it is hidden from assistive tech so it isn't read twice.
+        const visible = within(quests).getByTestId('quest-claim-result');
+        expect(visible).toHaveTextContent(spoken);
+        expect(visible).toHaveAttribute('aria-hidden', 'true');
       });
 
       it('announces the new trainer level when a claim levels up', async () => {
@@ -494,9 +508,7 @@ describe('HomePage', () => {
         );
         fireEvent.click(screen.getByRole('button', { name: /^Claim / }));
         expect(getSave()?.trainer.level).toBe(3);
-        expect(
-          within(screen.getByRole('region', { name: 'Daily quests' })).getByRole('status'),
-        ).toHaveTextContent(/· Trainer Lv 3$/);
+        expect(announcer()).toHaveTextContent(/· Trainer Lv 3$/);
       });
 
       it('refresh again with a fresh time when the tab becomes visible', async () => {
