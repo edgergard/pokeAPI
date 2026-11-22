@@ -92,6 +92,21 @@ export const economy = {
     /** Rival level at stage s: start + perStage × (s − 1). */
     rivalLevel: { start: 3, perStage: 2 },
     ladderStages: 25,
+    /** Rival team size by ladder stage: the last entry whose fromStage <= stage wins (sorted asc). */
+    rivalTeamSize: [
+      { fromStage: 1, size: 1 },
+      { fromStage: 4, size: 2 },
+      { fromStage: 9, size: 3 },
+      { fromStage: 16, size: 4 },
+    ],
+    /** Rarities a rival's species are drawn from, by ladder stage (same lookup rule). */
+    rivalRarities: [
+      { fromStage: 1, rarities: ['common'] },
+      { fromStage: 6, rarities: ['common', 'uncommon'] },
+      { fromStage: 11, rarities: ['uncommon', 'rare'] },
+      { fromStage: 16, rarities: ['rare', 'epic'] },
+      { fromStage: 25, rarities: ['epic', 'legendary'] },
+    ] as { fromStage: number; rarities: Rarity[] }[],
   },
 
   onboarding: {

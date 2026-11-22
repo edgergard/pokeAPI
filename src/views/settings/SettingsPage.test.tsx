@@ -278,9 +278,14 @@ describe('SettingsPage', () => {
       createdAt: 1,
     });
     await user.upload(fileInput(container), saveFile(text));
-    const dialog = await screen.findByRole('dialog', { name: 'Replace current progress?' });
+    // The v1 path lazy-loads the migration chain and species data: allow for a cold import under load.
+    const dialog = await screen.findByRole(
+      'dialog',
+      { name: 'Replace current progress?' },
+      { timeout: 5000 },
+    );
     await user.click(within(dialog).getByRole('button', { name: 'Replace' }));
-    await waitFor(() => expect(status()).toHaveTextContent('Upgraded from v1'));
+    await waitFor(() => expect(status()).toHaveTextContent('Upgraded from v1'), { timeout: 5000 });
     expect(getSave()?.meta.migratedFromV1).toBe(true);
   });
 
