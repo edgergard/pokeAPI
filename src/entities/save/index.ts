@@ -26,5 +26,11 @@ export {
   type LoadResult,
   type SaveStatus,
 } from './model/store';
-export type { GameEvent, GameEventKind } from './model/events';
+export {
+  registerGameEventReducer,
+  applyGameEvents,
+  type GameEvent,
+  type GameEventKind,
+  type GameEventReducer,
+} from './model/events';
 export { createDefaultPersistence } from './persistence';
