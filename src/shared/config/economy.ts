@@ -87,6 +87,8 @@ export const economy = {
     firstClear: { capsules: { basic: 1 }, dust: 20 },
     /** Replaying a cleared stage: a basic capsule every N wins. */
     replayCapsuleEveryWins: 3,
+    /** The capsule a replay streak or the trainer capsuleChance talent gives. */
+    bonusCapsuleReward: { capsules: { basic: 1 } } as { capsules: { basic: number } },
     /** Rival level at stage s: start + perStage × (s − 1). */
     rivalLevel: { start: 3, perStage: 2 },
     ladderStages: 25,

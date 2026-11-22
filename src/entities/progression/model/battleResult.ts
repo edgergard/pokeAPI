@@ -15,7 +15,7 @@ import { trainerBonuses } from './talentCatalog';
 import { addTrainerXp, type TrainerUnlock } from './trainerLevel';
 
 /** The capsule a replay streak or the trainer `capsuleChance` talent gives. */
-const BONUS_CAPSULE: Reward = { capsules: { basic: 1 } };
+const BONUS_CAPSULE: Reward = economy.battle.bonusCapsuleReward;
 
 export type BattleInput = {
   /** Ladder stage (1..economy.battle.ladderStages, at most `ladder.cleared + 1`) or the onboarding intro. */

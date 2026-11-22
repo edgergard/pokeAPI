@@ -1,7 +1,16 @@
 'use client';
 
 import { useEffect, type ReactNode } from 'react';
-import { createDefaultPersistence, createNewSave, initSave } from '@/entities/save';
+import {
+  createDefaultPersistence,
+  createNewSave,
+  initSave,
+  registerGameEventReducer,
+} from '@/entities/save';
+import { questEventReducer } from '@/entities/quest';
+
+// Game events (battles, capsules, level-ups) advance daily quests.
+registerGameEventReducer(questEventReducer);
 
 let started = false;
 

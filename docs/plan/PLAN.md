@@ -93,3 +93,4 @@ Retries: 0 · Failed streams: 0 · Escalations: 1 · Red dev fixes: 0 · Review 
 - 2026-11-22 foundation committed on main at c2cd6c5 (template config 4818d5b); repo renamed to edgergard/trainer-studio; dev CI green; fresh worktree check green
 - 2026-11-22 wave 1 launched (4 streams) from dev ce97573
 - 2026-11-22 ESCALATION from 1-save: export persistence API from src/entities/save/index.ts → decision: `export * from ./persistence` on dev (b87e199); agent told to merge origin/dev
+- 2026-11-22 1-progression merged (PR #7, 38b0e48); review: no findings ≥80; integration on dev: questEventReducer registered in SaveProvider, bonus capsule moved to economy.battle.bonusCapsuleReward
