@@ -38,7 +38,10 @@ export function ResultOverlay({ result, red, blue, onReplay, onNewBattle }: Prop
   });
 
   useEffect(() => {
-    mainRef.current?.focus({ preventScroll: true });
+    const main = mainRef.current;
+    main?.focus({ preventScroll: true });
+    // A 4×4 table can push the button below the fold on a phone: bring it into view (minimal scroll).
+    main?.scrollIntoView?.({ block: 'nearest' });
   }, []);
 
   return (

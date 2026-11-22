@@ -55,7 +55,8 @@ export function Hud({
 }: Props) {
   const fighters = [...red.fighters, ...blue.fighters];
   const started = hud.active.red !== null || hud.active.blue !== null;
-  const skipLocked = canSkip && skipIn > 0;
+  /** Intro: Skip shows its countdown from the start, and only unlocks once it reaches 0. */
+  const skipLocked = skipIn > 0;
   return (
     <div
       className="pointer-events-none absolute inset-0 flex flex-col justify-between p-2 sm:p-4"
@@ -119,7 +120,7 @@ export function Hud({
           variant="outline"
           onClick={skipLocked ? undefined : onSkip}
           disabled={!canSkip}
-          aria-disabled={skipLocked || undefined}
+          aria-disabled={(canSkip && skipLocked) || undefined}
           className="cursor-pointer bg-ink-950/75 aria-disabled:cursor-not-allowed aria-disabled:text-ink-300"
         >
           <SkipForward className="size-4" aria-hidden />

@@ -142,25 +142,22 @@ export function BattleArena({
           inert={showResult}
           replayRef={hudReplayRef}
         >
-          {!webgl && ready && <LogStage red={red} blue={blue} hud={hud} lines={log} />}
+          {!webgl && ready && (
+            // The text battle: lineups and log lines, with the reason (and Retry) below them.
+            <div className="flex h-full min-h-0 flex-col items-center justify-center gap-2 sm:gap-4">
+              <LogStage red={red} blue={blue} hud={hud} lines={log} />
+              {notice && <Notice notice={notice} onRetry={playback.retryStage} />}
+            </div>
+          )}
         </Hud>
 
-        {notice && (
-          <div className="absolute inset-x-3 bottom-16 z-[5] mx-auto flex w-fit max-w-sm flex-wrap items-center justify-center gap-x-3 gap-y-1 rounded-xl border border-white/12 bg-ink-900/90 px-3 py-2 text-center">
-            <p role="status" className="text-xs text-ink-200">
-              {NOTICE[notice]}
-            </p>
-            {notice === 'error' && (
-              <Button
-                variant="outline"
-                size="md"
-                onClick={playback.retryStage}
-                className="cursor-pointer"
-              >
-                Retry
-              </Button>
-            )}
-          </div>
+        {/* With the 3D stage still up (GPU context lost), the notice floats over the canvas. */}
+        {webgl && notice && (
+          <Notice
+            notice={notice}
+            onRetry={playback.retryStage}
+            className="absolute inset-x-3 bottom-16 z-[5] mx-auto"
+          />
         )}
 
         {showResult &&
@@ -200,6 +197,35 @@ function CustomResult({
   return render(result, { replay: onReplay });
 }
 
+/** Why the arena shows the text battle (or paused graphics); a load error offers Retry. */
+function Notice({
+  notice,
+  onRetry,
+  className,
+}: {
+  notice: Exclude<StageNotice, null>;
+  onRetry(): void;
+  className?: string;
+}) {
+  return (
+    <div
+      className={cn(
+        'pointer-events-auto flex w-fit max-w-sm flex-wrap items-center justify-center gap-x-3 gap-y-1 rounded-xl border border-white/12 bg-ink-900/90 px-3 py-2 text-center',
+        className,
+      )}
+    >
+      <p role="status" className="text-xs text-ink-200">
+        {NOTICE[notice]}
+      </p>
+      {notice === 'error' && (
+        <Button variant="outline" size="md" onClick={onRetry} className="cursor-pointer">
+          Retry
+        </Button>
+      )}
+    </div>
+  );
+}
+
 const SIDE_RING = { red: 'ring-side-red/70', blue: 'ring-side-blue/70' } as const;
 
 /**
@@ -221,7 +247,7 @@ function LogStage({
   const recent = lines.slice(-3);
   return (
     <div
-      className="flex h-full min-h-0 flex-col items-center justify-center gap-3 px-1 sm:gap-4 sm:px-6"
+      className="flex min-h-0 w-full flex-col items-center gap-2 px-1 sm:gap-4 sm:px-6"
       aria-hidden
     >
       <div className="grid w-full max-w-xl grid-cols-2 gap-2 sm:gap-6">
@@ -270,6 +296,8 @@ function LogStage({
             className={cn(
               'max-w-xl text-sm sm:text-base',
               i === recent.length - 1 ? 'font-semibold text-ink-100' : 'text-ink-400',
+              // Phones keep the two latest lines; the full log is below the arena.
+              i < recent.length - 2 && 'max-sm:hidden',
             )}
           >
             {line}

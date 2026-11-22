@@ -1,5 +1,7 @@
 import { MathUtils, Vector3 } from 'three';
-import type { Side } from '@/entities/battle';
+import { MAX_TEAM_SIZE, type Side } from '@/entities/battle';
+
+export { MAX_TEAM_SIZE };
 
 /*
  * Arena layout — pure, so it runs in node tests and drives both the stage and the camera rig.
@@ -19,9 +21,6 @@ export const CARD_RADIUS = 0.18;
 export const CARD_HOVER = 0.28;
 
 export type SlotRole = 'active' | { bench: number };
-
-/** The largest team the arena seats: one active card and up to three on the bench (4×4). */
-export const MAX_TEAM_SIZE = 4;
 
 /**
  * The deepest bench row a team of `teamSize` (1–4) ever uses. Before the first deal-in a lead waits on
