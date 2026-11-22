@@ -48,6 +48,20 @@ export const RARITY_BORDER_CLASS: Record<Rarity, string> = {
   legendary: 'border-rarity-legendary',
 };
 
+/**
+ * Frame shape per rarity: the non-colour cue next to the text label (design.md Accessibility: "форма
+ * рамки"). Thin → thick → double → double + dashed ring → wide double + solid ring. Colour comes from the
+ * caller (border colour); the outer ring carries the rarity colour itself.
+ */
+export const RARITY_FRAME: Record<Rarity, string> = {
+  common: 'border-2 border-solid',
+  uncommon: 'border-4 border-solid',
+  rare: 'border-4 border-double',
+  epic: 'border-4 border-double outline-2 outline-offset-2 outline-dashed outline-rarity-epic',
+  legendary:
+    'border-[6px] border-double outline-2 outline-offset-[3px] outline-solid outline-rarity-legendary',
+};
+
 /** CSS colour value of a rarity token, for inline styles (glows, gradients). */
 export const rarityColor = (rarity: Rarity): string => `var(--color-rarity-${rarity})`;
 

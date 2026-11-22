@@ -2,6 +2,7 @@ import type { CSSProperties } from 'react';
 import { Star } from 'lucide-react';
 import {
   RARITY_BG_CLASS,
+  RARITY_FRAME,
   RARITY_LABEL,
   RARITY_TEXT_CLASS,
   rarityColor,
@@ -88,6 +89,7 @@ export function RevealCard({ result, className }: { result: RevealResult; classN
   return (
     <article
       ref={tiltRef}
+      data-rarity={result.rarity}
       aria-label={`${RARITY_LABEL[result.rarity]}: ${name}, ${outcomeLabel(result)}, level ${result.level}, ${result.stars} stars`}
       style={
         {
@@ -97,7 +99,8 @@ export function RevealCard({ result, className }: { result: RevealResult; classN
         } as CSSProperties
       }
       className={cn(
-        'card-tilt relative isolate flex w-full flex-col gap-2.5 overflow-hidden rounded-3xl border-2 bg-linear-160 from-card to-muted p-3.5',
+        'card-tilt relative isolate flex w-full flex-col gap-2.5 overflow-hidden rounded-3xl bg-linear-160 from-card to-muted p-3.5',
+        RARITY_FRAME[result.rarity],
         className,
       )}
     >
@@ -144,7 +147,11 @@ export function MiniCard({ result }: { result: RevealResult }) {
   const color = typeColor(species?.types[0]);
   return (
     <div
-      className="flex h-full flex-col items-center gap-1.5 rounded-2xl border-2 bg-card p-2.5 text-center"
+      data-rarity={result.rarity}
+      className={cn(
+        'flex h-full flex-col items-center gap-1.5 rounded-2xl bg-card p-2.5 text-center',
+        RARITY_FRAME[result.rarity],
+      )}
       style={{ borderColor: rarityColor(result.rarity) }}
     >
       <div

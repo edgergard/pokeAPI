@@ -1,7 +1,7 @@
 import { readdirSync, readFileSync, statSync } from 'node:fs';
 import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
-import { economy } from '@/shared/config/economy';
+import { economy, RARITIES } from '@/shared/config/economy';
 import {
   craftPrice,
   dupesForNextStar,
@@ -11,7 +11,7 @@ import {
   speciesRarity,
   tierLockReason,
 } from './helpers';
-import { maxRarity, rarityRank } from './rarity';
+import { maxRarity, RARITY_FRAME, rarityRank } from './rarity';
 import { testSave } from './testSave';
 
 describe('capsule helpers', () => {
@@ -52,6 +52,13 @@ describe('capsule helpers', () => {
   it('reads the dupes the next star needs, 0 at max stars', () => {
     expect(dupesForNextStar(1)).toBe(economy.pokemon.dupesForNextStar[1]);
     expect(dupesForNextStar(economy.pokemon.maxStars)).toBe(0);
+  });
+
+  it('gives every rarity its own frame shape (a cue besides colour and the text label)', () => {
+    const frames = RARITIES.map((r) => RARITY_FRAME[r]);
+    expect(new Set(frames).size).toBe(RARITIES.length);
+    // No frame relies on a colour class alone: each sets a border width and style.
+    for (const frame of frames) expect(frame).toMatch(/border-(\d|\[).*border-(solid|double)/);
   });
 
   it('orders rarities as RARITIES', () => {
