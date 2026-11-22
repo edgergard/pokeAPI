@@ -192,6 +192,9 @@ describe('BattlePage stage battle', () => {
     expect(
       screen.getByRole('heading', { name: 'Defeated. Try a stronger lineup.' }),
     ).toBeInTheDocument();
+    // A loss pays no loot: no empty loot list.
+    expect(screen.queryByRole('list', { name: 'Loot' })).not.toBeInTheDocument();
+    expect(screen.getByText('Trainer Pell · Lv 1')).toBeInTheDocument();
     expect(screen.getByText('Bulbasaur is Lv 12 on the bench')).toBeInTheDocument();
     fireEvent.click(screen.getByRole('button', { name: /Put in team/ }));
     expect(screen.getByRole('dialog', { name: 'Team' })).toBeInTheDocument();

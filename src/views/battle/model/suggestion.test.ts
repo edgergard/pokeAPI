@@ -1,6 +1,14 @@
 import { describe, expect, it } from 'vitest';
 import { makeOwned, makeSave } from '@/entities/ladder/testing/testSave';
-import { lossSuggestion, questLabel, resultPhrase } from './suggestion';
+import { lossSuggestion, questLabel, resultPhrase, trainerLabel } from './suggestion';
+
+describe('trainer label', () => {
+  it('does not repeat "Trainer" for a default name', () => {
+    expect(trainerLabel('Trainer 2311')).toBe('Trainer 2311');
+    expect(trainerLabel('Rowan')).toBe('Trainer Rowan');
+    expect(trainerLabel('Trainerella')).toBe('Trainer Trainerella');
+  });
+});
 
 describe('loss suggestion', () => {
   it('suggests the strongest bench Pokémon above the weakest team member', () => {

@@ -16,7 +16,7 @@ import { Button } from '@/shared/ui/Button';
 import { CreatureArt } from '@/widgets/capsule-reveal';
 import type { QuestTick, StageOutcome } from '../model/commit';
 import { stageHref } from '../model/route';
-import { lossSuggestion, questLabel } from '../model/suggestion';
+import { lossSuggestion, questLabel, trainerLabel } from '../model/suggestion';
 import { XpBar } from './XpBar';
 
 export const primaryLinkClass =
@@ -183,13 +183,20 @@ function Rewards({
   const team = summary.pokemon.filter((p) => !p.bench);
   const benchCount = summary.pokemon.length - team.length;
   const capsules = CAPSULE_TIERS.reduce((n, tier) => n + summary.capsules[tier], 0);
+  const streak = summary.outcome === 'won' && !summary.firstClear ? summary.replay : null;
+  const loot =
+    capsules > 0 ||
+    summary.dust > 0 ||
+    summary.firstClear ||
+    summary.bonusCapsule ||
+    streak !== null;
 
   return (
     <div className="flex flex-col gap-4">
       <div className="flex flex-col gap-1.5">
         <div className="flex items-baseline justify-between gap-3 text-sm">
           <span className="font-semibold">
-            Trainer {trainerName} · Lv {trainer.toLevel}
+            {trainerLabel(trainerName)} · Lv {trainer.toLevel}
             {trainer.levelsGained > 0 && (
               <span className="ml-2 rounded-full bg-primary px-2 py-0.5 text-xs font-bold text-primary-foreground">
                 Lv up
@@ -226,7 +233,7 @@ function Rewards({
         </p>
       )}
 
-      {(capsules > 0 || summary.dust > 0 || summary.replay) && (
+      {loot && (
         <ul aria-label="Loot" className="flex flex-wrap gap-2 text-sm">
           {capsules > 0 && (
             <Chip icon={<Package className="size-4 text-primary" aria-hidden />}>
@@ -240,11 +247,11 @@ function Rewards({
           )}
           {summary.firstClear && <Chip>First-clear bonus</Chip>}
           {summary.bonusCapsule && <Chip>Bonus capsule</Chip>}
-          {summary.outcome === 'won' && !summary.firstClear && summary.replay && (
+          {streak && (
             <Chip>
-              {summary.replay.capsuleEarned
+              {streak.capsuleEarned
                 ? 'Replay streak complete · +1 capsule'
-                : `Replay streak ${summary.replay.wins} / ${summary.replay.every}`}
+                : `Replay streak ${streak.wins} / ${streak.every}`}
             </Chip>
           )}
         </ul>

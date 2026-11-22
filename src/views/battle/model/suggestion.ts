@@ -47,6 +47,9 @@ export function lossSuggestion(save: Pick<Save, 'collection' | 'team'>): LossSug
   return null;
 }
 
+/** "Trainer Rowan", but a default name that already says it stays as is ("Trainer 2311"). */
+export const trainerLabel = (name: string) => (/^trainer\s/i.test(name) ? name : `Trainer ${name}`);
+
 /** Quest names for the result's quest ticks ("Win 3 battles"). */
 export function questLabel(kind: QuestKind, target: number): string {
   const plural = (word: string) => `${target} ${word}${target === 1 ? '' : 's'}`;

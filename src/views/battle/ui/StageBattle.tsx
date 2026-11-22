@@ -21,6 +21,9 @@ type Phase =
 
 const formatPower = (n: number) => n.toLocaleString('en-US');
 
+/** After a dialog's exit (Dialog's 300 ms fallback), so its native focus restore has happened. */
+const DIALOG_EXIT_MS = 350;
+
 /**
  * One ladder battle (design.md `battle`, flow `loop`): preview (your N vs the rival's N, Fight
  * focused) → arena → result. Rewards are committed once when the battle first finishes; leaving
@@ -53,6 +56,8 @@ export function StageBattle({
   const committed = useRef(false);
   const primaryRef = useRef<HTMLButtonElement>(null);
   const arenaRef = useRef<HTMLElement>(null);
+  const teamTimer = useRef<ReturnType<typeof setTimeout>>(undefined);
+  useEffect(() => () => clearTimeout(teamTimer.current), []);
 
   // Warm the arena chunk and the movesets while the player looks at the preview.
   useEffect(() => {
@@ -276,7 +281,10 @@ export function StageBattle({
           onClose={() => setLevelUpOpen(false)}
           onFillSlot={(slot) => {
             setLevelUpOpen(false);
-            openTeam(slot);
+            // After the level-up has closed and handed focus back to the result: the team dialog
+            // then returns focus there too.
+            clearTimeout(teamTimer.current);
+            teamTimer.current = setTimeout(() => openTeam(slot), DIALOG_EXIT_MS);
           }}
         />
       )}

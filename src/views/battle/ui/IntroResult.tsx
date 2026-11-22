@@ -7,6 +7,7 @@ import { economy } from '@/shared/config/economy';
 import { cn } from '@/shared/lib/cn';
 import { Button } from '@/shared/ui/Button';
 import { CreatureArt } from '@/widgets/capsule-reveal';
+import { trainerLabel } from '../model/suggestion';
 import { XpBar } from './XpBar';
 
 type Props = {
@@ -81,7 +82,7 @@ export function IntroResult({
           <div className="flex flex-col gap-1.5">
             <div className="flex items-baseline justify-between gap-3 text-sm">
               <span className="font-semibold">
-                Trainer {trainer.name} · Lv {trainer.level}
+                {trainerLabel(trainer.name)} · Lv {trainer.level}
               </span>
               <span className="font-mono text-xs text-muted-foreground tabular-nums">
                 {trainer.xp} / {need} XP
