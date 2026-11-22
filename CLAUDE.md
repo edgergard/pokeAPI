@@ -57,6 +57,7 @@ npm run typecheck         # next typegen && tsc --noEmit
 npm run test              # Vitest once; test:watch for watch mode
 npm run format            # Prettier write; format:check only verifies
 npm run check             # lint, format:check, typecheck, test, build in sequence (CI runs the same)
+npm run preview -- 3101   # serve out/ after a build (next start does not work with static export)
 npm run species           # re-bake species data from PokeAPI (one-time, network)
 ```
 

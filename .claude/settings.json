@@ -43,6 +43,8 @@
       "Bash(npx playwright cli *)",
       "PowerShell(npx playwright cli *)",
       "Bash(npx next start --port *)",
+      "Bash(npm run preview*)",
+      "PowerShell(npm run preview*)",
       "PowerShell(npx next start --port *)"
     ],
     "deny": [
