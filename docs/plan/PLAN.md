@@ -1,6 +1,6 @@
 77fabe65 | wks_c5dc5cbdc19f155c | running | a27d07aa | wks_46d2a12c006dfbcf | running | e0cefd9e | wks_a4b3d44d18c0dd00 | running | 46bec808 | wks_e9fc7590143bc6f3 | running |# Trainer Studio — build plan
 
-Status: wave-1 running
+Status: wave-2 running
 Orchestrator launch mode: CLI
 Merge method: GitHub PR into dev
 Repo: C:\Projects\pokeAPI (folder rename to trainer-studio after the build) Remote: https://github.com/edgergard/pokeAPI → renamed to edgergard/trainer-studio in the foundation Visibility: public (GitHub Pages)
@@ -85,7 +85,7 @@ Status values: pending · running · permission · escalation · done (report in
 ## Metrics
 
 Gate A approved: 2026-11-22 · Gate A rounds: 1
-Retries: 0 · Failed streams: 0 · Escalations: 1 · Red dev fixes: 0 · Review findings fixed: 3 · User corrections: 0
+Retries: 0 · Failed streams: 0 · Escalations: 1 · Red dev fixes: 0 · Review findings fixed: 9 · User corrections: 0
 
 ## Log
 
@@ -97,3 +97,5 @@ Retries: 0 · Failed streams: 0 · Escalations: 1 · Red dev fixes: 0 · Review 
 - 2026-11-22 foundation fix on dev 1832d85: npm run preview (next start does not work with static export), vitest.setup.ts in tsconfig
 - 2026-11-22 1-engine merged (PR #10, 9143311); review: 0 confirmed (2 refuted); ESLint battle-arena override removed on dev; note: intro lasts 15-21 s, not 25 s, at loaner Lv 5 / rival Lv 3
 - 2026-11-22 1-capsules merged (PR #8, 25d382a); review: fixed 3 (Open-next reveal spoiler, endless pity shimmer on load error, rarity frame shape)
+- 2026-11-22 1-save merged (PR #9, 6a618cb); review: fixed 6 (v1 import lost on chunk-load failure, non-atomic backup+save writes, cross-tab overwrite guard, load-error import/reset without backup, focus loss, cancel during import)
+- 2026-11-22 wave 1 complete; dev 6a618cb green (577 tests)
