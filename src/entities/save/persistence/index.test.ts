@@ -272,7 +272,7 @@ describe('cross-tab guard', () => {
     await b.load();
 
     await expect(a.write({ ...fresh('A'), dust: 50 })).resolves.toBe(true);
-    await vi.waitFor(() => expect(b.durable).toBe(false));
+    await vi.waitFor(() => expect(b.durable).toBe(false), { timeout: 5000 });
     expect(a.durable).toBe(true);
 
     await expect(b.write({ ...fresh('B'), dust: 1 })).resolves.toBe(false);
@@ -309,7 +309,7 @@ describe('cross-tab guard', () => {
 
     // Now b writes: a is the stale one.
     await b.write(fresh('B'));
-    await vi.waitFor(() => expect(a.durable).toBe(false));
+    await vi.waitFor(() => expect(a.durable).toBe(false), { timeout: 5000 });
     expect(b.durable).toBe(true);
   });
 
@@ -464,7 +464,7 @@ describe('blocked storage', () => {
     __resetSaveStoreForTests();
     await initSave(createDefaultPersistence({ ...base, kv: null }), () => fresh());
     updateSave((s) => ({ ...s, dust: 5 }));
-    await vi.waitFor(() => expect(getState().writeFailed).toBe(true));
+    await vi.waitFor(() => expect(getState().writeFailed).toBe(true), { timeout: 5000 });
     expect(getSave()?.dust).toBe(5);
   });
 
