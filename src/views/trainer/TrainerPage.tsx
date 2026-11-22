@@ -72,11 +72,7 @@ function TrainerContent() {
     <>
       <TrainerSummary trainer={trainer} onRenamed={(name) => announce(`Name saved: ${name}`)} />
 
-      <p
-        role="status"
-        className="min-h-6 text-sm font-medium text-primary"
-        data-testid="trainer-status"
-      >
+      <p role="status" className="sr-only" data-testid="trainer-status">
         {announcement.text && <span key={announcement.n}>{announcement.text}</span>}
       </p>
 

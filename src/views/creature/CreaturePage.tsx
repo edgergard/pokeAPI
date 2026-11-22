@@ -185,11 +185,7 @@ function CreatureContent({ species, saveFailed }: { species: Species; saveFailed
         </p>
       )}
 
-      <p
-        role="status"
-        className="min-h-6 text-sm font-medium text-primary"
-        data-testid="creature-status"
-      >
+      <p role="status" className="sr-only" data-testid="creature-status">
         {announcement.text && <span key={announcement.n}>{announcement.text}</span>}
       </p>
 
