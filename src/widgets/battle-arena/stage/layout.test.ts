@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { slotPosition } from './layout';
+import { deepestBench, slotPosition } from './layout';
 
 describe('slotPosition', () => {
   it('places actives facing each other and benches behind their side', () => {
@@ -30,5 +30,16 @@ describe('slotPosition', () => {
     const a = slotPosition('red', 'active', 1);
     a.x = 99;
     expect(slotPosition('red', 'active', 1).x).not.toBe(99);
+  });
+});
+
+describe('deepestBench', () => {
+  it('uses bench 0 for 1×1 and 2×2 (the lead waits on its deck) and one more row per extra fighter', () => {
+    expect([1, 2, 3, 4].map(deepestBench)).toEqual([0, 0, 1, 2]);
+  });
+
+  it('clamps out-of-range sizes to the 4×4 layout', () => {
+    expect(deepestBench(0)).toBe(0);
+    expect(deepestBench(9)).toBe(2);
   });
 });

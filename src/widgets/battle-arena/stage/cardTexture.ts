@@ -1,7 +1,9 @@
 import { CanvasTexture, SRGBColorSpace } from 'three';
 import type { Fighter, Side } from '@/entities/battle';
+import type { TalentBranch } from '@/entities/progression';
 import { typeColor } from '@/entities/pokemon';
-import { formatDexNumber, formatName } from '@/shared/lib/format';
+import { formatDexNumber } from '@/shared/lib/format';
+import { talentTally } from '../model/badges';
 import { CARD_HEIGHT, CARD_RADIUS, CARD_WIDTH } from './layout';
 
 /*
@@ -227,7 +229,22 @@ function paintStat(
   ctx.textAlign = 'start';
 }
 
-/** Front face: artwork, dex number, name, type pills, battle stats. */
+const TALENT_CODE: Record<TalentBranch, string> = { offense: 'OFF', defense: 'DEF', tempo: 'TMP' };
+
+/** Card footer, left: "LV 5 · ★3" (no star part without stars). */
+export function cardBadgeText(fighter: Pick<Fighter, 'level' | 'badges'>): string {
+  const stars = fighter.badges.stars > 0 ? ` · ★${fighter.badges.stars}` : '';
+  return `LV ${fighter.level}${stars}`;
+}
+
+/** Card footer, right: learned talents per branch, "OFF 2 · TMP 1" ('' without talents). */
+export function cardTalentText(talents: readonly TalentBranch[]): string {
+  return talentTally(talents)
+    .map(([branch, n]) => `${TALENT_CODE[branch]} ${n}`)
+    .join(' · ');
+}
+
+/** Front face: artwork, dex number, name, type pills, battle stats, level, stars and talents. */
 export function paintCardFace(fighter: Fighter, img: HTMLImageElement | null): HTMLCanvasElement {
   const [canvas, ctx] = createCanvas();
   const color = typeColor(fighter.types[0]);
@@ -263,8 +280,8 @@ export function paintCardFace(fighter: Fighter, img: HTMLImageElement | null): H
 
   // Name.
   ctx.fillStyle = '#ffffff';
-  fitText(ctx, formatName(fighter.name), 800, 27, DISPLAY, BOX_W - 40);
-  ctx.fillText(formatName(fighter.name), 20, ART_H + 38);
+  fitText(ctx, fighter.name, 800, 27, DISPLAY, BOX_W - 40);
+  ctx.fillText(fighter.name, 20, ART_H + 38);
 
   // Type pills.
   let x = 20;
@@ -289,7 +306,7 @@ export function paintCardFace(fighter: Fighter, img: HTMLImageElement | null): H
   }
   setTracking(ctx, 0);
 
-  // Battle stats (level 50).
+  // Battle stats (at the fighter's level).
   const { hp, attack, defense, speed } = fighter.stats;
   [
     ['HP', hp],
@@ -300,13 +317,17 @@ export function paintCardFace(fighter: Fighter, img: HTMLImageElement | null): H
     paintStat(ctx, ART_H + 96 + i * 19, String(label), Number(value), color);
   });
 
-  // Footer.
+  // Footer: level and stars on the left, learned talents (or the brand) on the right.
   ctx.font = `500 9px ${MONO}`;
   setTracking(ctx, 1.6);
   ctx.fillStyle = INK_500;
-  ctx.fillText('LV 50', 20, BOX_H - 16);
+  ctx.fillText(cardBadgeText(fighter), 20, BOX_H - 16);
   ctx.textAlign = 'right';
-  ctx.fillText('TRAINER STUDIO', BOX_W - 20, BOX_H - 16);
+  ctx.fillText(
+    cardTalentText(fighter.badges.talentIcons) || 'TRAINER STUDIO',
+    BOX_W - 20,
+    BOX_H - 16,
+  );
   ctx.textAlign = 'start';
   setTracking(ctx, 0);
 

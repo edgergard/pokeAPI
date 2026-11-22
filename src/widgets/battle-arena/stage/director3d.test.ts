@@ -47,6 +47,8 @@ function fighter(side: Side, slot: number): Fighter {
     pokemonId: 1,
     types: ['fire'],
     artwork: null,
+    level: 50,
+    badges: { stars: 0, talentIcons: [] },
     stats: { hp: 100, attack: 50, defense: 50, specialAttack: 50, specialDefense: 50, speed: 50 },
     moves: [],
   };
@@ -333,6 +335,39 @@ describe('createStageDirector', () => {
     expect(at('red-0').distanceTo(slotPosition('red', 'active', portrait))).toBeLessThan(1e-6);
     expect(at('red-1').distanceTo(slotPosition('red', { bench: 0 }, portrait))).toBeLessThan(1e-6);
     expect(at('red-2').distanceTo(slotPosition('red', { bench: 1 }, portrait))).toBeLessThan(1e-6);
+    director.dispose();
+  });
+
+  it.each([1, 4])('plays a %i×%i battle to the victory lineup', (perSide) => {
+    const fake = fakeStage(perSide);
+    const director = createStageDirector(fake.stage, { reducedMotion: false });
+    const blueIds = Array.from({ length: perSide }, (_, i) => `blue-${i}`);
+    const events: BattleEvent[] = [
+      { kind: 'enter', turn: 0, fighterId: 'red-0' },
+      { kind: 'enter', turn: 0, fighterId: 'blue-0' },
+      ...blueIds.flatMap((id, i): BattleEvent[] => [
+        ...(i > 0 ? [{ kind: 'enter' as const, turn: i + 1, fighterId: id }] : []),
+        { kind: 'turnStart', turn: i + 1 },
+        { kind: 'move', turn: i + 1, attackerId: 'red-0', targetId: id, move: ember },
+        {
+          kind: 'hit',
+          turn: i + 1,
+          attackerId: 'red-0',
+          targetId: id,
+          damage: 100,
+          effectiveness: 1,
+          critical: false,
+          hpBefore: 100,
+          hpAfter: 0,
+        },
+        { kind: 'ko', turn: i + 1, fighterId: id },
+      ]),
+      { kind: 'end', turn: perSide, winner: 'red', reason: 'knockout', summary: [] },
+    ];
+    run(events, director);
+    for (const id of blueIds) expect(fake.card(id).group.visible).toBe(false);
+    expect(fake.card('red-0').group.visible).toBe(true);
+    expect(fake.camera.held?.name).toBe('victory');
     director.dispose();
   });
 

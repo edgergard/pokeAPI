@@ -12,7 +12,8 @@ export type HudState = {
   hp: Record<string, { current: number; max: number }>;
   active: Record<Side, string | null>;
   ko: Set<string>;
-  lastMove: { attackerId: string; name: string } | null;
+  /** `seq` counts moves, so a repeated move still reads as a new one (the banner types in again). */
+  lastMove: { attackerId: string; name: string; seq: number } | null;
   popups: HudPopup[];
   result: HudResult | null;
 };
@@ -57,7 +58,11 @@ export function reduceHud(state: HudState, event: BattleEvent): HudState {
     case 'move':
       return {
         ...state,
-        lastMove: { attackerId: event.attackerId, name: formatName(event.move.name) },
+        lastMove: {
+          attackerId: event.attackerId,
+          name: formatName(event.move.name),
+          seq: (state.lastMove?.seq ?? 0) + 1,
+        },
       };
     case 'hit': {
       const prev = state.hp[event.targetId];
@@ -95,7 +100,7 @@ function ownerOf(side: Side, trainers?: Partial<Record<Side, string>>): string {
 }
 
 /**
- * How the log names a fighter: the species, prefixed with its trainer ("Mira’s Charizard") when
+ * How the log names a fighter: its display name, prefixed with its trainer ("Mira’s Charizard") when
  * the other team fields the same species, so listeners can tell the two apart.
  */
 export function fighterLabel(
@@ -105,9 +110,20 @@ export function fighterLabel(
 ): string {
   const f = fighters[id];
   if (!f) return formatName(id);
-  const species = formatName(f.name);
+  const species = f.name;
   const mirrored = Object.values(fighters).some((o) => o.side !== f.side && o.name === f.name);
   return mirrored ? `${ownerOf(f.side, trainers)}’s ${species}` : species;
+}
+
+/** The result in one phrase, for the arena's status region ("Ash wins by knockout."). */
+export function describeResult(
+  result: { winner: Side; reason: 'knockout' | 'turnCap' },
+  trainers?: Partial<Record<Side, string>>,
+): string {
+  const winner = trainers?.[result.winner] ?? SIDE_LABEL[result.winner];
+  return result.reason === 'knockout'
+    ? `${winner} wins by knockout.`
+    : `Turn limit reached. ${winner} wins on remaining HP.`;
 }
 
 /**

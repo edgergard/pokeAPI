@@ -1,5 +1,7 @@
 import { MathUtils, Vector3 } from 'three';
-import type { Side } from '@/entities/battle';
+import { MAX_TEAM_SIZE, type Side } from '@/entities/battle';
+
+export { MAX_TEAM_SIZE };
 
 /*
  * Arena layout — pure, so it runs in node tests and drives both the stage and the camera rig.
@@ -19,6 +21,14 @@ export const CARD_RADIUS = 0.18;
 export const CARD_HOVER = 0.28;
 
 export type SlotRole = 'active' | { bench: number };
+
+/**
+ * The deepest bench row a team of `teamSize` (1–4) ever uses. Before the first deal-in a lead waits on
+ * top of its deck, in front of bench 0, so even a 1×1 battle reaches bench 0.
+ */
+export function deepestBench(teamSize: number): number {
+  return MathUtils.clamp(Math.round(teamSize) - 2, 0, MAX_TEAM_SIZE - 2);
+}
 
 /**
  * 0 on narrow portrait screens, 1 on wide landscape ones. Portrait layouts trade horizontal
