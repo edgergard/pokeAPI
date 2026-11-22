@@ -191,7 +191,7 @@ export function SaveSection({
           aria-hidden
         />
 
-        <div className="flex flex-col gap-1.5">
+        <div className="flex flex-col gap-1.5 sm:items-start">
           <Button
             variant="outline"
             onClick={onRestore}

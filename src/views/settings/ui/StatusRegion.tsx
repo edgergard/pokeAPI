@@ -13,7 +13,7 @@ const tones = {
 const iconColor = {
   success: 'text-rarity-uncommon',
   error: 'text-destructive',
-  info: 'text-primary motion-safe:animate-spin',
+  info: 'text-primary [:root[data-motion=full]_&]:animate-spin',
 } as const;
 
 /**
