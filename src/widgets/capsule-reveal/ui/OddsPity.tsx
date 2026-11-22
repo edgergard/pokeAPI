@@ -1,7 +1,7 @@
 'use client';
 
 import { useId } from 'react';
-import { Lock } from 'lucide-react';
+import { CircleAlert, Lock } from 'lucide-react';
 import {
   RARITY_LABEL,
   RARITY_TEXT_CLASS,
@@ -10,7 +10,7 @@ import {
   rarityColor,
   tierLockReason,
 } from '@/entities/capsule';
-import { useSave } from '@/entities/save';
+import { useSave, useSaveStatus } from '@/entities/save';
 import {
   CAPSULE_TIERS,
   economy,
@@ -143,6 +143,7 @@ export function OddsPity({ className, title = 'Odds & pity' }: OddsPityProps) {
   const pity = useSave((s) => s.pity);
   const level = useSave((s) => s.trainer.level);
   const opened = useSave((s) => s.capsulesOpened);
+  const saveStatus = useSaveStatus().status;
 
   return (
     <section
@@ -160,15 +161,23 @@ export function OddsPity({ className, title = 'Odds & pity' }: OddsPityProps) {
       <div className="grid gap-6 md:grid-cols-2">
         <OddsTable />
         <div className="flex flex-col gap-3">
+          {/* Shimmer only while the save loads; a failed load gets a plain note, never fake numbers. */}
+          {saveStatus === 'error' && (
+            <p className="flex items-center gap-3 rounded-2xl bg-muted px-4 py-3.5 text-sm text-muted-foreground">
+              <CircleAlert aria-hidden className="size-4 shrink-0" />
+              Pity unavailable: your save couldn&apos;t be loaded.
+            </p>
+          )}
           {CAPSULE_TIERS.map((tier) => {
             if (pity === undefined || level === undefined) {
-              return (
+              return saveStatus === 'loading' ? (
                 <div
                   key={tier}
                   aria-hidden
+                  data-testid="pity-skeleton"
                   className="shimmer relative h-[74px] overflow-hidden rounded-2xl bg-muted"
                 />
-              );
+              ) : null;
             }
             const reason = tierLockReason({ trainer: { level } }, tier);
             if (reason) {

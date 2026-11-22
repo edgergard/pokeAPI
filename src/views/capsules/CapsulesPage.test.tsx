@@ -54,6 +54,24 @@ describe('CapsulesPage', () => {
     expect(screen.getByRole('table')).toBeInTheDocument();
   });
 
+  it('explains a failed save load without fake pity numbers', async () => {
+    render(<CapsulesPage />);
+    await act(() =>
+      initSave(
+        {
+          durable: true,
+          load: async () => ({ kind: 'error', reason: 'corrupt' }),
+          write: async () => true,
+        },
+        () => testSave(),
+      ),
+    );
+    expect(screen.getByRole('link', { name: 'Go to Home' })).toHaveAttribute('href', '/');
+    expect(screen.getByText(/^Pity unavailable/)).toBeInTheDocument();
+    expect(screen.queryByTestId('pity-skeleton')).not.toBeInTheDocument();
+    expect(screen.queryByRole('status', { name: 'Loading capsules' })).not.toBeInTheDocument();
+  });
+
   it('shows the empty state with a Fight link to the next ladder stage', async () => {
     render(<CapsulesPage />);
     await load(testSave({ ladder: { cleared: 3, replayWins: 0 } }));

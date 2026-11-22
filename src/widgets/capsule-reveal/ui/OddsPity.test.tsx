@@ -68,9 +68,26 @@ describe('OddsPity', () => {
     expect(screen.getByText(`Epic guaranteed within ${opens - 2} opens`)).toBeInTheDocument();
   });
 
-  it('keeps the odds visible while the save loads', () => {
+  it('keeps the odds visible while the save loads, with pity placeholders', () => {
     render(<OddsPity />);
     expect(screen.getByRole('table')).toBeInTheDocument();
+    expect(screen.queryByRole('progressbar')).not.toBeInTheDocument();
+    expect(screen.getAllByTestId('pity-skeleton')).toHaveLength(2);
+  });
+
+  it('says pity is unavailable when the save failed to load, instead of shimmering forever', async () => {
+    await initSave(
+      {
+        durable: true,
+        load: async () => ({ kind: 'error', reason: 'corrupt' }),
+        write: async () => true,
+      },
+      () => testSave(),
+    );
+    render(<OddsPity />);
+    expect(screen.getByRole('table')).toBeInTheDocument();
+    expect(screen.getByText(/^Pity unavailable/)).toBeInTheDocument();
+    expect(screen.queryByTestId('pity-skeleton')).not.toBeInTheDocument();
     expect(screen.queryByRole('progressbar')).not.toBeInTheDocument();
   });
 });
