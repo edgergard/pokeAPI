@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type { BattleEvent, BattleTeam, Fighter, Move } from '@/entities/battle';
-import { describeEvent, initialHud, reduceHud } from './hudState';
+import { describeEvent, describeResult, initialHud, reduceHud } from './hudState';
 
 const FLAMETHROWER: Move = {
   name: 'flamethrower',
@@ -18,6 +18,8 @@ const fighter = (side: 'red' | 'blue', slot: number, name: string, hp = 110): Fi
   pokemonId: 1,
   types: ['normal'],
   artwork: null,
+  level: 50,
+  badges: { stars: 0, talentIcons: [] },
   stats: { hp, attack: 70, defense: 70, specialAttack: 70, specialDefense: 70, speed: 70 },
   moves: [FLAMETHROWER],
 });
@@ -25,12 +27,12 @@ const fighter = (side: 'red' | 'blue', slot: number, name: string, hp = 110): Fi
 const red: BattleTeam = {
   side: 'red',
   trainerName: 'Ash',
-  fighters: [fighter('red', 0, 'pikachu'), fighter('red', 1, 'mr-mime', 120)],
+  fighters: [fighter('red', 0, 'Pikachu'), fighter('red', 1, 'Mr. Mime', 120)],
 };
 const blue: BattleTeam = {
   side: 'blue',
   trainerName: 'Mira',
-  fighters: [fighter('blue', 0, 'charizard'), fighter('blue', 1, 'gengar')],
+  fighters: [fighter('blue', 0, 'Charizard'), fighter('blue', 1, 'Gengar')],
 };
 
 const fighters: Record<string, Fighter> = Object.fromEntries(
@@ -117,7 +119,8 @@ describe('reduceHud', () => {
 
   it('records the move banner with a readable name', () => {
     const s = reduceHud(initialHud(red, blue), moveEvt);
-    expect(s.lastMove).toEqual({ attackerId: 'blue-0', name: 'Flamethrower' });
+    expect(s.lastMove).toEqual({ attackerId: 'blue-0', name: 'Flamethrower', seq: 1 });
+    expect(reduceHud(s, moveEvt).lastMove?.seq).toBe(2);
   });
 
   it('picks a popup tone per result, with unique ids', () => {
@@ -145,6 +148,19 @@ describe('reduceHud', () => {
   });
 });
 
+describe('describeResult', () => {
+  it('says the result in one phrase, with the trainer name when known', () => {
+    const trainers = { red: 'Ash', blue: 'Mira' };
+    expect(describeResult({ winner: 'red', reason: 'knockout' }, trainers)).toBe(
+      'Ash wins by knockout.',
+    );
+    expect(describeResult({ winner: 'blue', reason: 'turnCap' }, trainers)).toBe(
+      'Turn limit reached. Mira wins on remaining HP.',
+    );
+    expect(describeResult({ winner: 'blue', reason: 'knockout' })).toBe('Blue wins by knockout.');
+  });
+});
+
 describe('describeEvent', () => {
   it('describeEvent writes readable log lines', () => {
     expect(describeEvent(moveEvt, fighters)).toBe('Charizard used Flamethrower!');
@@ -167,7 +183,7 @@ describe('describeEvent', () => {
       describeEvent({ kind: 'miss', turn: 1, attackerId: 'blue-0', targetId: 'red-0' }, fighters),
     ).toBe('Pikachu dodged Charizard’s attack!');
     expect(describeEvent({ kind: 'ko', turn: 1, fighterId: 'red-1' }, fighters)).toBe(
-      'Mr Mime is knocked out!',
+      'Mr. Mime is knocked out!',
     );
     expect(describeEvent({ kind: 'enter', turn: 0, fighterId: 'blue-1' }, fighters)).toBe(
       'Gengar steps into the arena.',
@@ -178,7 +194,7 @@ describe('describeEvent', () => {
   describe('same species on both sides', () => {
     const mirror: Record<string, Fighter> = {
       ...fighters,
-      'red-0': fighter('red', 0, 'charizard'),
+      'red-0': fighter('red', 0, 'Charizard'),
     };
     const trainers = { red: 'Ash', blue: 'Mira' };
 

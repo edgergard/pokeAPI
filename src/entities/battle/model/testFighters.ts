@@ -28,6 +28,8 @@ export function makeFighter(overrides: Partial<Fighter> = {}): Fighter {
     pokemonId: 25,
     types: ['normal'],
     artwork: null,
+    level: 50,
+    badges: { stars: 0, talentIcons: [] },
     stats: { hp: 110, attack: 75, defense: 60, specialAttack: 70, specialDefense: 70, speed: 100 },
     moves: [TACKLE],
     ...overrides,

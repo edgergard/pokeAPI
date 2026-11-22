@@ -1,5 +1,6 @@
 import type { Pokemon } from '@/entities/pokemon';
-import { statsAtLevel } from './stats';
+import { formatName } from '@/shared/lib/format';
+import { BATTLE_LEVEL, statsAtLevel } from './stats';
 import type { BattleTeam, Fighter, Move, MoveType, Side } from './types';
 
 export type MovesetData = {
@@ -13,6 +14,7 @@ export type MovesetData = {
 
 export type TeamChoice = { trainerName: string; team: string[] };
 
+/** The damaging moves of a species by its PokeAPI slug (none for an unknown slug: it fights with FALLBACK_MOVE). */
 export function movesFor(data: MovesetData, pokemonName: string): Move[] {
   const names = data.sets[pokemonName] ?? [];
   return names.flatMap((name) => {
@@ -21,20 +23,27 @@ export function movesFor(data: MovesetData, pokemonName: string): Move[] {
   });
 }
 
+/**
+ * Legacy watch-only battle: a fetched Pokémon at level 50 with no stars or talents.
+ * New code builds fighters from baked species with `buildFighter`.
+ */
 export function toFighter(pokemon: Pokemon, moves: Move[], side: Side, slot: number): Fighter {
   return {
     id: `${side}-${slot}`,
     side,
     slot,
-    name: pokemon.name,
+    name: formatName(pokemon.name),
     pokemonId: pokemon.id,
     types: pokemon.types,
     artwork: pokemon.artwork,
+    level: BATTLE_LEVEL,
+    badges: { stars: 0, talentIcons: [] },
     stats: statsAtLevel(pokemon.stats),
     moves,
   };
 }
 
+/** Legacy watch-only battle: fetches a team's Pokémon and turns them into level-50 fighters. */
 export async function prepareTeam(
   choice: TeamChoice,
   side: Side,

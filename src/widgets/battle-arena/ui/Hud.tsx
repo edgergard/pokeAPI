@@ -1,11 +1,11 @@
-import { useEffect, useRef, useState, type Ref } from 'react';
-import { RotateCcw, Swords } from 'lucide-react';
+import { useEffect, useState, type ReactNode, type Ref } from 'react';
+import { RotateCcw, SkipForward, Swords } from 'lucide-react';
 import type { BattleTeam, Fighter, Side } from '@/entities/battle';
 import { cn } from '@/shared/lib/cn';
-import { formatName } from '@/shared/lib/format';
 import { Button } from '@/shared/ui/Button';
 import type { HudPopup, HudState, PopupTone } from '../model/hudState';
 import type { Projection } from '../model/useBattlePlayback';
+import { FighterBadges } from './FighterBadges';
 
 type Props = {
   red: BattleTeam;
@@ -15,12 +15,20 @@ type Props = {
   speed: 1 | 2;
   onSpeed(s: 1 | 2): void;
   onReplay(): void;
-  onNewBattle(): void;
+  onSkip(): void;
+  /** A battle is playing and not over yet: there is something to skip. */
+  canSkip: boolean;
+  /** Seconds until Skip unlocks (intro battle); 0 = unlocked. */
+  skipIn: number;
+  /** Legacy watch-only battle: back to the team picker. No button without it. */
+  onNewBattle?: () => void;
   project(fighterId: string): Projection | null;
   /** True while the result screen covers the HUD: nothing underneath is focusable or read out. */
   inert?: boolean;
   /** The Replay control, so focus can return to it after the result screen's Replay. */
   replayRef?: Ref<HTMLButtonElement>;
+  /** Fills the space between the team bars and the controls (the text stage without WebGL). */
+  children?: ReactNode;
 };
 
 const SIDE_TEXT: Record<Side, string> = { red: 'text-side-red', blue: 'text-side-blue' };
@@ -36,13 +44,18 @@ export function Hud({
   speed,
   onSpeed,
   onReplay,
+  onSkip,
+  canSkip,
+  skipIn,
   onNewBattle,
   project,
   inert = false,
   replayRef,
+  children,
 }: Props) {
   const fighters = [...red.fighters, ...blue.fighters];
   const started = hud.active.red !== null || hud.active.blue !== null;
+  const skipLocked = canSkip && skipIn > 0;
   return (
     <div
       className="pointer-events-none absolute inset-0 flex flex-col justify-between p-2 sm:p-4"
@@ -52,6 +65,8 @@ export function Hud({
         <TeamBar team={red} hud={hud} />
         <TeamBar team={blue} hud={hud} />
       </div>
+
+      <div className="min-h-0 flex-1 py-2">{children}</div>
 
       {ready && !started && <TitleCard red={red} blue={blue} />}
       {hud.lastMove && !hud.result && (
@@ -71,7 +86,7 @@ export function Hud({
       </div>
 
       <div
-        className="pointer-events-auto relative flex items-center justify-center gap-2"
+        className="pointer-events-auto relative flex flex-wrap items-center justify-center gap-2"
         role="group"
         aria-label="Battle controls"
       >
@@ -81,7 +96,7 @@ export function Hud({
           aria-pressed={speed === 2}
           onClick={() => onSpeed(speed === 2 ? 1 : 2)}
           className={cn(
-            'bg-ink-950/75 font-mono tabular-nums',
+            'cursor-pointer bg-ink-950/75 font-mono tabular-nums',
             speed === 2 && 'border-accent/70 text-accent',
           )}
           disabled={!ready}
@@ -94,15 +109,36 @@ export function Hud({
           variant="outline"
           onClick={onReplay}
           disabled={!ready}
-          className="bg-ink-950/75"
+          className="cursor-pointer bg-ink-950/75"
         >
           <RotateCcw className="size-4" aria-hidden />
           Replay
         </Button>
-        <Button variant="outline" onClick={onNewBattle} className="bg-ink-950/75">
-          <Swords className="size-4" aria-hidden />
-          New battle
+        {/* Locked (intro): stays focusable and shows why, via aria-disabled instead of disabled. */}
+        <Button
+          variant="outline"
+          onClick={skipLocked ? undefined : onSkip}
+          disabled={!canSkip}
+          aria-disabled={skipLocked || undefined}
+          className="cursor-pointer bg-ink-950/75 aria-disabled:cursor-not-allowed aria-disabled:text-ink-300"
+        >
+          <SkipForward className="size-4" aria-hidden />
+          {skipLocked ? (
+            <span className="tabular-nums">Skip in {skipIn} s</span>
+          ) : (
+            <span>
+              Skip <span className="max-sm:sr-only">to result</span>
+            </span>
+          )}
         </Button>
+        {onNewBattle && (
+          <Button variant="outline" onClick={onNewBattle} className="cursor-pointer bg-ink-950/75">
+            <Swords className="size-4" aria-hidden />
+            <span>
+              New <span className="max-sm:sr-only">battle</span>
+            </span>
+          </Button>
+        )}
       </div>
     </div>
   );
@@ -148,19 +184,20 @@ function TeamBar({ team, hud }: { team: BattleTeam; hud: HudState }) {
           )}
         >
           <span className="truncate font-semibold text-ink-100">
-            {active ? formatName(active.name) : 'Waiting…'}
+            {active ? active.name : 'Waiting…'}
           </span>
           {hp && (
-            <span className="shrink-0 font-mono text-[11px] text-ink-300 tabular-nums sm:text-xs">
+            <span className="shrink-0 font-mono text-xs text-ink-300 tabular-nums">
               {hp.current}
               <span className="text-ink-400">/{hp.max}</span> HP
             </span>
           )}
         </div>
+        {active && <FighterBadges fighter={active} className={cn(mirrored && 'justify-end')} />}
         <div
           className="h-1.5 w-full overflow-hidden rounded-full bg-white/10 sm:h-2"
           role="meter"
-          aria-label={active ? `${formatName(active.name)} HP` : 'HP'}
+          aria-label={active ? `${active.name} HP` : 'HP'}
           aria-valuemin={0}
           aria-valuemax={hp?.max ?? 0}
           aria-valuenow={hp?.current ?? 0}
@@ -180,7 +217,8 @@ function TeamBar({ team, hud }: { team: BattleTeam; hud: HudState }) {
 }
 
 function Pip({ fighter, ko, active }: { fighter: Fighter; ko: boolean; active: boolean }) {
-  const name = formatName(fighter.name);
+  const name = fighter.name;
+  const stars = fighter.badges.stars;
   // Blocked or missing artwork: show the initial instead of a broken-image icon.
   const [broken, setBroken] = useState(false);
   return (
@@ -190,7 +228,7 @@ function Pip({ fighter, ko, active }: { fighter: Fighter; ko: boolean; active: b
         active && !ko && cn('ring-2', SIDE_RING[fighter.side]),
         ko && 'opacity-45 grayscale',
       )}
-      title={name}
+      title={`${name} · Lv ${fighter.level}${stars > 0 ? ` · ★${stars}` : ''}`}
     >
       {fighter.artwork && !broken ? (
         <img
@@ -201,13 +239,14 @@ function Pip({ fighter, ko, active }: { fighter: Fighter; ko: boolean; active: b
           onError={() => setBroken(true)}
         />
       ) : (
-        <span className="text-[10px] font-bold text-ink-300" aria-hidden>
+        <span className="text-xs font-bold text-ink-300" aria-hidden>
           {name.charAt(0)}
         </span>
       )}
       {ko && <span className="absolute inset-x-0 top-1/2 h-px -rotate-45 bg-ink-100" aria-hidden />}
       <span className="sr-only">
-        {name}
+        {`${name}, Lv ${fighter.level}`}
+        {stars > 0 && `, ${stars} star${stars === 1 ? '' : 's'}`}
         {ko ? ', knocked out' : active ? ', in battle' : ''}
       </span>
     </li>
@@ -227,19 +266,12 @@ function TitleCard({ red, blue }: { red: BattleTeam; blue: BattleTeam }) {
   );
 }
 
-/** Each new move gets a fresh key so its letters type in again, even for a repeated move. */
-function useSequence(value: object): number {
-  const seq = useRef({ value, n: 0 });
-  if (seq.current.value !== value) seq.current = { value, n: seq.current.n + 1 };
-  return seq.current.n;
-}
-
 function MoveBanner({ move, side }: { move: NonNullable<HudState['lastMove']>; side: Side }) {
-  const key = useSequence(move);
   return (
     <div className="absolute inset-x-0 top-[34%] flex justify-center px-4 sm:top-[30%]">
       <p
-        key={key}
+        // Each new move gets a fresh key so its letters type in again, even for a repeated move.
+        key={move.seq}
         className={cn(
           'rounded-full border border-white/12 bg-ink-950/80 px-4 py-1.5 font-display text-base font-bold tracking-tight sm:text-xl',
           SIDE_TEXT[side],
@@ -296,11 +328,13 @@ function Popup({
   const [pos] = useState(
     () => project(popup.fighterId) ?? FALLBACK[fighter?.side ?? sideOf(popup.fighterId)],
   );
+  // The lifetime is fixed at spawn too: a later speed change does not restart it.
+  const [lifetime] = useState(() => POPUP_MS / speed);
   const [gone, setGone] = useState(false);
   useEffect(() => {
-    const timer = window.setTimeout(() => setGone(true), POPUP_MS / speed);
+    const timer = window.setTimeout(() => setGone(true), lifetime);
     return () => window.clearTimeout(timer);
-  }, []); // lifetime is fixed at spawn; a later speed change does not restart it
+  }, [lifetime]);
   if (gone) return null;
   const tone = TONE[popup.tone];
   return (
@@ -313,7 +347,7 @@ function Popup({
         style={{ animationDuration: `${POPUP_MS / speed}ms` }}
       >
         {tone.caption && (
-          <span className="rounded-full bg-ink-950/80 px-2 py-0.5 text-[10px] font-semibold tracking-wider text-ink-200 uppercase sm:text-xs">
+          <span className="rounded-full bg-ink-950/80 px-2 py-0.5 text-xs font-semibold tracking-wider text-ink-200 uppercase">
             {tone.caption}
           </span>
         )}

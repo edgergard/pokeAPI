@@ -20,6 +20,17 @@ export const CARD_HOVER = 0.28;
 
 export type SlotRole = 'active' | { bench: number };
 
+/** The largest team the arena seats: one active card and up to three on the bench (4×4). */
+export const MAX_TEAM_SIZE = 4;
+
+/**
+ * The deepest bench row a team of `teamSize` (1–4) ever uses. Before the first deal-in a lead waits on
+ * top of its deck, in front of bench 0, so even a 1×1 battle reaches bench 0.
+ */
+export function deepestBench(teamSize: number): number {
+  return MathUtils.clamp(Math.round(teamSize) - 2, 0, MAX_TEAM_SIZE - 2);
+}
+
 /**
  * 0 on narrow portrait screens, 1 on wide landscape ones. Portrait layouts trade horizontal
  * spread for depth: benches tuck in closer and stack further back.

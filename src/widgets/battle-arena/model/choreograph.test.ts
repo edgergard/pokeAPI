@@ -64,6 +64,37 @@ describe('tierFor', () => {
     expect(tierFor(hit({ effectiveness: 1 }), false)).toBe('short');
     expect(tierFor(hit({ effectiveness: 1 }), true)).toBe('full');
   });
+
+  it('plays every exchange in full when asked (the intro battle)', () => {
+    expect(tierFor(hit({ effectiveness: 1 }), false, true)).toBe('full');
+    expect(tierFor(hit({ effectiveness: 0.5 }), false, true)).toBe('full');
+  });
+});
+
+describe('intro pacing and Skip', () => {
+  it('fullExchanges lengthens a battle with neutral repeat exchanges', () => {
+    const events = longBattleEvents(14);
+    const standard = choreograph(events, createNullDirector(), { onEvent: () => {} }).seconds;
+    const showcase = choreograph(events, createNullDirector(), {
+      onEvent: () => {},
+      fullExchanges: true,
+    }).seconds;
+    expect(showcase).toBeGreaterThan(standard);
+  });
+
+  it('a jump to the end mid-battle (Skip) delivers the remaining events once, in order', () => {
+    const seen: BattleEvent[] = [];
+    const { timeline, seconds } = choreograph(shortEvents, createNullDirector(), {
+      onEvent: (e) => seen.push(e),
+    });
+    for (let t = 0; t <= seconds * 0.4; t += 1 / 30) timeline.time(t);
+    const before = seen.length;
+    expect(before).toBeGreaterThan(0);
+    expect(before).toBeLessThan(shortEvents.length);
+    timeline.progress(1, false);
+    expect(seen).toEqual(shortEvents);
+    expect(timeline.progress()).toBe(1);
+  });
 });
 
 describe('choreograph', () => {
