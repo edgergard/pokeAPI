@@ -14,6 +14,7 @@ import {
   type LucideProps,
 } from 'lucide-react';
 import { CapsuleArt } from '@/entities/capsule';
+import { nextStageToFight } from '@/entities/ladder';
 import { xpToNextTrainerLevel } from '@/entities/progression';
 import { useSave, useSaveStatus, type OnboardingStep } from '@/entities/save';
 import { MotionToggle } from '@/features/motion-toggle/MotionToggle';
@@ -23,7 +24,6 @@ import { useHydrated } from '@/shared/lib/useHydrated';
 import {
   NAV_LINKS,
   SETTINGS_HREF,
-  fightStage,
   isCurrent,
   redirectDuringOnboarding,
   unopenedCapsules,
@@ -77,7 +77,7 @@ export function AppNav() {
     xp: s.trainer.xp,
     capsules: unopenedCapsules(s),
     talentPoints: s.trainer.talentPoints,
-    stage: fightStage(s),
+    stage: nextStageToFight(s),
   }));
   const step = hydrated ? data?.step : undefined;
   const ready = hydrated && status === 'ready' && data !== undefined;

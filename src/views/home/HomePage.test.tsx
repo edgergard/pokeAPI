@@ -4,6 +4,7 @@ import '@testing-library/jest-dom/vitest';
 import { act, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import { afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
 import { loadMovesets } from '@/entities/battle';
+import { stageInfo } from '@/entities/ladder';
 import { getSpecies, SPECIES_COUNT } from '@/entities/pokemon';
 import { teamSlotUnlockLevel, xpToNextTrainerLevel } from '@/entities/progression';
 import { questDay } from '@/entities/quest';
@@ -320,6 +321,19 @@ describe('HomePage', () => {
       expect(screen.getByTestId('next-unlock')).toHaveTextContent(/^Next: Lv 5 · team slot 3$/);
 
       expect(screen.getByRole('heading', { name: 'Stage 5' })).toBeInTheDocument();
+      const info = stageInfo(5);
+      expect(screen.getByTestId('next-stage-rival')).toHaveTextContent(`Rival ${info.rivalName}`);
+      const rivalTeam = screen.getByRole('list', { name: `Rival ${info.rivalName}'s team` });
+      const rivalCards = within(rivalTeam).getAllByRole('listitem');
+      expect(rivalCards).toHaveLength(info.rival.length);
+      info.rival.forEach((m, i) => {
+        const name = getSpecies(m.speciesId)?.name ?? '';
+        expect(rivalCards[i]).toHaveTextContent(`${name}, Lv ${m.level}`);
+        expect(rivalCards[i]?.querySelector('img')).toHaveAttribute(
+          'src',
+          expect.stringContaining(`/${m.speciesId}.png`),
+        );
+      });
       expect(screen.getByText('+1 Basic capsule · +20 dust')).toBeInTheDocument();
       expect(screen.getByRole('link', { name: 'Fight · Stage 5' })).toHaveAttribute(
         'href',
@@ -338,10 +352,7 @@ describe('HomePage', () => {
       expect(
         within(team).getByText(`Unlocks at Trainer Lv ${teamSlotUnlockLevel(4)}`),
       ).toBeInTheDocument();
-      expect(within(team).getByRole('link', { name: 'Edit team' })).toHaveAttribute(
-        'href',
-        '/ladder/',
-      );
+      expect(within(team).getByRole('button', { name: 'Edit team' })).toBeInTheDocument();
 
       expect(screen.getByRole('region', { name: 'Daily quests' })).toBeInTheDocument();
       expect(screen.getByRole('region', { name: 'Capsules' })).toBeInTheDocument();
@@ -363,12 +374,36 @@ describe('HomePage', () => {
       ).toBeInTheDocument();
     });
 
-    it('caps the next stage at the last ladder stage', async () => {
+    it('says the ladder is complete once every stage is cleared and links to replays', async () => {
       const last = economy.battle.ladderStages;
       render(<HomePage />);
       await load(hubSave({ ladder: { cleared: last, replayWins: 0 } }));
-      expect(screen.getByRole('heading', { name: `Stage ${last}` })).toBeInTheDocument();
-      expect(screen.getByText('Every stage cleared. Replay it for XP.')).toBeInTheDocument();
+      expect(screen.getByRole('heading', { name: 'Ladder complete' })).toBeInTheDocument();
+      expect(screen.getByText('Replay any stage for XP and capsules.')).toBeInTheDocument();
+      expect(screen.queryByTestId('next-stage-rival')).not.toBeInTheDocument();
+      expect(screen.queryByText(/^First clear:/)).not.toBeInTheDocument();
+      expect(screen.getByRole('link', { name: 'Replay a stage' })).toHaveAttribute(
+        'href',
+        '/ladder/',
+      );
+    });
+
+    it('"Edit team" opens the team dialog on Home', async () => {
+      render(<HomePage />);
+      await load(hubSave());
+      expect(screen.queryByRole('dialog', { name: 'Team' })).not.toBeInTheDocument();
+      const team = screen.getByRole('region', { name: /^Team/ });
+      fireEvent.click(within(team).getByRole('button', { name: 'Edit team' }));
+      const dialog = screen.getByRole('dialog', { name: 'Team' });
+      expect(dialog).toHaveAttribute('open');
+      expect(dialog.querySelector('[data-highlight]')).toBeNull();
+      expect(push).not.toHaveBeenCalled();
+    });
+
+    it('asks for persistent storage on mount for players past onboarding (v1, imported)', async () => {
+      render(<HomePage />);
+      await load(hubSave());
+      await waitFor(() => expect(persistSpy).toHaveBeenCalledTimes(1));
     });
 
     it('does not pulse or steal focus on a reload with onboarding already done', async () => {
@@ -509,6 +544,58 @@ describe('HomePage', () => {
         fireEvent.click(screen.getByRole('button', { name: /^Claim / }));
         expect(getSave()?.trainer.level).toBe(3);
         expect(announcer()).toHaveTextContent(/· Trainer Lv 3$/);
+
+        // The level-up opens with the new slot; "Fill slot 2" opens the team dialog on Home.
+        const levelUp = screen.getByRole('dialog', { name: 'Trainer Lv 3' });
+        expect(within(levelUp).getByText('Team slot 2')).toBeInTheDocument();
+        fireEvent.click(within(levelUp).getByRole('button', { name: 'Fill slot 2' }));
+        const team = await screen.findByRole('dialog', { name: 'Team' });
+        await waitFor(() => expect(team).toHaveAttribute('open'));
+        const pulsing = team.querySelectorAll('[data-highlight]');
+        expect(pulsing).toHaveLength(1);
+        expect(pulsing[0]).toHaveAttribute('data-slot-state', 'empty');
+        expect(push).not.toHaveBeenCalled();
+      });
+
+      it('a claim level-up without a new slot offers "Learn talent"', async () => {
+        const now = new Date(2026, 10, 22, 12, 0).getTime();
+        vi.useFakeTimers({ toFake: ['Date'], now });
+        render(<HomePage />);
+        await load(hubSave({ trainer: { level: 3, xp: xpToNextTrainerLevel(3) - 1 } }, now - 1000));
+        act(() =>
+          updateSave((s) => ({
+            ...s,
+            quests: {
+              ...s.quests,
+              active: s.quests.active.map((q, i) => (i === 0 ? { ...q, progress: q.target } : q)),
+            },
+          })),
+        );
+        fireEvent.click(screen.getByRole('button', { name: /^Claim / }));
+        const levelUp = screen.getByRole('dialog', { name: 'Trainer Lv 4' });
+        expect(within(levelUp).getByRole('link', { name: 'Learn talent' })).toHaveAttribute(
+          'href',
+          '/trainer/',
+        );
+      });
+
+      it('a claim without a level-up opens no dialog', async () => {
+        const now = new Date(2026, 10, 22, 12, 0).getTime();
+        vi.useFakeTimers({ toFake: ['Date'], now });
+        render(<HomePage />);
+        await load(hubSave({ trainer: { level: 2, xp: 0 } }, now - 1000));
+        act(() =>
+          updateSave((s) => ({
+            ...s,
+            quests: {
+              ...s.quests,
+              active: s.quests.active.map((q, i) => (i === 0 ? { ...q, progress: q.target } : q)),
+            },
+          })),
+        );
+        fireEvent.click(screen.getByRole('button', { name: /^Claim / }));
+        expect(getSave()?.trainer.level).toBe(2);
+        expect(screen.queryByRole('dialog', { name: /^Trainer Lv/ })).not.toBeInTheDocument();
       });
 
       it('refresh again with a fresh time when the tab becomes visible', async () => {

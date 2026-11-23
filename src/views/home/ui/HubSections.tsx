@@ -3,13 +3,14 @@
 import { useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { ChevronRight, LayoutGrid, Swords, UserRound } from 'lucide-react';
-import { SPECIES_COUNT } from '@/entities/pokemon';
+import { getSpecies, SPECIES_COUNT, typeColor } from '@/entities/pokemon';
 import { talentPointsAvailable, teamSlots, xpToNextTrainerLevel } from '@/entities/progression';
 import type { Save } from '@/entities/save';
 import { cn } from '@/shared/lib/cn';
 import { DUR, EASE, usePrefersReducedMotion } from '@/shared/lib/motion';
+import { CreatureArt } from '@/widgets/capsule-reveal';
 import { HoloCard } from '@/widgets/team-showcase';
-import { firstClearText, ladderComplete, nextStage, nextUnlockText, teamStrip } from '../model/hub';
+import { nextStageView, nextUnlockText, teamStrip, type RivalPreview } from '../model/hub';
 import { eyebrow, outlineLink, panel, primaryLink } from './styles';
 
 /** Trainer name, level, XP towards the next level and the next unlock. */
@@ -75,8 +76,9 @@ const PULSE: Keyframe[] = [
 ];
 
 /**
- * The next ladder stage with its first-clear reward and "Fight". Right after onboarding it reads
- * "Stage 1 is ready", and `celebrate` pulses Fight once (not under reduced motion) and focuses it.
+ * The next ladder stage: its rival (name, mini-sprites with level), the first-clear reward and
+ * "Fight". Right after onboarding it reads "Stage 1 is ready", and `celebrate` pulses Fight once (not
+ * under reduced motion) and focuses it. With every stage cleared it offers replays from the ladder.
  */
 export function NextStageCard({
   ladder,
@@ -85,8 +87,8 @@ export function NextStageCard({
   ladder: Save['ladder'];
   celebrate: boolean;
 }) {
-  const stage = nextStage({ ladder });
-  const complete = ladderComplete({ ladder });
+  const view = nextStageView({ ladder });
+  const { stage } = view;
   const reduced = usePrefersReducedMotion();
   const fightRef = useRef<HTMLAnchorElement>(null);
 
@@ -101,7 +103,11 @@ export function NextStageCard({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [celebrate]);
 
-  const title = ladder.cleared === 0 ? `Stage ${stage} is ready` : `Stage ${stage}`;
+  const title = view.complete
+    ? 'Ladder complete'
+    : ladder.cleared === 0
+      ? `Stage ${stage} is ready`
+      : `Stage ${stage}`;
 
   return (
     <section aria-labelledby="next-stage-title" className={cn(panel, 'overflow-hidden')}>
@@ -114,35 +120,79 @@ export function NextStageCard({
           {title}
         </h2>
       </div>
-      {/* TODO(2-play): rival preview from entities/ladder */}
-      <p className="text-sm text-muted-foreground">
-        {complete ? (
-          'Every stage cleared. Replay it for XP.'
-        ) : (
-          <>
-            First clear: <span className="font-semibold text-foreground">{firstClearText()}</span>
-          </>
-        )}
-      </p>
+      {view.complete ? (
+        <p className="text-sm text-muted-foreground">Replay any stage for XP and capsules.</p>
+      ) : (
+        <>
+          <RivalLineup name={view.rivalName} rival={view.rival} />
+          <p className="text-sm text-muted-foreground">
+            First clear: <span className="font-semibold text-foreground">{view.firstClear}</span>
+          </p>
+        </>
+      )}
       <div>
-        <Link
-          ref={fightRef}
-          href={`/battle/?stage=${stage}`}
-          prefetch
-          aria-label={`Fight · Stage ${stage}`}
-          data-pulse={celebrate && !reduced ? '' : undefined}
-          className={cn(primaryLink, 'px-8')}
-        >
-          <Swords aria-hidden className="size-5" />
-          Fight
-        </Link>
+        {view.complete ? (
+          <Link ref={fightRef} href="/ladder/" className={cn(primaryLink, 'px-8')}>
+            <Swords aria-hidden className="size-5" />
+            Replay a stage
+          </Link>
+        ) : (
+          <Link
+            ref={fightRef}
+            href={`/battle/?stage=${stage}`}
+            prefetch
+            aria-label={`Fight · Stage ${stage}`}
+            data-pulse={celebrate && !reduced ? '' : undefined}
+            className={cn(primaryLink, 'px-8')}
+          >
+            <Swords aria-hidden className="size-5" />
+            Fight
+          </Link>
+        )}
       </div>
     </section>
   );
 }
 
-/** 1–4 holo cards, open empty slots and locked slots with their unlock level. Read-only. */
-export function TeamStrip({ save }: { save: Pick<Save, 'team' | 'collection' | 'trainer'> }) {
+/** "Rival Ada Moss" and the rival team's mini-sprites, lead first, each with its level. */
+function RivalLineup({ name, rival }: { name: string; rival: RivalPreview[] }) {
+  return (
+    <div className="flex flex-col gap-2">
+      <p className="text-sm font-semibold text-foreground" data-testid="next-stage-rival">
+        Rival {name}
+      </p>
+      <ul aria-label={`Rival ${name}'s team`} className="flex flex-wrap gap-2">
+        {rival.map((m) => (
+          <li
+            key={m.speciesId}
+            className="flex items-center gap-1 rounded-2xl border border-white/10 bg-secondary/50 py-1 pr-3 pl-1"
+          >
+            <CreatureArt
+              speciesId={m.speciesId}
+              name={m.name}
+              color={typeColor(getSpecies(m.speciesId)?.types[0])}
+              kind="sprite"
+              interactive={false}
+              className="size-10 shrink-0 [image-rendering:pixelated]"
+            />
+            <span className="font-mono text-xs text-muted-foreground">
+              <span className="sr-only">{m.name}, </span>Lv {m.level}
+            </span>
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
+}
+
+/** 1–4 holo cards, open empty slots and locked slots with their unlock level; "Edit team" opens the team dialog. */
+export function TeamStrip({
+  save,
+  onEditTeam,
+}: {
+  save: Pick<Save, 'team' | 'collection' | 'trainer'>;
+  onEditTeam: () => void;
+}) {
   const slots = teamStrip(save);
   const members = slots.filter((s) => s.kind === 'member').length;
   const open = teamSlots(save.trainer.level);
@@ -155,10 +205,9 @@ export function TeamStrip({ save }: { save: Pick<Save, 'team' | 'collection' | '
             {members} / {open}
           </span>
         </h2>
-        {/* TODO(2-play): open widgets/team-dialog from the home view */}
-        <Link href="/ladder/" className={outlineLink}>
+        <button type="button" onClick={onEditTeam} className={outlineLink}>
           Edit team
-        </Link>
+        </button>
       </div>
       <ul className="grid grid-cols-2 gap-3 sm:grid-cols-4">
         {slots.map((slot) => (
