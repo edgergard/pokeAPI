@@ -26,8 +26,11 @@ export function isCurrent(pathname: string | null | undefined, href: string): bo
   return normalizePath(pathname) === normalizePath(href);
 }
 
-/** Pages a player in onboarding may open directly: home, the intro battle and Settings (save rescue). */
-const ONBOARDING_PATHS = new Set(['/', '/battle', '/settings']);
+/**
+ * Pages a player in onboarding may open directly: home, the intro battle, Settings (save rescue) and
+ * the legal pages linked from the Home footer.
+ */
+const ONBOARDING_PATHS = new Set(['/', '/battle', '/settings', '/privacy', '/terms']);
 
 /** During onboarding every other deep link goes back to `/`. */
 export function redirectDuringOnboarding(pathname: string | null | undefined): boolean {

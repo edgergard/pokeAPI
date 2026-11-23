@@ -88,12 +88,17 @@ describe('AppNav', () => {
     expect(nav.replace).toHaveBeenCalledWith('/');
   });
 
-  it.each(['/', '/battle/', '/settings/'])('keeps %s open during onboarding', async (path) => {
-    nav.pathname = path;
-    render(<AppNav />);
-    await load(save({ onboarding: { step: 'hero', loanerSpeciesId: null, rivalSpeciesId: null } }));
-    expect(nav.replace).not.toHaveBeenCalled();
-  });
+  it.each(['/', '/battle/', '/settings/', '/privacy/', '/terms/'])(
+    'keeps %s open during onboarding',
+    async (path) => {
+      nav.pathname = path;
+      render(<AppNav />);
+      await load(
+        save({ onboarding: { step: 'hero', loanerSpeciesId: null, rivalSpeciesId: null } }),
+      );
+      expect(nav.replace).not.toHaveBeenCalled();
+    },
+  );
 
   it('shows sections, badges, the Lv pill, Fight · Stage N and Settings once onboarding is done', async () => {
     nav.pathname = '/collection/';
