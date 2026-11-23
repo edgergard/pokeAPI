@@ -1,6 +1,12 @@
 import { useRef, useState, type ChangeEvent, type Ref } from 'react';
 import { Download, History, RefreshCw, ShieldCheck, TriangleAlert, Upload } from 'lucide-react';
-import { useSave, usePersistState, type Save, type SaveBackup } from '@/entities/save';
+import {
+  requestPersist,
+  useSave,
+  usePersistState,
+  type Save,
+  type SaveBackup,
+} from '@/entities/save';
 import {
   TRANSFER_COPY,
   applyImport,
@@ -90,6 +96,9 @@ export function SaveSection({
       const result = await exportSave({ now });
       if (result) {
         setJustExportedAt(now);
+        // Someone who keeps backups wants this browser's copy kept too (players who skipped onboarding
+        // were never asked).
+        void requestPersist();
         announce(`${SETTINGS_COPY.justExported} · ${result.fileName}`, 'success');
       }
     } catch {
@@ -142,6 +151,8 @@ export function SaveSection({
     }
     setJustExportedAt(null);
     onBackupChange();
+    // An imported save never went through onboarding's persist request: ask now (once per page load).
+    void requestPersist();
     const text = migratedFrom
       ? `${TRANSFER_COPY.imported} · ${TRANSFER_COPY.upgraded(migratedFrom)}`
       : TRANSFER_COPY.imported;
