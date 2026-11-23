@@ -10,7 +10,7 @@ import {
   replaceSave,
   updateSave,
 } from '../model/store';
-import { BACKUP_KEY, SAVE_KEY, V1_ROSTER_KEY } from './keys';
+import { BACKUP_KEY, SAVE_KEY, SESSION_SAVE_KEY, V1_ROSTER_KEY } from './keys';
 import { createIdbKeyValue, type KeyValueStore } from './kv';
 import {
   LOAD_ERROR_DAMAGED,
@@ -27,6 +27,7 @@ const base: PersistenceOptions = {
   window: null,
   document: null,
   localStorage: null,
+  sessionStorage: null,
   channel: null,
 };
 
@@ -475,5 +476,105 @@ describe('blocked storage', () => {
     await adapter.write(fresh());
     expect(kv.sets.map(([key]) => key)).toEqual([SAVE_KEY]);
     expect(kv.data.has(BACKUP_KEY)).toBe(false);
+  });
+});
+
+describe('sessionStorage fallback', () => {
+  /** A Storage-like map that counts writes. */
+  function memorySession(initial: Record<string, string> = {}) {
+    const data = new Map(Object.entries(initial));
+    return {
+      data,
+      writes: 0,
+      getItem(key: string) {
+        return data.get(key) ?? null;
+      },
+      setItem(key: string, value: string) {
+        this.writes += 1;
+        data.set(key, value);
+      },
+    };
+  }
+
+  it('keeps the save in sessionStorage when IndexedDB is missing, and reloads it in the same tab', async () => {
+    const session = memorySession();
+    const first = createDefaultPersistence({
+      ...base,
+      kv: null,
+      sessionStorage: session,
+      debounceMs: 0,
+    });
+    expect(await first.load()).toEqual({ kind: 'empty' });
+    await expect(first.write(fresh('Kept'))).resolves.toBe(true);
+    expect(first.durable).toBe(false);
+    expect(session.data.has(SESSION_SAVE_KEY)).toBe(true);
+
+    const reloaded = createDefaultPersistence({ ...base, kv: null, sessionStorage: session });
+    expect(await reloaded.load()).toMatchObject({
+      kind: 'loaded',
+      save: { trainer: { name: 'Kept' } },
+    });
+    expect(reloaded.durable).toBe(false);
+  });
+
+  it('falls back when IndexedDB is blocked and never writes IndexedDB afterwards', async () => {
+    const kv = memoryKv();
+    kv.failGet = true;
+    const session = memorySession();
+    const adapter = createDefaultPersistence({
+      ...base,
+      kv,
+      sessionStorage: session,
+      debounceMs: 0,
+    });
+    expect(await adapter.load()).toEqual({ kind: 'empty' });
+    await expect(adapter.write(fresh())).resolves.toBe(true);
+    expect(adapter.durable).toBe(false);
+    expect(kv.sets).toEqual([]);
+    expect(session.writes).toBe(1);
+    // Replacements need the backup slot in one transaction: not available on the fallback.
+    await expect(adapter.commit(fresh('Next'), null)).resolves.toBe(false);
+    expect(kv.batches).toEqual([]);
+  });
+
+  it('keeps progress through a full page load via the save store', async () => {
+    const session = memorySession();
+    __resetSaveStoreForTests();
+    await initSave(createDefaultPersistence({ ...base, kv: null, sessionStorage: session }), () =>
+      fresh(),
+    );
+    updateSave((s) => ({ ...s, dust: 42 }));
+    await vi.waitFor(() => expect(session.data.has(SESSION_SAVE_KEY)).toBe(true), {
+      timeout: 5000,
+    });
+
+    __resetSaveStoreForTests();
+    await initSave(createDefaultPersistence({ ...base, kv: null, sessionStorage: session }), () =>
+      fresh('Other'),
+    );
+    expect(getSave()?.dust).toBe(42);
+  });
+
+  it('reports a damaged session document instead of starting over', async () => {
+    const session = memorySession({ [SESSION_SAVE_KEY]: '{not json' });
+    const adapter = createDefaultPersistence({ ...base, kv: null, sessionStorage: session });
+    expect(await adapter.load()).toEqual({ kind: 'error', reason: LOAD_ERROR_DAMAGED });
+  });
+
+  it('leaves sessionStorage untouched while IndexedDB works', async () => {
+    const kv = memoryKv();
+    const session = memorySession();
+    const adapter = createDefaultPersistence({
+      ...base,
+      kv,
+      sessionStorage: session,
+      debounceMs: 0,
+    });
+    await adapter.load();
+    await expect(adapter.write(fresh())).resolves.toBe(true);
+    expect(adapter.durable).toBe(true);
+    expect(kv.sets.map(([key]) => key)).toEqual([SAVE_KEY]);
+    expect(session.writes).toBe(0);
+    expect(session.data.size).toBe(0);
   });
 });

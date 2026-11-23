@@ -118,6 +118,8 @@ describe('HomePage', () => {
       expect(screen.getByTestId('home-skeleton')).toBeInTheDocument();
       expect(screen.queryByRole('button', { name: /Fill my team/ })).not.toBeInTheDocument();
       expect(screen.getByText(FOOTER_TEXT)).toBeInTheDocument();
+      expect(screen.getByRole('link', { name: 'Privacy' })).toHaveAttribute('href', '/privacy/');
+      expect(screen.getByRole('link', { name: 'Terms' })).toHaveAttribute('href', '/terms/');
     });
   });
 

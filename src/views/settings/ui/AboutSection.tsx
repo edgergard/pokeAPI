@@ -1,6 +1,7 @@
 import type { ReactNode } from 'react';
 import { ExternalLink } from 'lucide-react';
 import { GAME_VERSION } from '@/features/save-transfer';
+import { LegalLinks } from '@/shared/ui/LegalLinks';
 import { SETTINGS_COPY } from '../model/notice';
 import { Panel } from './Panel';
 
@@ -35,6 +36,7 @@ export function AboutSection() {
           <OutLink href={SOURCE_URL}>Source code on GitHub</OutLink>
           <span className="font-mono text-xs">v{GAME_VERSION}</span>
         </p>
+        <LegalLinks className="-ml-2" />
       </div>
     </Panel>
   );
