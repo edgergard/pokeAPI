@@ -1,8 +1,8 @@
 ---
 project: trainer-studio
 track: web
-status: preparing
-launched: ""
+status: live
+launched: "2026-11-23"
 url: "https://pokeapi-trainer-studio.vercel.app/"
 date: "2026-11-23"
 ---
@@ -46,12 +46,14 @@ date: "2026-11-23"
 
 ## Сервисы и ключи (Services)
 - [x] Vercel: проект подключён к GitHub, production-ветка `main` (you)
-- [ ] Vercel: переименовать проект в `trainer-studio` (you)
-- [ ] GitHub Pages: опубликовать сборку под `/trainer-studio/` (agent, по твоему «go»)
+- [ ] Vercel: переименовать проект в `trainer-studio` и убрать домен с «poke» (you) — после этого обновить url в этом файле и в README (agent)
+- [ ] GitHub Pages: опубликовать сборку под `/trainer-studio/` (agent, по твоему «go») — пока отложено, там старая v1
 
 ## Деплой (Deploy)
-- Preview: —
-- Production: https://pokeapi-trainer-studio.vercel.app/ — v2 выкачен 2026-11-23 (PR #15, hotfix #16)
+- Preview: PR #17 и #18 — Vercel preview зелёные; ручной smoke делался на локальной сборке (preview за логином Vercel)
+- Production: https://pokeapi-trainer-studio.vercel.app/ — v2 выкачен 2026-11-23 (PR #15, hotfix #16), фиксы запуска 2026-11-23 (PR #18, b8b278b) по твоему «go»
+- Smoke production: онбординг → интро-бой → продолжение после перезагрузки, /privacy, /terms, robots.txt, sitemap.xml, opengraph-image.png — ok, ошибок в консоли нет
+- Lighthouse: не запускался
 
 ## Календарь ручных шагов (Calendar)
 | When | What | Who |
@@ -59,7 +61,11 @@ date: "2026-11-23"
 | — | — | — |
 
 ## Известные пробелы (Gaps)
-- —
+- Юридические страницы — черновики: прочитай и поправь (you).
+- GitHub Pages отдаёт старую сборку v1 по старому пути; новая под /trainer-studio/ не опубликована.
+- Имя Vercel-проекта и домен содержат «poke» до переименования.
+- Запасное сохранение в sessionStorage проверено только тестами, не в браузере с заблокированной IndexedDB.
+- Lighthouse (a11y / best practices / SEO) не запускался.
 
 ## Дальше (Next)
 После запуска `/product` показывает дни с `launched`; правки идут через `/ship-pr`.
