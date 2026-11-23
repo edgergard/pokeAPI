@@ -1,7 +1,6 @@
 {
   "name": "trainer-studio",
   "private": true,
-  "homepage": "https://edgergard.github.io/trainer-studio",
   "version": "4.0.0-dev",
   "type": "module",
   "scripts": {
@@ -18,9 +17,7 @@
     "format:check": "prettier --check .",
     "check": "npm run lint && npm run format:check && npm run typecheck && npm run test && npm run build",
     "movesets": "tsx scripts/build-movesets.ts",
-    "species": "tsx scripts/bake-species.ts",
-    "predeploy": "npm run build",
-    "deploy": "gh-pages -d out --nojekyll"
+    "species": "tsx scripts/bake-species.ts"
   },
   "dependencies": {
     "@gsap/react": "^2.1.2",
@@ -51,7 +48,6 @@
     "eslint-config-next": "^16.4.6",
     "eslint-config-prettier": "^10.1.8",
     "fake-indexeddb": "^6.2.8",
-    "gh-pages": "^6.3.0",
     "jsdom": "^29.1.1",
     "prettier": "^3.10.1",
     "prettier-plugin-tailwindcss": "^0.8.1",

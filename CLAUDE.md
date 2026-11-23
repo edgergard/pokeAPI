@@ -11,7 +11,7 @@ Rules for this repository that are not obvious from the code. Keep this file sho
 - GSAP 3 for UI motion, three.js for the 3D battle (lazy chunk), zod 3, idb-keyval (IndexedDB save)
 - Vitest 5 + Testing Library + jsdom, ESLint 9 (flat config) + Prettier 3 (single quotes, width 100)
 - Node.js 26 (`.nvmrc`), npm only
-- Deploys: Vercel (domain root) and GitHub Pages (basePath `/trainer-studio`), picked in `src/shared/config/site.ts`
+- Deploy: Vercel only (domain root, no basePath), Git-connected: merging into `main` deploys production. GitHub Pages is retired.
 
 ## Documentation sources, in this order
 

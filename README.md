@@ -2,7 +2,7 @@
 
 <p align="center">Build your Pokémon squad of four, then watch it battle on a 3D card arena — powered by <a href="https://pokeapi.co/">PokeAPI</a>.</p>
 
-- [Live demo](https://pokeapi-trainer-studio.vercel.app/) (Vercel) · [mirror](https://edgergard.github.io/pokeAPI/) (GitHub Pages)
+- [Live demo](https://pokeapi-trainer-studio.vercel.app/) (Vercel)
 
 ## Features
 
@@ -48,7 +48,7 @@ src/
 
 Key decisions:
 
-- **Static export, prerendered HTML.** `next build` (`output: 'export'`) renders both routes to plain HTML at build time, so the page arrives with its content and styles instead of an empty `<div id="root">`; it is served as static files from Vercel (domain root) and GitHub Pages (`basePath: '/pokeAPI'`, picked in `src/shared/config/site.ts`), with `trailingSlash` so `/battle/` maps to `battle/index.html`.
+- **Static export, prerendered HTML.** `next build` (`output: 'export'`) renders both routes to plain HTML at build time, so the page arrives with its content and styles instead of an empty `<div id="root">`; it is served as static files from Vercel (domain root), with `trailingSlash` so `/battle/` maps to `battle/index.html`.
 - **Hydration-safe browser storage.** The roster, the selected trainer and the motion preference are read through `useSyncExternalStore` stores (`shared/lib/storageStore.ts`): prerendered HTML and the hydrating render agree, and the stored values swap in before paint — no hydration mismatch. The roster also stays in sync across tabs.
 - **Self-hosted fonts** via `next/font` — no render-blocking Google Fonts stylesheet, size-adjusted fallbacks against layout shift.
 - **Real URLs.** `/battle/?red=<trainer id>` replaced hash routing; client-side navigation goes through `next/link` (prefetched), and old `#/battle?red=…` links are redirected on load.
@@ -102,7 +102,7 @@ npm run dev        # Next.js dev server at http://localhost:3000
 npm test           # unit tests (Vitest)
 npm run typecheck  # route types + tsc
 npm run build      # typecheck + static export to out/
-npm run deploy     # publish out/ to GitHub Pages (with .nojekyll, so _next/ is served)
-npx vercel --prod  # deploy to Vercel (builds remotely with VERCEL=1 → no basePath)
+npm run preview    # serve out/ locally after a build
+# Deploy: merging into main deploys production on Vercel (Git-connected project).
 npm run movesets   # regenerate src/entities/battle/data/movesets.json from PokeAPI (rarely needed, ~2,000 requests)
 ```

@@ -1,6 +1,6 @@
 // Next 16's static export writes per-segment RSC prefetch payloads as nested files
 // (battle/__next.battle/__PAGE__.txt), but the client router requests them dot-joined
-// (battle/__next.battle.__PAGE__.txt). A plain static host such as GitHub Pages has no rewrites, so every
+// (battle/__next.battle.__PAGE__.txt). A plain static host has no rewrites, so every
 // prefetch 404s and navigation falls back to a slower full fetch. This copies each nested payload to the
 // dot-joined name the client asks for. Idempotent; run after `next build`.
 import fs from 'node:fs';

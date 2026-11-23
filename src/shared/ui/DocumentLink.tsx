@@ -1,13 +1,12 @@
 import { forwardRef, type AnchorHTMLAttributes } from 'react';
-import { PUBLIC_BASE_PATH } from '@/shared/config/site';
 
 type Props = Omit<AnchorHTMLAttributes<HTMLAnchorElement>, 'href'> & {
-  /** App path without the basePath, e.g. `/battle/?stage=3`. */
+  /** App path, e.g. `/battle/?stage=3`. */
   href: string;
 };
 
 /**
- * A plain document navigation (full page load) with the deploy's basePath, instead of `next/link`.
+ * A plain document navigation (full page load) instead of `next/link`.
  *
  * Use it for links into `/battle/?stage=…`: with the static export, Next 16 sometimes fetches the
  * route's RSC payload at `/battle/?…&_rsc=` (not `battle/index.txt`), the host answers with HTML and the
@@ -19,5 +18,5 @@ export const DocumentLink = forwardRef<HTMLAnchorElement, Props>(function Docume
   { href, ...rest },
   ref,
 ) {
-  return <a ref={ref} href={`${PUBLIC_BASE_PATH}${href}`} {...rest} />;
+  return <a ref={ref} href={href} {...rest} />;
 });

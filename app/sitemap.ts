@@ -20,6 +20,6 @@ const PATHS = [
 ] as const;
 
 export default function sitemap(): MetadataRoute.Sitemap {
-  // SITE_URL ends with a slash and already includes the GitHub Pages basePath.
+  // SITE_URL ends with a slash.
   return PATHS.map((path) => ({ url: `${SITE_URL}${path}` }));
 }
