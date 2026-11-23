@@ -1,6 +1,6 @@
 8b1fceab | wks_686a3715d3caf059 | running | 66df01da | wks_8a3b437e09b1144f | running | 77686b22 | wks_6b48f5dcfc40670d | running |77fabe65 | wks_c5dc5cbdc19f155c | running | a27d07aa | wks_46d2a12c006dfbcf | running | e0cefd9e | wks_a4b3d44d18c0dd00 | running | 46bec808 | wks_e9fc7590143bc6f3 | running |# Trainer Studio — build plan
 
-Status: finishing
+Status: done
 Orchestrator launch mode: CLI
 Merge method: GitHub PR into dev
 Repo: C:\Projects\pokeAPI (folder rename to trainer-studio after the build) Remote: https://github.com/edgergard/pokeAPI → renamed to edgergard/trainer-studio in the foundation Visibility: public (GitHub Pages)
@@ -125,3 +125,5 @@ Retries: 6 · Failed streams: 0 · Escalations: 1 · Red dev fixes: 1 · Review 
 - 2026-11-23 USER DECISION: trainer talents stay percentage bonuses for v2; rule-changing trainer talents move to Later (record in idea.md Later on the next /product-idea revise)
 - 2026-11-23 removed the last Poke Ball art (battle backdrop, 404, card placeholder) → shared/ui/CapsuleGlyph (idea.md Never)
 - 2026-11-23 Phase 5 step 4 report given to the user (14 PRs #7–#14 across 3 waves + integration on dev; Must 7/7; open: Lv 1 balance tuned, trainer talents → Later)
+- 2026-11-23 Phase 5 step 5 retro done (skills f94e686; templates nextjs-pet a9cc3d0, nextjs-commercial 97b8393, expo-pet d9986c7, expo-commercial 3db39c0)
+- 2026-11-23 Phase 5 step 6 Status: done; Gate B (dev → main) waits for the user
