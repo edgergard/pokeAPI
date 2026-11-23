@@ -1,27 +1,16 @@
 /**
- * Where the site is deployed. Read at build time (the export is static).
- * - Vercel (`VERCEL=1`): served at the domain root; the canonical URL is the project's production domain.
- * - GitHub Pages (any other production build): served under /trainer-studio/.
- * - `next dev`: the root.
+ * Where the site lives. Vercel is the only production host (GitHub Pages was retired on 2026-11-23), and the
+ * site is always served from the domain root — no basePath.
  */
-const onVercel = Boolean(process.env.VERCEL);
-
-export const BASE_PATH =
-  process.env.NODE_ENV === 'production' && !onVercel ? '/trainer-studio' : '';
-
-/**
- * The basePath as the browser sees it: inlined at build time from next.config's `env` (BASE_PATH itself reads
- * VERCEL, which never reaches client bundles, so it would always say GitHub Pages there).
- */
-export const PUBLIC_BASE_PATH = process.env.NEXT_PUBLIC_BASE_PATH ?? '';
-
 const vercelHost = process.env.VERCEL_PROJECT_PRODUCTION_URL ?? process.env.VERCEL_URL;
 
-/** Absolute site URL with a trailing slash — the base for canonical / Open Graph URLs. */
-export const SITE_URL =
-  onVercel && vercelHost ? `https://${vercelHost}/` : 'https://edgergard.github.io/trainer-studio/';
+/**
+ * Absolute site URL with a trailing slash — the base for canonical / Open Graph / sitemap URLs.
+ * Vercel builds use the project's production domain; local builds use the dev server.
+ */
+export const SITE_URL = vercelHost ? `https://${vercelHost}/` : 'http://localhost:3000/';
 
-/** The Open Graph card (app/opengraph-image.png/route.tsx), relative to SITE_URL so it keeps the basePath. */
+/** The Open Graph card (app/opengraph-image.png/route.tsx), relative to SITE_URL. */
 export const OG_IMAGE = {
   url: 'opengraph-image.png',
   width: 1200,

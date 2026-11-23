@@ -55,9 +55,8 @@ export function PrivacyPage() {
         </p>
         <LegalList>
           <li>
-            The hosting providers that serve the site: Vercel (
-            <OutboundLink href={VERCEL_PRIVACY_URL}>privacy policy</OutboundLink>) and GitHub Pages
-            (<OutboundLink href={GITHUB_PRIVACY_URL}>privacy statement</OutboundLink>).
+            The hosting provider that serves the site: Vercel (
+            <OutboundLink href={VERCEL_PRIVACY_URL}>privacy policy</OutboundLink>).
           </li>
           <li>
             raw.githubusercontent.com (GitHub), which serves the Pokémon images (
