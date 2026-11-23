@@ -124,3 +124,4 @@ Retries: 6 · Failed streams: 0 · Escalations: 1 · Red dev fixes: 1 · Review 
 - 2026-11-23 USER DECISION: every first fight is Lv 1 vs Lv 1 (no Lv 3/5 starts) → economy.onboarding loaner/rival Lv 1; the stage-1 rival comes only from commons with BST ≤ economy.battle.firstStageRivalMaxBst (250); first-try stage-1 win rate 38% → ~82% (test now asserts the first try); intro test accepts the few Lv 1 pairs that resist each other (the deal re-picks the rival)
 - 2026-11-23 USER DECISION: trainer talents stay percentage bonuses for v2; rule-changing trainer talents move to Later (record in idea.md Later on the next /product-idea revise)
 - 2026-11-23 removed the last Poke Ball art (battle backdrop, 404, card placeholder) → shared/ui/CapsuleGlyph (idea.md Never)
+- 2026-11-23 Phase 5 step 4 report given to the user (14 PRs #7–#14 across 3 waves + integration on dev; Must 7/7; open: Lv 1 balance tuned, trainer talents → Later)
