@@ -27,6 +27,12 @@ const refreshNow = () => updateSave((s) => refreshQuests(s, Date.now()));
 /** After a dialog's exit (Dialog's 300 ms fallback), so its native focus restore has happened. */
 const DIALOG_EXIT_MS = 350;
 
+/**
+ * A claim's level-up opens this long after the claim: showModal() makes the page live region inert,
+ * so the claimed reward has to be committed and spoken before the dialog takes over.
+ */
+export const LEVEL_UP_DELAY_MS = 500;
+
 /** A trainer level-up to show: the new level and what it unlocked. */
 export type HubLevelUp = { toLevel: number; unlocks: TrainerUnlock[] };
 
@@ -50,13 +56,20 @@ export function Hub({ announce }: { announce: (text: string) => void }) {
   const [levelUp, setLevelUp] = useState<{ result: HubLevelUp; open: boolean } | null>(null);
   const questsHeadingRef = useRef<HTMLHeadingElement>(null);
   const timer = useRef<ReturnType<typeof setTimeout>>(undefined);
+  const levelUpTimer = useRef<ReturnType<typeof setTimeout>>(undefined);
   /** "See quests" was pressed: focus the quest list once the level-up has closed. */
   const seeQuests = useRef(false);
 
   useEffect(() => {
     if (celebrate) markFinishShown();
   }, [celebrate]);
-  useEffect(() => () => clearTimeout(timer.current), []);
+  useEffect(
+    () => () => {
+      clearTimeout(timer.current);
+      clearTimeout(levelUpTimer.current);
+    },
+    [],
+  );
 
   // Players who skipped onboarding (v1 or imported saves) never hit its persist request: ask here
   // (once per page load; later calls reuse the first request).
@@ -124,7 +137,14 @@ export function Hub({ announce }: { announce: (text: string) => void }) {
             now={now}
             announce={announce}
             headingRef={questsHeadingRef}
-            onLevelUp={(result) => setLevelUp({ result, open: true })}
+            onLevelUp={(result) => {
+              // Let the claim announcement land first (see LEVEL_UP_DELAY_MS).
+              clearTimeout(levelUpTimer.current);
+              levelUpTimer.current = setTimeout(
+                () => setLevelUp({ result, open: true }),
+                LEVEL_UP_DELAY_MS,
+              );
+            }}
           />
           <CapsuleTray save={save} />
           <CollectionTile count={owned} />

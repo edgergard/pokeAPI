@@ -18,6 +18,7 @@ import { FOOTER_TEXT, HomePage } from './HomePage';
 import { dealOnboarding } from './model/dealOnboarding';
 import { __resetHomeSessionForTests } from './model/session';
 import { __resetNowForTests } from './model/useNow';
+import { LEVEL_UP_DELAY_MS } from './ui/Hub';
 import { collectionOf, homeSave, hubSave, ownedMon, polyfillHomeDom } from './testing';
 
 // GSAP (hero heading) reads matchMedia at import time: stub it before any import runs.
@@ -283,9 +284,12 @@ describe('HomePage', () => {
         screen.getByText('Your v1 trainers were imported: 3 Pokémon added.'),
       ).toBeInTheDocument();
       expect(screen.queryByRole('button', { name: /welcome capsule/i })).not.toBeInTheDocument();
+      // The hub asks for persistent storage on mount; dismissing the welcome adds no request.
+      await waitFor(() => expect(persistSpy).toHaveBeenCalledTimes(1));
 
       fireEvent.click(screen.getByRole('button', { name: 'Dismiss welcome message' }));
       expect(screen.queryByText(/v1 trainers were imported/)).not.toBeInTheDocument();
+      await act(async () => {});
       expect(persistSpy).toHaveBeenCalledTimes(1);
       expect(getSave()?.capsules).toEqual({ basic: 0, great: 0 });
 
@@ -544,9 +548,12 @@ describe('HomePage', () => {
         fireEvent.click(screen.getByRole('button', { name: /^Claim / }));
         expect(getSave()?.trainer.level).toBe(3);
         expect(announcer()).toHaveTextContent(/· Trainer Lv 3$/);
+        // The announcement is committed before the modal opens (showModal() would make it inert).
+        expect(screen.queryByRole('dialog', { name: /^Trainer Lv/ })).not.toBeInTheDocument();
 
         // The level-up opens with the new slot; "Fill slot 2" opens the team dialog on Home.
-        const levelUp = screen.getByRole('dialog', { name: 'Trainer Lv 3' });
+        const levelUp = await screen.findByRole('dialog', { name: 'Trainer Lv 3' });
+        expect(announcer()).toHaveTextContent(/· Trainer Lv 3$/);
         expect(within(levelUp).getByText('Team slot 2')).toBeInTheDocument();
         fireEvent.click(within(levelUp).getByRole('button', { name: 'Fill slot 2' }));
         const team = await screen.findByRole('dialog', { name: 'Team' });
@@ -572,7 +579,7 @@ describe('HomePage', () => {
           })),
         );
         fireEvent.click(screen.getByRole('button', { name: /^Claim / }));
-        const levelUp = screen.getByRole('dialog', { name: 'Trainer Lv 4' });
+        const levelUp = await screen.findByRole('dialog', { name: 'Trainer Lv 4' });
         expect(within(levelUp).getByRole('link', { name: 'Learn talent' })).toHaveAttribute(
           'href',
           '/trainer/',
@@ -595,6 +602,7 @@ describe('HomePage', () => {
         );
         fireEvent.click(screen.getByRole('button', { name: /^Claim / }));
         expect(getSave()?.trainer.level).toBe(2);
+        await act(() => new Promise((resolve) => setTimeout(resolve, LEVEL_UP_DELAY_MS + 50)));
         expect(screen.queryByRole('dialog', { name: /^Trainer Lv/ })).not.toBeInTheDocument();
       });
 

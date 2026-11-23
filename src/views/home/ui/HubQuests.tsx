@@ -12,7 +12,8 @@ import { panel } from './styles';
  * Daily quests on the hub: the board at `now` and Claim (committed with its level-ups in one update).
  * The claim result is spoken by the page's live region (`announce`), which exists from the first paint;
  * the line under the list only repeats it for sighted players. A claim that levels the trainer up
- * hands the new level and its unlocks to `onLevelUp` (the hub opens the level-up dialog).
+ * hands the new level and its unlocks to `onLevelUp`; the hub opens the level-up dialog a moment
+ * later, once the announcement has been spoken (a modal makes the live region inert).
  */
 export function HubQuests({
   save,

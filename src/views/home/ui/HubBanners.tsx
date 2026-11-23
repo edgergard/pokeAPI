@@ -3,7 +3,7 @@
 import { useState, type ReactNode } from 'react';
 import Link from 'next/link';
 import { Download, Sparkles, TriangleAlert, X } from 'lucide-react';
-import { requestPersist, type PersistState } from '@/entities/save';
+import type { PersistState } from '@/entities/save';
 import { cn } from '@/shared/lib/cn';
 import { dismiss, isDismissed } from '../model/session';
 import { textLink } from './styles';
@@ -41,10 +41,7 @@ export function HubBanners({ atRisk, persist, backupDue, v1Imported }: Props) {
         id="v1-welcome"
         tone="info"
         icon={<Sparkles aria-hidden className="size-5 shrink-0 text-primary" />}
-        onDismiss={() => {
-          close('v1Welcome');
-          void requestPersist();
-        }}
+        onDismiss={() => close('v1Welcome')}
         dismissLabel="Dismiss welcome message"
       >
         Your v1 trainers were imported: {v1Imported} Pokémon added.
