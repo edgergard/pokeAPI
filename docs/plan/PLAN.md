@@ -1,6 +1,6 @@
 8b1fceab | wks_686a3715d3caf059 | running | 66df01da | wks_8a3b437e09b1144f | running | 77686b22 | wks_6b48f5dcfc40670d | running |77fabe65 | wks_c5dc5cbdc19f155c | running | a27d07aa | wks_46d2a12c006dfbcf | running | e0cefd9e | wks_a4b3d44d18c0dd00 | running | 46bec808 | wks_e9fc7590143bc6f3 | running |# Trainer Studio — build plan
 
-Status: wave-2 running
+Status: wave-3 running
 Orchestrator launch mode: CLI
 Merge method: GitHub PR into dev
 Repo: C:\Projects\pokeAPI (folder rename to trainer-studio after the build) Remote: https://github.com/edgergard/pokeAPI → renamed to edgergard/trainer-studio in the foundation Visibility: public (GitHub Pages)
@@ -80,6 +80,12 @@ No keys are needed: streams and CI run with no `.env`.
 | 2-play       | stream/2-play       | `src/views/battle/**`, `src/views/ladder/**`, `src/entities/ladder/**`, `src/widgets/team-dialog/**`, `src/widgets/level-up/**`, `src/features/battle-setup/**` (delete)                                | 3202 | claude/claude-opus-5-5 · auto | 66df01da | wks_8a3b437e09b1144f | merged | [#13](https://github.com/edgergard/trainer-studio/pull/13) |
 | 2-home       | stream/2-home       | `src/views/home/**`, `src/widgets/app-nav/**`, `src/widgets/quest-list/**`, `src/widgets/team-showcase/**`, `src/features/team-builder/**` (delete), `src/entities/trainer/**` (v1 roster code retired) | 3203 | claude/claude-opus-5-5 · auto | 8b1fceab | wks_686a3715d3caf059 | merged | [#11](https://github.com/edgergard/trainer-studio/pull/11) |
 
+### Wave 3 (final, from the acceptance check)
+
+| Stream | Branch        | Owns (only these paths)                                                                                                                                       | Port | Provider/profile · mode                              | Agent ID | Workspace ID | Status  | PR  |
+| ------ | ------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---- | ---------------------------------------------------- | -------- | ------------ | ------- | --- |
+| 3-glue | stream/3-glue | `src/views/home/**`, `src/widgets/app-nav/**`, `src/views/settings/ui/SaveSection.tsx`, `src/entities/ladder/**`, economy `battle.rivalLevel`/`rivalRarities` | 3301 | Workflow agent in a git worktree (Paseo daemon down) | —        | —            | running |     |
+
 Status values: pending · running · permission · escalation · done (report in) · in review · fixing · merged · failed
 
 ## Metrics
@@ -109,3 +115,4 @@ Retries: 0 · Failed streams: 0 · Escalations: 1 · Red dev fixes: 1 · Review 
 - 2026-11-23 2-play merged (PR #13, 0043b7f); review: fixed 2 (ladder scroll to current stage, mobile result focus scroll)
 - 2026-11-23 integration on dev: stage-1 rival Lv 1 (economy.battle.rivalLevel.start), intro trainer XP (economy.onboarding.introTrainerXp), shared Dialog close button tap-target + focus ring, battle page metadata
 - 2026-11-23 wave 2 complete; open: 5 TODO(2-play) links in home/app-nav (next-stage helper, rival preview, team dialog, level-up on quest claim) and leftover src/entities/trainer
+- 2026-11-23 acceptance check: Must 1,2,3,4,7 done; 5 and 6 partly (no level-up after a quest claim; ladder passability unproven); minor: Home Edit team/rival preview/next-stage helper/persist for importers → final stream 3-glue; trainer talents being percentage bonuses left as a product note
