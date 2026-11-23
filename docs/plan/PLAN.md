@@ -91,7 +91,7 @@ Status values: pending · running · permission · escalation · done (report in
 ## Metrics
 
 Gate A approved: 2026-11-22 · Gate A rounds: 1
-Retries: 0 · Failed streams: 0 · Escalations: 1 · Red dev fixes: 1 · Review findings fixed: 20 · User corrections: 0
+Retries: 6 · Failed streams: 0 · Escalations: 1 · Red dev fixes: 1 · Review findings fixed: 20 · User corrections: 0
 
 ## Log
 
@@ -119,3 +119,5 @@ Retries: 0 · Failed streams: 0 · Escalations: 1 · Red dev fixes: 1 · Review 
 - 2026-11-23 3-glue merged (PR #14, f277251) as a workflow agent in a git worktree; review: fixed 2 (reward announcement lost when the level-up modal opens, v1 welcome test proving nothing); passability test: all 25 stages ≥ 50% with the documented assumptions; OPEN for the user: a fresh Lv 1 Pokémon wins its first stage-1 fight ~38% (85% with one Retry); trainer talents are percentage bonuses
 - 2026-11-23 dev: .claude/worktrees/ ignored by git and ESLint (agent worktrees made lint report 23k problems locally)
 - 2026-11-23 Phase 5 started: step 1 acceptance check done (see above)
+- 2026-11-23 Phase 5 step 2 integration pass: npm run check green (817 tests); browser smoke on the built preview (basePath) at 375/1000/1280: onboarding → intro battle → capsule → hub → stage 1 battle (loss) → result → Retry, Collection, Capsules, Trainer, Settings; no console errors, no horizontal scroll. FOUND + FIXED: links into /battle/ did nothing after some client navigations (Next 16 static export fetched /battle/?…&_rsc= and the host returned HTML) → DocumentLink (500e821). Noted: old Poke Ball silhouettes in the battle backdrop (BattleAmbient, IP), "Open capsules (0)" shown with zero capsules
+- 2026-11-23 Phase 5 step 3 metrics row B-003 appended to ~/.claude/skills/METRICS.md
