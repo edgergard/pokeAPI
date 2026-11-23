@@ -1,5 +1,5 @@
 import { forwardRef, type AnchorHTMLAttributes } from 'react';
-import { BASE_PATH } from '@/shared/config/site';
+import { PUBLIC_BASE_PATH } from '@/shared/config/site';
 
 type Props = Omit<AnchorHTMLAttributes<HTMLAnchorElement>, 'href'> & {
   /** App path without the basePath, e.g. `/battle/?stage=3`. */
@@ -19,5 +19,5 @@ export const DocumentLink = forwardRef<HTMLAnchorElement, Props>(function Docume
   { href, ...rest },
   ref,
 ) {
-  return <a ref={ref} href={`${BASE_PATH}${href}`} {...rest} />;
+  return <a ref={ref} href={`${PUBLIC_BASE_PATH}${href}`} {...rest} />;
 });
