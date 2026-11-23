@@ -134,7 +134,9 @@ export function generateLadder(): StageInfo[] {
       const rarity = pick(rng, rarities);
       const species = pick(
         rng,
-        poolOf(rarity).filter((s) => !used.has(s.id)),
+        poolOf(rarity).filter(
+          (s) => !used.has(s.id) && (stage > 1 || s.bst <= economy.battle.firstStageRivalMaxBst),
+        ),
       );
       used.add(species.id);
       rival.push({ speciesId: species.id, level, stars });

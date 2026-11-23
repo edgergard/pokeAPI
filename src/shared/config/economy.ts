@@ -92,6 +92,11 @@ export const economy = {
     /** Rival level at stage s: start + perStage × (s − 1). */
     // Stage 1 rival at Lv 1: a fresh Lv 1 Pokémon from the first capsule must have a fair first fight.
     rivalLevel: { start: 1, perStage: 2 },
+    /**
+     * Stage 1 is the first real fight of a fresh Lv 1 Pokémon against a Lv 1 rival: its rival comes only from
+     * common species at or below this base-stat total, so the matchup itself is fair.
+     */
+    firstStageRivalMaxBst: 250,
     ladderStages: 25,
     /** Rival team size by ladder stage: the last entry whose fromStage <= stage wins (sorted asc). */
     rivalTeamSize: [
@@ -111,8 +116,9 @@ export const economy = {
   },
 
   onboarding: {
-    loanerLevel: 5,
-    rivalLevel: 3,
+    // Everyone starts at Lv 1: the loaner and the intro rival too (user decision 2026-11-23).
+    loanerLevel: 1,
+    rivalLevel: 1,
     introReward: { capsules: { basic: 1 } },
     /** Trainer XP for the scripted intro win (design.md first-visit step 4: the XP bar fills). */
     introTrainerXp: 120,

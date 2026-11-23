@@ -47,9 +47,9 @@ import { rivalRarities, stageInfo, stageWinXp, type RivalMember } from './stages
  *   `CANDIDATES` strongest (scouted on separate seeds, so the reported rate isn't fitted to them).
  *
  * Stage 1 is checked separately with the real first capsule of many new saves (Lv 1, rolled IVs and
- * nature). Rivals have IV 31 and the stage-1 rival is already at the lowest level (1), so a fresh
- * Lv 1 Pokémon wins its first try only ~38% of the time; a loss still pays XP, and with the Retry
- * the stage is won ~85% of the time — that is what the check asserts.
+ * nature) against the Lv 1 stage-1 rival, drawn only from weak commons
+ * (`economy.battle.firstStageRivalMaxBst`): the first try must be won at least MIN_WIN_RATE of the
+ * time (~82% at the time of writing; ~100% with one Retry).
  *
  * Win rates per stage: `PASSABILITY_DEBUG=1 npx vitest run passability --silent=false`.
  */
@@ -245,6 +245,6 @@ describe('ladder passability', () => {
     if (process.env.PASSABILITY_DEBUG) {
       console.info('stage 1 fresh Lv 1: first try', mean(first), 'first or retry', mean(withRetry));
     }
-    expect(mean(withRetry)).toBeGreaterThanOrEqual(MIN_WIN_RATE);
+    expect(mean(first)).toBeGreaterThanOrEqual(MIN_WIN_RATE);
   });
 });
