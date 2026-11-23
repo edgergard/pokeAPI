@@ -127,3 +127,6 @@ Retries: 6 · Failed streams: 0 · Escalations: 1 · Red dev fixes: 1 · Review 
 - 2026-11-23 Phase 5 step 4 report given to the user (14 PRs #7–#14 across 3 waves + integration on dev; Must 7/7; open: Lv 1 balance tuned, trainer talents → Later)
 - 2026-11-23 Phase 5 step 5 retro done (skills f94e686; templates nextjs-pet a9cc3d0, nextjs-commercial 97b8393, expo-pet d9986c7, expo-commercial 3db39c0)
 - 2026-11-23 Phase 5 step 6 Status: done; Gate B (dev → main) waits for the user
+- 2026-11-23 GATE B: release PR #15 merged (merge commit 5ff6aeb) on the user's go; Vercel (now Git-connected) auto-deployed production
+- 2026-11-23 ESCAPED: on Vercel the Fight links pointed at /trainer-studio/battle/ (404) — BASE_PATH read process.env.VERCEL, which never reaches client bundles; hotfix 8c2225c passes NEXT_PUBLIC_BASE_PATH from next.config; PR #16 merged (0e8bcec) on the user's go; production verified (intro battle opens, no console errors)
+- 2026-11-23 known risk: with IndexedDB unavailable the save is memory-only and the full page load into /battle/ loses it (onboarding loops) — consider a sessionStorage fallback in /product-launch or a follow-up
