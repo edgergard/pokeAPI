@@ -50,7 +50,7 @@ date: "2026-11-23"
 
 ## Деплой (Deploy)
 - Preview: PR #17 и #18 — Vercel preview зелёные; ручной smoke делался на локальной сборке (preview за логином Vercel)
-- Production: https://pokeapi-trainer-studio.vercel.app/ — v2 выкачен 2026-11-23 (PR #15, hotfix #16), фиксы запуска 2026-11-23 (PR #18, b8b278b) по твоему «go»
+- Production: https://pokeapi-trainer-studio.vercel.app/ — v2 выкачен 2026-11-23 (PR #15, hotfix #16), фиксы запуска 2026-11-23 (PR #18, b8b278b) по твоему «go»; GitHub Pages выведен 2026-11-23 (PR #20, d97b10a)
 - Smoke production: онбординг → интро-бой → продолжение после перезагрузки, /privacy, /terms, robots.txt, sitemap.xml, opengraph-image.png — ok, ошибок в консоли нет
 - Lighthouse: не запускался
 
