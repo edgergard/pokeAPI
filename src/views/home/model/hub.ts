@@ -1,3 +1,5 @@
+import { isLadderComplete, nextStageToFight, stageInfo } from '@/entities/ladder';
+import { getSpecies } from '@/entities/pokemon';
 import {
   nextUnlock,
   teamSlotUnlockLevel,
@@ -11,22 +13,37 @@ import { rewardParts } from '@/widgets/quest-list';
 /** Team slots the game ever opens (the largest entry of `economy.trainer.teamSlots`). */
 export const MAX_TEAM_SLOTS = Math.max(...economy.trainer.teamSlots.map((e) => e.slots));
 
-/**
- * The ladder stage to fight next: one past the highest cleared, capped at the last stage.
- * TODO(2-play): use the "next stage to fight" helper from entities/ladder once it is merged.
- */
-export function nextStage(save: Pick<Save, 'ladder'>): number {
-  return Math.min(save.ladder.cleared + 1, economy.battle.ladderStages);
-}
+export type RivalPreview = { speciesId: number; name: string; level: number; stars: number };
 
-/** Every stage is cleared: the next-stage card offers a replay. */
-export function ladderComplete(save: Pick<Save, 'ladder'>): boolean {
-  return save.ladder.cleared >= economy.battle.ladderStages;
-}
+/** The hub's next-stage card: the stage to fight, its rival and first-clear reward, or "all cleared". */
+export type NextStageView =
+  | { complete: true; stage: number }
+  | {
+      complete: false;
+      stage: number;
+      rivalName: string;
+      rival: RivalPreview[];
+      /** "+1 Basic capsule · +20 dust". */
+      firstClear: string;
+    };
 
-/** "+1 Basic capsule · +20 dust" from `economy.battle.firstClear`. */
-export function firstClearText(): string {
-  return rewardParts(economy.battle.firstClear).join(' · ');
+/** The next stage (`nextStageToFight`) with its rival preview; `complete` once every stage is cleared. */
+export function nextStageView(save: Pick<Save, 'ladder'>): NextStageView {
+  const stage = nextStageToFight(save);
+  if (isLadderComplete(save)) return { complete: true, stage };
+  const info = stageInfo(stage);
+  return {
+    complete: false,
+    stage,
+    rivalName: info.rivalName,
+    rival: info.rival.map((m) => ({
+      speciesId: m.speciesId,
+      name: getSpecies(m.speciesId)?.name ?? `#${m.speciesId}`,
+      level: m.level,
+      stars: m.stars,
+    })),
+    firstClear: rewardParts(info.firstClear).join(' · '),
+  };
 }
 
 function unlockText(unlock: TrainerUnlock): string {

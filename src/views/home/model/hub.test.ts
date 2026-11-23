@@ -1,32 +1,38 @@
 import { describe, expect, it } from 'vitest';
+import { nextStageToFight, stageInfo } from '@/entities/ladder';
+import { getSpecies } from '@/entities/pokemon';
 import { nextUnlock, teamSlotUnlockLevel, teamSlots } from '@/entities/progression';
 import { economy } from '@/shared/config/economy';
 import { collectionOf, homeSave, ownedMon } from '../testing';
-import {
-  MAX_TEAM_SLOTS,
-  firstClearText,
-  ladderComplete,
-  nextStage,
-  nextUnlockText,
-  teamStrip,
-} from './hub';
+import { MAX_TEAM_SLOTS, nextStageView, nextUnlockText, teamStrip } from './hub';
 import { claimAnnouncement } from './quests';
 
-describe('nextStage', () => {
-  it('is one past the highest cleared stage, capped at the last stage', () => {
-    expect(nextStage({ ladder: { cleared: 0, replayWins: 0 } })).toBe(1);
-    expect(nextStage({ ladder: { cleared: 6, replayWins: 0 } })).toBe(7);
-    const last = economy.battle.ladderStages;
-    expect(nextStage({ ladder: { cleared: last, replayWins: 0 } })).toBe(last);
-    expect(ladderComplete({ ladder: { cleared: last, replayWins: 0 } })).toBe(true);
-    expect(ladderComplete({ ladder: { cleared: last - 1, replayWins: 0 } })).toBe(false);
-  });
-});
+describe('nextStageView', () => {
+  const ladder = (cleared: number) => ({ ladder: { cleared, replayWins: 0 } });
 
-describe('firstClearText', () => {
-  it('is built from economy.battle.firstClear', () => {
-    const { capsules, dust } = economy.battle.firstClear;
-    expect(firstClearText()).toBe(`+${capsules.basic} Basic capsule · +${dust} dust`);
+  it('is the next stage to fight with its rival and first-clear reward', () => {
+    for (const cleared of [0, 6]) {
+      const view = nextStageView(ladder(cleared));
+      const info = stageInfo(cleared + 1);
+      expect(view).toEqual({
+        complete: false,
+        stage: nextStageToFight(ladder(cleared)),
+        rivalName: info.rivalName,
+        rival: info.rival.map((m) => ({
+          speciesId: m.speciesId,
+          name: getSpecies(m.speciesId)?.name,
+          level: m.level,
+          stars: m.stars,
+        })),
+        firstClear: `+${economy.battle.firstClear.capsules.basic} Basic capsule · +${economy.battle.firstClear.dust} dust`,
+      });
+    }
+  });
+
+  it('is complete once every stage is cleared', () => {
+    const last = economy.battle.ladderStages;
+    expect(nextStageView(ladder(last))).toEqual({ complete: true, stage: last });
+    expect(nextStageView(ladder(last - 1)).complete).toBe(false);
   });
 });
 

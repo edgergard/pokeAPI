@@ -1,5 +1,5 @@
 import type { Save } from '@/entities/save';
-import { CAPSULE_TIERS, economy } from '@/shared/config/economy';
+import { CAPSULE_TIERS } from '@/shared/config/economy';
 
 /** Main sections in tab order. Literal trailing-slash paths (static export, `trailingSlash: true`). */
 export const NAV_LINKS = [
@@ -32,15 +32,6 @@ const ONBOARDING_PATHS = new Set(['/', '/battle', '/settings']);
 /** During onboarding every other deep link goes back to `/`. */
 export function redirectDuringOnboarding(pathname: string | null | undefined): boolean {
   return !ONBOARDING_PATHS.has(normalizePath(pathname));
-}
-
-/**
- * The ladder stage the Fight CTA opens: one past the highest cleared, capped at the last stage
- * (same rule as the home hub's next-stage card).
- * TODO(2-play): use the "next stage to fight" helper from entities/ladder once it is merged.
- */
-export function fightStage(save: Pick<Save, 'ladder'>): number {
-  return Math.min(save.ladder.cleared + 1, economy.battle.ladderStages);
 }
 
 /** Unopened capsules of every tier (Capsules badge). */
