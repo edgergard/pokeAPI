@@ -33,3 +33,6 @@ next-env.d.ts
 # Vercel (project link + pulled env, e.g. the OIDC token in .env.local)
 .vercel
 .env*
+
+# Agent worktrees (Claude Code workflow isolation)
+.claude/worktrees/

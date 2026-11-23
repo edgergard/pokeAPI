@@ -1,6 +1,6 @@
 8b1fceab | wks_686a3715d3caf059 | running | 66df01da | wks_8a3b437e09b1144f | running | 77686b22 | wks_6b48f5dcfc40670d | running |77fabe65 | wks_c5dc5cbdc19f155c | running | a27d07aa | wks_46d2a12c006dfbcf | running | e0cefd9e | wks_a4b3d44d18c0dd00 | running | 46bec808 | wks_e9fc7590143bc6f3 | running |# Trainer Studio — build plan
 
-Status: wave-3 running
+Status: finishing
 Orchestrator launch mode: CLI
 Merge method: GitHub PR into dev
 Repo: C:\Projects\pokeAPI (folder rename to trainer-studio after the build) Remote: https://github.com/edgergard/pokeAPI → renamed to edgergard/trainer-studio in the foundation Visibility: public (GitHub Pages)
@@ -82,16 +82,16 @@ No keys are needed: streams and CI run with no `.env`.
 
 ### Wave 3 (final, from the acceptance check)
 
-| Stream | Branch        | Owns (only these paths)                                                                                                                                       | Port | Provider/profile · mode                              | Agent ID | Workspace ID | Status  | PR  |
-| ------ | ------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---- | ---------------------------------------------------- | -------- | ------------ | ------- | --- |
-| 3-glue | stream/3-glue | `src/views/home/**`, `src/widgets/app-nav/**`, `src/views/settings/ui/SaveSection.tsx`, `src/entities/ladder/**`, economy `battle.rivalLevel`/`rivalRarities` | 3301 | Workflow agent in a git worktree (Paseo daemon down) | —        | —            | running |     |
+| Stream | Branch        | Owns (only these paths)                                                                                                                                       | Port | Provider/profile · mode                              | Agent ID | Workspace ID | Status | PR                                                         |
+| ------ | ------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---- | ---------------------------------------------------- | -------- | ------------ | ------ | ---------------------------------------------------------- |
+| 3-glue | stream/3-glue | `src/views/home/**`, `src/widgets/app-nav/**`, `src/views/settings/ui/SaveSection.tsx`, `src/entities/ladder/**`, economy `battle.rivalLevel`/`rivalRarities` | 3301 | Workflow agent in a git worktree (Paseo daemon down) | —        | —            | merged | [#14](https://github.com/edgergard/trainer-studio/pull/14) |
 
 Status values: pending · running · permission · escalation · done (report in) · in review · fixing · merged · failed
 
 ## Metrics
 
 Gate A approved: 2026-11-22 · Gate A rounds: 1
-Retries: 0 · Failed streams: 0 · Escalations: 1 · Red dev fixes: 1 · Review findings fixed: 18 · User corrections: 0
+Retries: 0 · Failed streams: 0 · Escalations: 1 · Red dev fixes: 1 · Review findings fixed: 20 · User corrections: 0
 
 ## Log
 
@@ -116,3 +116,6 @@ Retries: 0 · Failed streams: 0 · Escalations: 1 · Red dev fixes: 1 · Review 
 - 2026-11-23 integration on dev: stage-1 rival Lv 1 (economy.battle.rivalLevel.start), intro trainer XP (economy.onboarding.introTrainerXp), shared Dialog close button tap-target + focus ring, battle page metadata
 - 2026-11-23 wave 2 complete; open: 5 TODO(2-play) links in home/app-nav (next-stage helper, rival preview, team dialog, level-up on quest claim) and leftover src/entities/trainer
 - 2026-11-23 acceptance check: Must 1,2,3,4,7 done; 5 and 6 partly (no level-up after a quest claim; ladder passability unproven); minor: Home Edit team/rival preview/next-stage helper/persist for importers → final stream 3-glue; trainer talents being percentage bonuses left as a product note
+- 2026-11-23 3-glue merged (PR #14, f277251) as a workflow agent in a git worktree; review: fixed 2 (reward announcement lost when the level-up modal opens, v1 welcome test proving nothing); passability test: all 25 stages ≥ 50% with the documented assumptions; OPEN for the user: a fresh Lv 1 Pokémon wins its first stage-1 fight ~38% (85% with one Retry); trainer talents are percentage bonuses
+- 2026-11-23 dev: .claude/worktrees/ ignored by git and ESLint (agent worktrees made lint report 23k problems locally)
+- 2026-11-23 Phase 5 started: step 1 acceptance check done (see above)
