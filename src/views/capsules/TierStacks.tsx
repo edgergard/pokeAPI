@@ -1,4 +1,4 @@
-import Link from 'next/link';
+import { DocumentLink } from '@/shared/ui/DocumentLink';
 import { Lock } from 'lucide-react';
 import { CapsuleArt, TIER_LABEL, tierLockReason } from '@/entities/capsule';
 import { CAPSULE_TIERS, economy, type CapsuleTier } from '@/shared/config/economy';
@@ -115,9 +115,9 @@ export function EmptyCapsules({ cleared }: { cleared: number }) {
       <p className="max-w-sm text-foreground">
         No capsules. Win battles and finish daily quests to earn them.
       </p>
-      <Link href={`/battle/?stage=${stage}`} className={linkButtonClass}>
+      <DocumentLink href={`/battle/?stage=${stage}`} className={linkButtonClass}>
         Fight
-      </Link>
+      </DocumentLink>
     </div>
   );
 }

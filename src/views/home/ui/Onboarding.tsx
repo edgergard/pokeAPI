@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
-import Link from 'next/link';
+import { DocumentLink } from '@/shared/ui/DocumentLink';
 import { loadMovesets } from '@/entities/battle';
 import { CapsuleArt, type RevealResult } from '@/entities/capsule';
 import { getSpecies } from '@/entities/pokemon';
@@ -223,9 +223,9 @@ function Dealt({ announce }: { announce: Announce }) {
           className="card-deal"
         />
       </div>
-      <Link ref={fightRef} href="/battle/?stage=intro" prefetch className={primaryLinkLarge}>
+      <DocumentLink ref={fightRef} href="/battle/?stage=intro" className={primaryLinkLarge}>
         Fight
-      </Link>
+      </DocumentLink>
     </section>
   );
 }

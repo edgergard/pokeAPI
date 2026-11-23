@@ -1,4 +1,5 @@
 import { useEffect, useId, useRef, type ReactNode } from 'react';
+import { DocumentLink } from '@/shared/ui/DocumentLink';
 import Link from 'next/link';
 import { Check, Package, RotateCcw, Sparkles, Trophy } from 'lucide-react';
 import type { BattleResult } from '@/entities/battle';
@@ -138,9 +139,13 @@ export function StageResult({
                 Back to ladder
               </Link>
             ) : (
-              <Link ref={setPrimary} href={stageHref(stage + 1)} className={primaryLinkClass}>
+              <DocumentLink
+                ref={setPrimary}
+                href={stageHref(stage + 1)}
+                className={primaryLinkClass}
+              >
                 Next stage
-              </Link>
+              </DocumentLink>
             )
           ) : (
             <Button ref={setPrimary} onClick={onRetry} className="cursor-pointer">

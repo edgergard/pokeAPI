@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useRef, useState, type ComponentType } from 'react';
+import { DocumentLink } from '@/shared/ui/DocumentLink';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import {
@@ -318,7 +319,7 @@ function FightCta({ stage, pulse, reduced }: { stage: number; pulse: number; red
   }, [pulse, reduced]);
 
   return (
-    <Link
+    <DocumentLink
       ref={ref}
       href={`/battle/?stage=${stage}`}
       aria-label={`Fight · Stage ${stage}`}
@@ -330,6 +331,6 @@ function FightCta({ stage, pulse, reduced }: { stage: number; pulse: number; red
     >
       <Swords aria-hidden className="size-4" />
       Fight<span className="hidden sm:inline"> · Stage {stage}</span>
-    </Link>
+    </DocumentLink>
   );
 }

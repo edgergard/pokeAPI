@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useRef } from 'react';
+import { DocumentLink } from '@/shared/ui/DocumentLink';
 import Link from 'next/link';
 import { ChevronRight, LayoutGrid, Swords, UserRound } from 'lucide-react';
 import { getSpecies, SPECIES_COUNT, typeColor } from '@/entities/pokemon';
@@ -137,17 +138,16 @@ export function NextStageCard({
             Replay a stage
           </Link>
         ) : (
-          <Link
+          <DocumentLink
             ref={fightRef}
             href={`/battle/?stage=${stage}`}
-            prefetch
             aria-label={`Fight · Stage ${stage}`}
             data-pulse={celebrate && !reduced ? '' : undefined}
             className={cn(primaryLink, 'px-8')}
           >
             <Swords aria-hidden className="size-5" />
             Fight
-          </Link>
+          </DocumentLink>
         )}
       </div>
     </section>

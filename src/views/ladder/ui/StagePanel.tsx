@@ -1,4 +1,4 @@
-import Link from 'next/link';
+import { DocumentLink } from '@/shared/ui/DocumentLink';
 import { Package, Sparkles, Swords, Users } from 'lucide-react';
 import { RARITY_LABEL, RARITY_TEXT_CLASS } from '@/entities/capsule';
 import type { StageInfo, StageStatus } from '@/entities/ladder';
@@ -141,10 +141,10 @@ export function StagePanel({ info, status, yourPower, replayWins, fillTeam, onEd
             Fill team
           </Button>
         ) : (
-          <Link href={`/battle/?stage=${info.stage}`} className={fightLinkClass}>
+          <DocumentLink href={`/battle/?stage=${info.stage}`} className={fightLinkClass}>
             <Swords className="size-4" aria-hidden />
             Fight
-          </Link>
+          </DocumentLink>
         )}
         <Button size="lg" variant="outline" onClick={onEditTeam} className="cursor-pointer">
           Edit team
