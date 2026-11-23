@@ -6,7 +6,6 @@ export { animatedSpriteUrl, pickSpriteSource, spriteSrc, type SpriteSource } fro
 export { usePokemonIndex, usePokemonList, pokemonKeys, pokemonQuery } from './api/queries';
 export { PokemonCard } from './ui/PokemonCard';
 export { PokemonCardPlaceholder } from './ui/PokemonCardPlaceholder';
-export { Pokeball } from '@/shared/ui/Pokeball';
 export { PokemonRow } from './ui/PokemonRow';
 export { PokemonSprite } from './ui/PokemonSprite';
 export { TypeBadge } from './ui/TypeBadge';

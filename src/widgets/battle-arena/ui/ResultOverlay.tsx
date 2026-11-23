@@ -1,17 +1,16 @@
 import { useEffect, useId, useRef } from 'react';
 import { RotateCcw, Swords, Trophy } from 'lucide-react';
-import type { BattleTeam, Fighter, Side } from '@/entities/battle';
+import type { BattleResult, BattleTeam, Fighter, Side } from '@/entities/battle';
 import { cn } from '@/shared/lib/cn';
-import { formatName } from '@/shared/lib/format';
 import { Button } from '@/shared/ui/Button';
-import type { HudResult } from '../model/hudState';
 
 type Props = {
-  result: HudResult;
+  result: BattleResult;
   red: BattleTeam;
   blue: BattleTeam;
   onReplay(): void;
-  onNewBattle(): void;
+  /** Legacy watch-only battle: back to the team picker. No button without it. */
+  onNewBattle?: () => void;
 };
 
 const SIDE_TEXT: Record<Side, string> = { red: 'text-side-red', blue: 'text-side-blue' };
@@ -19,18 +18,19 @@ const SIDE_BG: Record<Side, string> = { red: 'bg-side-red', blue: 'bg-side-blue'
 const SIDE_NAME: Record<Side, string> = { red: 'Red', blue: 'Blue' };
 
 /**
- * The result screen for the `end` event, shown once its victory beat has played: winner, reason
- * and each fighter's numbers. Focus moves to its heading.
+ * The default result screen, shown once the victory beat has played: winner, reason and each
+ * fighter's numbers. Focus moves to its main button (Replay). Callers with their own result screen
+ * pass `renderResult` to the arena instead.
  */
 export function ResultOverlay({ result, red, blue, onReplay, onNewBattle }: Props) {
-  const headingRef = useRef<HTMLHeadingElement>(null);
+  const mainRef = useRef<HTMLButtonElement>(null);
   const headingId = useId();
   const winner = result.winner === 'red' ? red : blue;
   const fighters: Record<string, Fighter> = Object.fromEntries(
     [...red.fighters, ...blue.fighters].map((f) => [f.id, f]),
   );
   // Winner's team first, each team in slot order.
-  const rows = [...result.summary].sort((a, b) => {
+  const rows = [...result.fighters].sort((a, b) => {
     const fa = fighters[a.fighterId];
     const fb = fighters[b.fighterId];
     const rank = (f: Fighter | undefined) => (f?.side === result.winner ? 0 : 1);
@@ -38,7 +38,10 @@ export function ResultOverlay({ result, red, blue, onReplay, onNewBattle }: Prop
   });
 
   useEffect(() => {
-    headingRef.current?.focus({ preventScroll: true });
+    const main = mainRef.current;
+    main?.focus({ preventScroll: true });
+    // A 4×4 table can push the button below the fold on a phone: bring it into view (minimal scroll).
+    main?.scrollIntoView?.({ block: 'nearest' });
   }, []);
 
   return (
@@ -47,15 +50,13 @@ export function ResultOverlay({ result, red, blue, onReplay, onNewBattle }: Prop
       className="absolute inset-0 z-10 flex animate-[fade-in_400ms_var(--ease-standard)_backwards] overflow-y-auto bg-linear-to-t from-ink-950/90 via-ink-950/55 to-ink-950/10 p-3 sm:items-center sm:p-6"
     >
       <div className="m-auto w-full max-w-md animate-[rise_600ms_var(--ease-out-expo)_120ms_backwards] rounded-3xl border border-white/12 bg-ink-900/92 p-4 shadow-2xl sm:p-6">
-        <p className="flex items-center gap-2 font-mono text-[11px] tracking-[0.25em] text-ink-300 uppercase">
+        <p className="flex items-center gap-2 font-mono text-xs tracking-[0.25em] text-ink-300 uppercase">
           <Trophy className="size-3.5 text-accent" aria-hidden />
           {result.reason === 'knockout' ? 'Knockout' : 'Turn limit reached'}
         </p>
         <h2
-          ref={headingRef}
           id={headingId}
-          tabIndex={-1}
-          className="mt-1 font-display text-2xl font-extrabold tracking-tight focus:outline-none sm:text-3xl"
+          className="mt-1 font-display text-2xl font-extrabold tracking-tight sm:text-3xl"
         >
           <span className={SIDE_TEXT[result.winner]}>{winner.trainerName}</span> wins!
         </h2>
@@ -68,7 +69,7 @@ export function ResultOverlay({ result, red, blue, onReplay, onNewBattle }: Prop
         <table className="mt-4 w-full text-sm">
           <caption className="sr-only">Fighter results</caption>
           <thead>
-            <tr className="text-left text-[11px] tracking-wider text-ink-400 uppercase">
+            <tr className="text-left text-xs tracking-wider text-ink-400 uppercase">
               <th scope="col" className="pb-1.5 font-semibold">
                 Fighter
               </th>
@@ -103,7 +104,7 @@ export function ResultOverlay({ result, red, blue, onReplay, onNewBattle }: Prop
                           !row.survived && 'text-ink-400 line-through decoration-ink-500',
                         )}
                       >
-                        {f ? formatName(f.name) : row.fighterId}
+                        {f ? f.name : row.fighterId}
                       </span>
                       {/* The coloured dot is decorative: say whose fighter it is (same species can be on both sides). */}
                       {f && (
@@ -124,14 +125,16 @@ export function ResultOverlay({ result, red, blue, onReplay, onNewBattle }: Prop
         </table>
 
         <div className="mt-5 flex flex-wrap gap-2">
-          <Button onClick={onReplay}>
+          <Button ref={mainRef} onClick={onReplay} className="cursor-pointer">
             <RotateCcw className="size-4" aria-hidden />
             Replay
           </Button>
-          <Button variant="outline" onClick={onNewBattle}>
-            <Swords className="size-4" aria-hidden />
-            New battle
-          </Button>
+          {onNewBattle && (
+            <Button variant="outline" onClick={onNewBattle} className="cursor-pointer">
+              <Swords className="size-4" aria-hidden />
+              New battle
+            </Button>
+          )}
         </div>
       </div>
     </section>

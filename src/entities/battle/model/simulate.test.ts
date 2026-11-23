@@ -1,8 +1,8 @@
 import { describe, expect, it } from 'vitest';
-import { calcDamage, chooseMove, FALLBACK_MOVE } from './damage';
+import { calcDamage, chooseMove, critChance, FALLBACK_MOVE } from './damage';
 import type { BattleEvent } from './events';
 import { createRng } from './rng';
-import { simulateBattle } from './simulate';
+import { simulateBattle, TeamSizeError } from './simulate';
 import type { BattleTeam, Move } from './types';
 import { makeFighter, makeTeam, SHADOW_BALL, TACKLE } from './testFighters';
 
@@ -26,7 +26,10 @@ describe('simulateBattle', () => {
   });
 
   it('produces a well-formed relay: starts with two enters, ends with one end event', () => {
-    const { events, winner } = simulateBattle(...sampleTeams(), 1);
+    const {
+      events,
+      result: { winner },
+    } = simulateBattle(...sampleTeams(), 1);
     expect(events.slice(0, 2).map((e) => e.kind)).toEqual(['enter', 'enter']);
     expect(events.at(-1)).toMatchObject({ kind: 'end', winner, reason: 'knockout' });
     expect(events.filter((e) => e.kind === 'end')).toHaveLength(1);
@@ -74,7 +77,10 @@ describe('simulateBattle', () => {
   });
 
   it('ends a mutual-immunity stalemate at the turn cap by remaining HP %', () => {
-    const { events, winner } = simulateBattle(
+    const {
+      events,
+      result: { winner },
+    } = simulateBattle(
       makeTeam('red', ['normal'], [TACKLE]),
       makeTeam('blue', ['ghost'], [SHADOW_BALL]),
       5,
@@ -88,7 +94,10 @@ describe('simulateBattle', () => {
   it('awards the cap win to the side with more remaining HP %', () => {
     const red = makeTeam('red', ['normal'], [TACKLE], 100);
     const blue = makeTeam('blue', ['normal'], [TACKLE], 90);
-    const { events, winner } = simulateBattle(red, blue, 9, { turnCap: 2 });
+    const {
+      events,
+      result: { winner },
+    } = simulateBattle(red, blue, 9, { turnCap: 2 });
     expect(events.at(-1)).toMatchObject({ kind: 'end', reason: 'turnCap' });
     const dmg = (side: string) =>
       events
@@ -227,5 +236,196 @@ describe('chooseMove', () => {
     for (let s = 0; s < 20; s++) expect(chooseMove(atk, ghost, createRng(s))).toBe(EMBER);
     const onlyTackle = makeFighter({ moves: [TACKLE] });
     expect(chooseMove(onlyTackle, ghost, createRng(1))).toBe(TACKLE);
+  });
+});
+
+describe('N×N teams', () => {
+  const teams = (n: number): [BattleTeam, BattleTeam] => [
+    makeTeam('red', ['normal'], [TACKLE], 100, n),
+    makeTeam('blue', ['normal'], [TACKLE], 95, n),
+  ];
+
+  it.each([1, 2, 3, 4])('plays %i×%i deterministically to a knockout', (n) => {
+    const [r, b] = teams(n);
+    const first = simulateBattle(r, b, 42);
+    expect(simulateBattle(r, b, 42)).toEqual(first);
+    const { events, result } = first;
+    expect(events.filter((e) => e.kind === 'enter').length).toBe(
+      2 + events.filter((e) => e.kind === 'ko').length - 1,
+    );
+    const loser = result.winner === 'red' ? 'blue' : 'red';
+    expect(events.filter((e) => e.kind === 'ko' && e.fighterId.startsWith(loser))).toHaveLength(n);
+    expect(result.reason).toBe('knockout');
+    expect(result.fighters.map((f) => f.fighterId)).toEqual([
+      ...r.fighters.map((f) => f.id),
+      ...b.fighters.map((f) => f.id),
+    ]);
+  });
+
+  it.each([
+    ['unequal', 2, 3, /same size \(red 2, blue 3\)/],
+    ['empty', 0, 0, /1–4 fighters, red has 0/],
+    ['more than four', 5, 5, /1–4 fighters, red has 5/],
+  ])('rejects %s teams with a clear error', (_, redSize, blueSize, message) => {
+    const red = makeTeam('red', ['normal'], [TACKLE], 100, redSize);
+    const blue = makeTeam('blue', ['normal'], [TACKLE], 100, blueSize);
+    expect(() => simulateBattle(red, blue, 1)).toThrow(TeamSizeError);
+    expect(() => simulateBattle(red, blue, 1)).toThrow(message);
+  });
+
+  it('rejects an empty blue team even when red is valid', () => {
+    expect(() =>
+      simulateBattle(
+        makeTeam('red', ['normal'], [TACKLE], 100, 1),
+        makeTeam('blue', ['normal'], [TACKLE], 100, 0),
+        1,
+      ),
+    ).toThrow(/blue has 0/);
+  });
+});
+
+describe('battle result', () => {
+  it('reports winner, reason and turns matching the end event', () => {
+    for (const n of [1, 2, 3, 4]) {
+      const { events, result } = simulateBattle(
+        makeTeam('red', ['normal'], [TACKLE], 100, n),
+        makeTeam('blue', ['normal'], [TACKLE], 90, n),
+        n * 7,
+      );
+      const end = events.at(-1);
+      if (end?.kind !== 'end') throw new Error('no end');
+      expect(result).toMatchObject({ winner: end.winner, reason: end.reason, turns: end.turn });
+      expect(result.turns).toBe(events.filter((e) => e.kind === 'turnStart').length);
+    }
+  });
+
+  it('red total = sum of red fighters’ damageDealt = sum of hit damage by red', () => {
+    for (const n of [1, 2, 3, 4]) {
+      for (const seed of [1, 2, 3]) {
+        const { events, result } = simulateBattle(
+          makeTeam('red', ['fire'], [EMBER, TACKLE], 100, n),
+          makeTeam('blue', ['grass'], [TACKLE], 105, n),
+          seed,
+        );
+        const hitsBy = (side: string) =>
+          events
+            .filter(
+              (e): e is Extract<BattleEvent, { kind: 'hit' }> =>
+                e.kind === 'hit' && e.attackerId.startsWith(side),
+            )
+            .reduce((sum, e) => sum + e.damage, 0);
+        const dealtBy = (side: string) =>
+          result.fighters
+            .filter((f) => f.fighterId.startsWith(side))
+            .reduce((sum, f) => sum + f.damageDealt, 0);
+        expect(result.redDamageDealt).toBe(dealtBy('red'));
+        expect(result.redDamageDealt).toBe(hitsBy('red'));
+        expect(result.blueDamageDealt).toBe(dealtBy('blue'));
+        expect(result.blueDamageDealt).toBe(hitsBy('blue'));
+        expect(result.redDamageDealt).toBeGreaterThan(0);
+      }
+    }
+  });
+
+  it('a turn-cap result reports the cap as its turn count', () => {
+    const { result } = simulateBattle(
+      makeTeam('red', ['normal'], [TACKLE], 100, 2),
+      makeTeam('blue', ['ghost'], [SHADOW_BALL], 100, 2),
+      5,
+      { turnCap: 6 },
+    );
+    expect(result).toMatchObject({ reason: 'turnCap', turns: 6, redDamageDealt: 0 });
+  });
+
+  it('result fighters are copies: mutating them leaves the end event alone', () => {
+    const { events, result } = simulateBattle(...sampleTeams(), 4);
+    const first = result.fighters[0];
+    if (!first) throw new Error('no fighters');
+    first.damageDealt = -1;
+    const end = events.at(-1);
+    expect(end?.kind === 'end' && end.summary[0]?.damageDealt).not.toBe(-1);
+  });
+});
+
+describe('talent modifiers', () => {
+  const critRate = (bonus: number | undefined) => {
+    const attacker = makeFighter(bonus === undefined ? {} : { critChanceBonus: bonus });
+    const defender = makeFighter({ side: 'blue' });
+    const rng = createRng(99);
+    let crits = 0;
+    for (let i = 0; i < 4000; i++)
+      if (calcDamage(attacker, defender, TACKLE, rng).critical) crits++;
+    return crits / 4000;
+  };
+
+  it('critChance is the base 1/24 without a bonus and adds percentage points with one', () => {
+    expect(critChance(makeFighter())).toBe(1 / 24);
+    expect(critChance(makeFighter({ critChanceBonus: 10 }))).toBeCloseTo(1 / 24 + 0.1);
+    expect(critChance(makeFighter({ critChanceBonus: 500 }))).toBe(1);
+    expect(critChance(makeFighter({ critChanceBonus: -500 }))).toBe(0);
+  });
+
+  it('critChanceBonus raises the crit rate', () => {
+    const base = critRate(undefined);
+    const boosted = critRate(20);
+    expect(base).toBeGreaterThan(0.02);
+    expect(base).toBeLessThan(0.07);
+    expect(boosted).toBeGreaterThan(0.2);
+    expect(boosted).toBeLessThan(0.3);
+  });
+
+  it('a zero bonus behaves exactly like no bonus', () => {
+    const [r, b] = sampleTeams();
+    const zero = { ...r, fighters: r.fighters.map((f) => ({ ...f, critChanceBonus: 0 })) };
+    expect(simulateBattle(zero, b, 13)).toEqual(simulateBattle(r, b, 13));
+  });
+
+  const firstAttacker = (events: BattleEvent[], turn: number) =>
+    events.find((e) => e.kind === 'move' && e.turn === turn);
+
+  it('firstStrike makes a slower fighter act first in its first turn only', () => {
+    const slow = makeFighter({ firstStrike: true, stats: { ...makeFighter().stats, speed: 10 } });
+    const fast = makeFighter({ side: 'blue', stats: { ...makeFighter().stats, speed: 200 } });
+    const red: BattleTeam = { side: 'red', trainerName: 'r', fighters: [slow] };
+    const blue: BattleTeam = { side: 'blue', trainerName: 'b', fighters: [fast] };
+    const { events } = simulateBattle(red, blue, 3);
+    expect(firstAttacker(events, 1)).toMatchObject({ attackerId: 'red-0' });
+    expect(firstAttacker(events, 2)).toMatchObject({ attackerId: 'blue-0' });
+  });
+
+  it('firstStrike applies again to a replacement in its first turn on the field', () => {
+    const red = makeTeam('red', ['normal'], [TACKLE], 10, 2);
+    red.fighters.forEach((f) => (f.firstStrike = true));
+    const blue = makeTeam('blue', ['normal'], [TACKLE], 200, 2);
+    blue.fighters.forEach((f) => (f.stats = { ...f.stats, attack: 400 }));
+    const { events } = simulateBattle(red, blue, 8);
+    const entry = events.find((e) => e.kind === 'enter' && e.fighterId === 'red-1');
+    if (!entry) throw new Error('red-1 never entered');
+    expect(firstAttacker(events, entry.turn)).toMatchObject({ attackerId: 'red-1' });
+  });
+
+  it('when both actives have firstStrike the speed order decides', () => {
+    const red = makeTeam('red', ['normal'], [TACKLE], 10, 1);
+    const blue = makeTeam('blue', ['normal'], [TACKLE], 200, 1);
+    for (const f of [...red.fighters, ...blue.fighters]) f.firstStrike = true;
+    expect(firstAttacker(simulateBattle(red, blue, 3).events, 1)).toMatchObject({
+      attackerId: 'blue-0',
+    });
+  });
+
+  it('firstStrike: false behaves exactly like no modifier', () => {
+    const [r, b] = sampleTeams();
+    const off = { ...r, fighters: r.fighters.map((f) => ({ ...f, firstStrike: false })) };
+    expect(simulateBattle(off, b, 21)).toEqual(simulateBattle(r, b, 21));
+  });
+});
+
+describe('levels', () => {
+  it('damage scales with the attacker’s level (level 50 keeps the old formula)', () => {
+    const roll = () => 0.5;
+    const at = (level: number) =>
+      calcDamage(makeFighter({ level }), makeFighter({ side: 'blue' }), TACKLE, roll).damage;
+    expect(at(5)).toBeLessThan(at(20));
+    expect(at(20)).toBeLessThan(at(50));
   });
 });

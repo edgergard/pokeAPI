@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { loadImage, resolveArtwork } from './cardTexture';
+import { cardBadgeText, cardTalentText, loadImage, resolveArtwork } from './cardTexture';
 
 describe('resolveArtwork', () => {
   it('resolveArtwork returns null on missing url or failed load', async () => {
@@ -55,5 +55,17 @@ describe('loadImage', () => {
     const pending = loadImage('https://example.test/arrived.png');
     await vi.advanceTimersByTimeAsync(4000);
     expect((await pending).naturalWidth).toBe(475);
+  });
+});
+
+describe('card footer badges', () => {
+  it('shows the level and the star count only when there are stars', () => {
+    expect(cardBadgeText({ level: 5, badges: { stars: 3, talentIcons: [] } })).toBe('LV 5 · ★3');
+    expect(cardBadgeText({ level: 50, badges: { stars: 0, talentIcons: [] } })).toBe('LV 50');
+  });
+
+  it('tallies learned talents per branch in a fixed order', () => {
+    expect(cardTalentText(['tempo', 'offense', 'offense'])).toBe('OFF 2 · TMP 1');
+    expect(cardTalentText([])).toBe('');
   });
 });

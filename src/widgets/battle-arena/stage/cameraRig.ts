@@ -1,5 +1,12 @@
 import { MathUtils, PerspectiveCamera, Vector3 } from 'three';
-import { CARD_HEIGHT, CARD_WIDTH, layoutSpread, slotPosition } from './layout';
+import {
+  CARD_HEIGHT,
+  CARD_WIDTH,
+  deepestBench,
+  layoutSpread,
+  MAX_TEAM_SIZE,
+  slotPosition,
+} from './layout';
 
 export type ShotName = 'wide' | 'redClose' | 'blueClose' | 'impact' | 'victory';
 export type Shot = { position: Vector3; target: Vector3 };
@@ -22,11 +29,21 @@ function fitDistance(halfW: number, halfH: number, aspect: number, margin = 1.08
  * Closest distance (along the shot's direction) at which both card rows fit across the frame and
  * the cards fit vertically. Rows further back appear smaller, so each row is fitted at its own
  * depth instead of using one flat half-width — on portrait screens that halves the distance.
+ * Only the rows the teams use count: a 1×1 battle frames tighter than a 4×4 one.
  */
-function wideDistance(aspect: number, target: Vector3, pitch: number, margin = 1.06): number {
+function wideDistance(
+  aspect: number,
+  target: Vector3,
+  pitch: number,
+  teamSize: number,
+  margin = 1.06,
+): number {
   const tanV = Math.tan(MathUtils.degToRad(FOV / 2));
   const tanH = tanV * aspect;
-  const rows = [slotPosition('blue', 'active', aspect), slotPosition('blue', { bench: 2 }, aspect)];
+  const rows = [
+    slotPosition('blue', 'active', aspect),
+    slotPosition('blue', { bench: deepestBench(teamSize) }, aspect),
+  ];
   const across = Math.max(
     ...rows.map((row) => ((row.x + CARD_WIDTH / 2) * margin) / tanH - (target.z - row.z)),
   );
@@ -69,6 +86,7 @@ export class CameraRig {
   readonly shake = new Vector3();
 
   private aspect = 16 / 9;
+  private teamSize = MAX_TEAM_SIZE;
 
   constructor(aspect: number, opts: { reducedMotion: boolean }) {
     this.drift = opts.reducedMotion ? 0 : 1;
@@ -81,6 +99,14 @@ export class CameraRig {
     this.aspect = aspect;
     this.camera.aspect = aspect;
     this.camera.updateProjectionMatrix();
+    if (this.held) this.cut(this.held.name, this.held.orbit);
+  }
+
+  /** Fighters per side (1–4): the wide shot frames only the bench rows in use. Re-frames a held shot. */
+  setTeamSize(size: number): void {
+    const clamped = MathUtils.clamp(Math.round(size), 1, MAX_TEAM_SIZE);
+    if (!Number.isFinite(clamped) || clamped === this.teamSize) return;
+    this.teamSize = clamped;
     if (this.held) this.cut(this.held.name, this.held.orbit);
   }
 
@@ -102,13 +128,17 @@ export class CameraRig {
 
     switch (name) {
       case 'wide': {
+        // The look-at point sits between the actives and the benches; fewer bench rows pull it forward.
+        const depth =
+          slotPosition('blue', { bench: deepestBench(this.teamSize) }, aspect).z /
+          slotPosition('blue', { bench: deepestBench(MAX_TEAM_SIZE) }, aspect).z;
         const target = new Vector3(
           0,
           MathUtils.lerp(1.9, 2.3, portrait),
-          MathUtils.lerp(-1.3, -2.2, portrait),
+          MathUtils.lerp(-1.3, -2.2, portrait) * depth,
         );
         const pitch = MathUtils.degToRad(MathUtils.lerp(13, 24, portrait));
-        const distance = wideDistance(aspect, target, pitch);
+        const distance = wideDistance(aspect, target, pitch, this.teamSize);
         shot = { target, position: target.clone().addScaledVector(direction(0, pitch), distance) };
         break;
       }

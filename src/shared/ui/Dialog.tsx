@@ -105,7 +105,7 @@ export function Dialog({ open, onClose, title, description, children, footer, cl
               type="button"
               onClick={onClose}
               aria-label="Close dialog"
-              className="-mr-2 rounded-lg p-2 text-ink-400 transition-colors hover:bg-white/8 hover:text-white"
+              className="tap-target -mr-2 inline-flex items-center justify-center rounded-lg p-2 text-ink-400 transition-colors hover:bg-white/8 hover:text-white focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
             >
               <X className="size-5" />
             </button>

@@ -12,14 +12,17 @@ const ANNOUNCE_MS = 1200;
 export function BattleLog({
   lines,
   defaultOpen = false,
+  quiet = false,
 }: {
   lines: string[];
   defaultOpen?: boolean;
+  /** Lines arriving while quiet (a Skip jumping to the end) are listed but never read out. */
+  quiet?: boolean;
 }) {
   const [open, setOpen] = useState(defaultOpen);
   const panelId = useId();
   const listRef = useRef<HTMLOListElement>(null);
-  const announcements = useAnnouncements(lines);
+  const announcements = useAnnouncements(lines, quiet);
 
   // Keep the newest line in view while the panel is open.
   useEffect(() => {
@@ -84,19 +87,30 @@ export function BattleLog({
 type Announcement = { id: number; text: string };
 
 /** Batches new log lines into at most one live-region addition per ANNOUNCE_MS. */
-function useAnnouncements(lines: string[]): Announcement[] {
+function useAnnouncements(lines: string[], quiet: boolean): Announcement[] {
   const [items, setItems] = useState<Announcement[]>([]);
   const sent = useRef(0);
   const nextId = useRef(1);
   const timer = useRef<number | null>(null);
   const latest = useRef(lines);
-  latest.current = lines;
+  const quietRef = useRef(quiet);
+
+  // Effects run in order: the batching effect below (and its timers) always see the current lines.
+  useEffect(() => {
+    latest.current = lines;
+    quietRef.current = quiet;
+  }, [lines, quiet]);
 
   useEffect(() => {
     // The log restarted (Replay): start announcing from the top again.
     if (lines.length < sent.current) {
       sent.current = 0;
       setItems([]);
+    }
+    if (quiet) {
+      // Skipped to the end: mark everything as read without announcing it.
+      sent.current = lines.length;
+      return;
     }
     if (lines.length === sent.current || timer.current !== null) return;
     const flush = () => {
@@ -111,7 +125,7 @@ function useAnnouncements(lines: string[]): Announcement[] {
     const schedule = () => {
       timer.current = window.setTimeout(() => {
         timer.current = null;
-        if (latest.current.length > sent.current) {
+        if (latest.current.length > sent.current && !quietRef.current) {
           flush();
           schedule();
         }
@@ -119,7 +133,7 @@ function useAnnouncements(lines: string[]): Announcement[] {
     };
     flush();
     schedule();
-  }, [lines]);
+  }, [lines, quiet]);
 
   useEffect(
     () => () => {

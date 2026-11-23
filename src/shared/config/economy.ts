@@ -87,15 +87,41 @@ export const economy = {
     firstClear: { capsules: { basic: 1 }, dust: 20 },
     /** Replaying a cleared stage: a basic capsule every N wins. */
     replayCapsuleEveryWins: 3,
+    /** The capsule a replay streak or the trainer capsuleChance talent gives. */
+    bonusCapsuleReward: { capsules: { basic: 1 } } as { capsules: { basic: number } },
     /** Rival level at stage s: start + perStage × (s − 1). */
-    rivalLevel: { start: 3, perStage: 2 },
+    // Stage 1 rival at Lv 1: a fresh Lv 1 Pokémon from the first capsule must have a fair first fight.
+    rivalLevel: { start: 1, perStage: 2 },
+    /**
+     * Stage 1 is the first real fight of a fresh Lv 1 Pokémon against a Lv 1 rival: its rival comes only from
+     * common species at or below this base-stat total, so the matchup itself is fair.
+     */
+    firstStageRivalMaxBst: 250,
     ladderStages: 25,
+    /** Rival team size by ladder stage: the last entry whose fromStage <= stage wins (sorted asc). */
+    rivalTeamSize: [
+      { fromStage: 1, size: 1 },
+      { fromStage: 4, size: 2 },
+      { fromStage: 9, size: 3 },
+      { fromStage: 16, size: 4 },
+    ],
+    /** Rarities a rival's species are drawn from, by ladder stage (same lookup rule). */
+    rivalRarities: [
+      { fromStage: 1, rarities: ['common'] },
+      { fromStage: 6, rarities: ['common', 'uncommon'] },
+      { fromStage: 11, rarities: ['uncommon', 'rare'] },
+      { fromStage: 16, rarities: ['rare', 'epic'] },
+      { fromStage: 25, rarities: ['epic', 'legendary'] },
+    ] as { fromStage: number; rarities: Rarity[] }[],
   },
 
   onboarding: {
-    loanerLevel: 5,
-    rivalLevel: 3,
+    // Everyone starts at Lv 1: the loaner and the intro rival too (user decision 2026-11-23).
+    loanerLevel: 1,
+    rivalLevel: 1,
     introReward: { capsules: { basic: 1 } },
+    /** Trainer XP for the scripted intro win (design.md first-visit step 4: the XP bar fills). */
+    introTrainerXp: 120,
   },
 
   quests: {

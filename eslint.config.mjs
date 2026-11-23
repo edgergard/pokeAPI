@@ -12,15 +12,6 @@ const eslintConfig = defineConfig([
       '@next/next/no-img-element': 'off',
     },
   },
-  {
-    // Legacy battle playback code predates the React Compiler lint rules.
-    // TODO(stream 1-engine): fix these files and remove this override.
-    files: ['src/widgets/battle-arena/**'],
-    rules: {
-      'react-hooks/refs': 'warn',
-      'react-hooks/set-state-in-effect': 'warn',
-    },
-  },
   // Turns off stylistic rules that conflict with Prettier. Keep it after other configs.
   prettier,
   globalIgnores([
@@ -30,6 +21,7 @@ const eslintConfig = defineConfig([
     'next-env.d.ts',
     'coverage/**',
     '.claude/skills/**',
+    '.claude/worktrees/**',
   ]),
 ]);
 

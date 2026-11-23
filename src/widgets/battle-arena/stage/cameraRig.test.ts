@@ -34,6 +34,39 @@ function projectedCorners(
 }
 
 describe('CameraRig', () => {
+  it.each([1, 2, 3, 4])(
+    'keeps every card of a %i×%i battle in the wide shot, portrait and landscape',
+    (size) => {
+      for (const aspect of [16 / 9, 9 / 16, 375 / 469]) {
+        const rig = new CameraRig(aspect, { reducedMotion: true });
+        rig.setTeamSize(size);
+        const roles = ROLES.slice(0, Math.max(2, size));
+        for (const p of projectedCorners(rig, aspect, 'wide', SIDES, roles)) {
+          expect(Math.abs(p.x)).toBeLessThanOrEqual(1);
+          expect(Math.abs(p.y)).toBeLessThanOrEqual(1);
+        }
+      }
+    },
+  );
+
+  it('frames smaller teams closer, so 1×1 cards read larger on a phone', () => {
+    const distance = (size: number) => {
+      const rig = new CameraRig(375 / 469, { reducedMotion: true });
+      rig.setTeamSize(size);
+      return rig.wideDistance;
+    };
+    expect(distance(1)).toBeLessThan(distance(3));
+    expect(distance(3)).toBeLessThan(distance(4));
+    expect(distance(1)).toBe(distance(2));
+  });
+
+  it('re-frames a held wide shot when the team size changes', () => {
+    const rig = new CameraRig(16 / 9, { reducedMotion: true });
+    const far = rig.position.clone();
+    rig.setTeamSize(1);
+    expect(rig.position.distanceTo(rig.target)).toBeLessThan(far.distanceTo(rig.target));
+  });
+
   it.each([16 / 9, 4 / 3, 1, 4 / 5, 9 / 16])(
     'keeps all eight cards in the wide shot at aspect %d',
     (aspect) => {

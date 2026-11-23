@@ -41,8 +41,9 @@ function paintGradientChars(heading: HTMLElement, chars: Element[]) {
 }
 
 /**
- * The hero h1. Memoised with no props so React never re-renders its children: SplitText rewrites
- * them while the intro runs and restores the original markup when it is done.
+ * The hero headline (an h2 under the page's "Trainer Studio" h1). Memoised with no props so React never
+ * re-renders its children: SplitText rewrites them while the intro runs and restores the original
+ * markup when it is done.
  */
 export const HeroHeading = memo(function HeroHeading() {
   const ref = useRef<HTMLHeadingElement>(null);
@@ -93,11 +94,11 @@ export const HeroHeading = memo(function HeroHeading() {
   );
 
   return (
-    <h1
+    <h2
       ref={ref}
       className="hero-heading font-display text-5xl leading-[0.95] font-extrabold tracking-tight text-balance sm:text-6xl lg:text-7xl"
     >
-      Assemble your <span className="text-gradient">squad of four.</span>
-    </h1>
+      Your collection <span className="text-gradient">fights for you.</span>
+    </h2>
   );
 });

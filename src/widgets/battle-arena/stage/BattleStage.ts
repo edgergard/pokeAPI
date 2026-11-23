@@ -71,7 +71,8 @@ export type StageLights = {
 type CardEntry = CardParts & { role: SlotRole | null; faceDown: boolean };
 
 /**
- * The arena's three.js stage: renderer, scene, lights, floor, eight 3D cards and the camera rig.
+ * The arena's three.js stage: renderer, scene, lights, floor, one 3D card per fighter (1×1 up to
+ * 4×4) and the camera rig.
  * It owns the render loop and every GPU resource; it does not choreograph anything — the
  * director (Task 9) moves `card(id).group`, tweens `camera.position/target`, tints lights.
  */
@@ -166,6 +167,9 @@ export class BattleStage {
     if (this.disposed || token !== this.loadToken) return;
 
     this.clearCards();
+    // Frame the wide shot (and the fog that scales from it) for the bench rows this battle uses.
+    this.camera.setTeamSize(Math.max(red.fighters.length, blue.fighters.length));
+    this.updateAtmosphere();
     const geometries = (this.geometries ??= createCardGeometries());
     const anisotropy = Math.min(8, this.renderer.capabilities.getMaxAnisotropy());
     const backs: Record<Side, Texture> = {
@@ -265,13 +269,17 @@ export class BattleStage {
     this.renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
     this.renderer.setSize(width, height, false);
     this.camera.setAspect(this.aspect);
+    this.updateAtmosphere();
 
+    for (const entry of this.cards.values()) this.place(entry);
+  }
+
+  /** Fog and floor scale with the wide shot's distance (aspect and team size). */
+  private updateAtmosphere(): void {
     const wide = this.camera.wideDistance;
     this.fog.near = wide * 0.9;
     this.fog.far = wide * 2.3;
     this.floorRadius.value = wide * 1.2;
-
-    for (const entry of this.cards.values()) this.place(entry);
   }
 
   /**

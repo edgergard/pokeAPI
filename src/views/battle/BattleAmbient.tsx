@@ -1,10 +1,10 @@
 import type { CSSProperties } from 'react';
-import { Pokeball } from '@/entities/pokemon';
+import { CapsuleGlyph } from '@/shared/ui/CapsuleGlyph';
 import { makeParticles } from './ambient';
 
 const PARTICLES = makeParticles(24);
 
-/** Faint pokéball silhouettes: position, size (rem), float/spin periods (s) and spin direction. */
+/** Faint capsule silhouettes: position, size (rem), float/spin periods (s) and spin direction. */
 type Ball = Pick<CSSProperties, 'left' | 'right' | 'top' | 'bottom'> & {
   size: number;
   float: number;
@@ -26,7 +26,7 @@ const TINT = {
 } as const;
 
 /**
- * Battle page backdrop: drifting corner glows, a perspective floor, rising motes and slow pokéballs.
+ * Battle page backdrop: drifting corner glows, a perspective floor, rising motes and slow capsules.
  * Pure CSS (transform / opacity loops under data-motion='full'); reduced motion keeps the glows only.
  * `paused` freezes the loops (during a battle they would compete with the WebGL arena for the GPU).
  */
@@ -57,7 +57,7 @@ export function BattleAmbient({ paused = false }: { paused?: boolean }) {
             } as CSSProperties
           }
         >
-          <Pokeball className="amb-ball-spin size-full" />
+          <CapsuleGlyph className="amb-ball-spin size-full" />
         </span>
       ))}
       {PARTICLES.map((p, i) => (
