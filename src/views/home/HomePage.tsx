@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import { useSave, useSaveStatus } from '@/entities/save';
 import { useHydrated } from '@/shared/lib/useHydrated';
+import { LegalLinks } from '@/shared/ui/LegalLinks';
 import { homeStep } from './model/onboarding';
 import { noteOnboardingStep } from './model/session';
 import { Hub } from './ui/Hub';
@@ -90,8 +91,9 @@ export function HomePage() {
           {announcement.text && <span key={announcement.id}>{announcement.text}</span>}
         </p>
       </main>
-      <footer className="px-4 pt-4 pb-[calc(4rem+env(safe-area-inset-bottom))] text-center text-xs text-muted-foreground lg:pb-8">
-        {FOOTER_TEXT}
+      <footer className="flex flex-col items-center gap-1 px-4 pt-4 pb-[calc(4rem+env(safe-area-inset-bottom))] text-center text-xs text-muted-foreground lg:pb-8">
+        <p>{FOOTER_TEXT}</p>
+        <LegalLinks />
       </footer>
     </div>
   );

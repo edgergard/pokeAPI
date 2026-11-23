@@ -20,3 +20,11 @@ const vercelHost = process.env.VERCEL_PROJECT_PRODUCTION_URL ?? process.env.VERC
 /** Absolute site URL with a trailing slash — the base for canonical / Open Graph URLs. */
 export const SITE_URL =
   onVercel && vercelHost ? `https://${vercelHost}/` : 'https://edgergard.github.io/trainer-studio/';
+
+/** The Open Graph card (app/opengraph-image.png/route.tsx), relative to SITE_URL so it keeps the basePath. */
+export const OG_IMAGE = {
+  url: 'opengraph-image.png',
+  width: 1200,
+  height: 630,
+  alt: 'Trainer Studio: collect, level up and auto-battle in your browser',
+} as const;

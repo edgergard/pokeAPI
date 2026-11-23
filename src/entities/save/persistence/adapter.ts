@@ -2,7 +2,7 @@ import type { LoadResult, SavePersistence } from '../model/store';
 import type { Save } from '../model/schema';
 import type { SaveBackup } from './backup';
 import { reportSaveConflict } from './conflict';
-import { BACKUP_KEY, SAVE_KEY } from './keys';
+import { BACKUP_KEY, SAVE_KEY, SESSION_SAVE_KEY } from './keys';
 import { defaultKeyValue, hasIndexedDb, type KeyValueStore } from './kv';
 import { detectVersion, migrateSave } from './migrate';
 import { browserLocalStorage, readV1Doc } from './v1';
@@ -22,6 +22,17 @@ export const LOAD_ERROR_NEWER =
 export const LOAD_ERROR_UNAVAILABLE =
   'Couldn’t load the game files needed to read your save. Check your connection and reload the page.';
 
+type SessionStore = Pick<Storage, 'getItem' | 'setItem'>;
+
+/** `window.sessionStorage`, or null when there is none or touching it throws (sandboxed frames). */
+function browserSessionStorage(): SessionStore | null {
+  try {
+    return typeof window === 'undefined' ? null : window.sessionStorage;
+  } catch {
+    return null;
+  }
+}
+
 type Listenable = Pick<EventTarget, 'addEventListener' | 'removeEventListener'>;
 
 export type PersistenceOptions = {
@@ -29,6 +40,8 @@ export type PersistenceOptions = {
   kv?: KeyValueStore | null;
   /** Where the v1 roster is read from; defaults to `window.localStorage`. */
   localStorage?: Pick<Storage, 'getItem'> | null;
+  /** Same-tab fallback while IndexedDB is missing or blocked; defaults to `window.sessionStorage`. */
+  sessionStorage?: SessionStore | null;
   now?: () => number;
   debounceMs?: number;
   maxWaitMs?: number;
@@ -101,8 +114,10 @@ let active: IdbPersistence | null = null;
 
 /**
  * The save in IndexedDB (`save:v2`), with debounced writes and the v1 → v2 migration on first load.
- * When IndexedDB is missing, blocked or can't be read, the game runs in memory: `durable` is false,
- * writes resolve false and nothing stored is ever overwritten. A save made by a newer version is never
+ * When IndexedDB is missing, blocked or can't be read, the save falls back to sessionStorage
+ * (`SESSION_SAVE_KEY`, same document and load checks) so a full page load in the same tab keeps it;
+ * `durable` stays false, IndexedDB is never written and nothing stored there is ever overwritten.
+ * Without sessionStorage either, the game runs in memory and writes resolve false. A save made by a newer version is never
  * overwritten either. When another tab writes newer progress, this tab stops writing. Never throws.
  */
 export function createDefaultPersistence(options: PersistenceOptions = {}): IdbPersistence {
@@ -121,9 +136,13 @@ export function createDefaultPersistence(options: PersistenceOptions = {}): IdbP
       : options.document;
   const channel = openChannel(options.channel === undefined ? SYNC_CHANNEL : options.channel);
   const tabId = randomTabId();
+  const sessionOption =
+    options.sessionStorage === undefined ? browserSessionStorage() : options.sessionStorage;
 
   /** False once IndexedDB failed to open or read, or holds a newer save: from then on nothing is written. */
   let available = kv !== null;
+  /** The same-tab fallback, set only while IndexedDB is missing or blocked. */
+  let session: SessionStore | null = kv === null ? sessionOption : null;
   let lastWriteOk = true;
   /** Another tab stored newer progress: this tab's save is stale and must not be written. */
   let superseded = false;
@@ -132,7 +151,8 @@ export function createDefaultPersistence(options: PersistenceOptions = {}): IdbP
   let pending: { save: Save; since: number; waiters: ((ok: boolean) => void)[] } | null = null;
   let timer: ReturnType<typeof setTimeout> | undefined;
 
-  const canWrite = () => available && kv !== null && !superseded;
+  const idbWritable = () => available && kv !== null && !superseded;
+  const canWrite = () => idbWritable() || (session !== null && !superseded);
 
   function schedule() {
     if (!pending) return;
@@ -178,7 +198,7 @@ export function createDefaultPersistence(options: PersistenceOptions = {}): IdbP
     const batch = takePending();
     if (!batch) return;
     let ok = false;
-    if (canWrite() && kv) {
+    if (idbWritable() && kv) {
       try {
         await kv.set(SAVE_KEY, batch.save);
         ok = true;
@@ -187,6 +207,13 @@ export function createDefaultPersistence(options: PersistenceOptions = {}): IdbP
         ok = false; // quota or a closed connection: the save lives in memory until a later write lands
       }
       lastWriteOk = ok;
+    } else if (session && !superseded) {
+      try {
+        session.setItem(SESSION_SAVE_KEY, JSON.stringify(batch.save));
+        ok = true; // this tab only: durable stays false
+      } catch {
+        ok = false; // quota: the save lives in memory until a later write lands
+      }
     }
     for (const resolve of batch.waiters) resolve(ok);
   }
@@ -205,7 +232,8 @@ export function createDefaultPersistence(options: PersistenceOptions = {}): IdbP
   }
 
   async function commit(save: Save, backup: SaveBackup | null): Promise<boolean> {
-    if (!canWrite() || !kv) return false;
+    // A replacement stores the backup slot in the same transaction: IndexedDB only, never the fallback.
+    if (!idbWritable() || !kv) return false;
     // Cancel the debounced write first: it holds older data and must not land after this one.
     const batch = takePending();
     let ok = false;
@@ -228,30 +256,61 @@ export function createDefaultPersistence(options: PersistenceOptions = {}): IdbP
     return ok;
   }
 
-  async function readStored(): Promise<LoadResult | null> {
-    if (!kv || !available) return null;
-    let raw: unknown;
-    try {
-      raw = await withTimeout(kv.get(SAVE_KEY), openTimeoutMs);
-    } catch {
-      available = false; // blocked, private mode or hung: play in memory, never overwrite what's there
-      return null;
-    }
-    lastSyncAt = now();
-    if (raw === undefined) return null;
+  /** Version check and migration of a stored document; `block` stops writes to where it came from. */
+  async function checkStored(raw: unknown, block: () => void): Promise<LoadResult> {
     const version = detectVersion(raw);
     if (version === null) return { kind: 'error', reason: LOAD_ERROR_DAMAGED };
     const result = await migrateSave(version, raw, { now: now() });
     if (result.ok) return { kind: 'loaded', save: result.save };
     if (result.reason === 'newer') {
-      available = false; // an older game must never overwrite a newer game's save
+      block(); // an older game must never overwrite a newer game's save
       return { kind: 'error', reason: LOAD_ERROR_NEWER };
     }
     if (result.reason === 'unavailable') {
-      available = false; // the save may be fine: keep it untouched until a reload can read it
+      block(); // the save may be fine: keep it untouched until a reload can read it
       return { kind: 'error', reason: LOAD_ERROR_UNAVAILABLE };
     }
     return { kind: 'error', reason: LOAD_ERROR_DAMAGED };
+  }
+
+  /** The sessionStorage fallback's document, through the same checks as IndexedDB's. */
+  async function readSession(): Promise<LoadResult | null> {
+    if (!session) return null;
+    let text: string | null;
+    try {
+      text = session.getItem(SESSION_SAVE_KEY);
+    } catch {
+      session = null; // blocked too: play in memory
+      return null;
+    }
+    if (text === null) return null;
+    let raw: unknown;
+    try {
+      raw = JSON.parse(text);
+    } catch {
+      return { kind: 'error', reason: LOAD_ERROR_DAMAGED };
+    }
+    return checkStored(raw, () => {
+      session = null;
+    });
+  }
+
+  async function readStored(): Promise<LoadResult | null> {
+    if (!kv || !available) return readSession();
+    let raw: unknown;
+    try {
+      raw = await withTimeout(kv.get(SAVE_KEY), openTimeoutMs);
+    } catch {
+      // Blocked, private mode or hung: never overwrite what's there; keep this tab's progress in session.
+      available = false;
+      session = sessionOption;
+      return readSession();
+    }
+    lastSyncAt = now();
+    if (raw === undefined) return null;
+    return checkStored(raw, () => {
+      available = false;
+    });
   }
 
   async function load(): Promise<LoadResult> {
@@ -268,13 +327,17 @@ export function createDefaultPersistence(options: PersistenceOptions = {}): IdbP
       if (!result.ok) {
         // Nothing to import: a normal fresh start. Otherwise the import couldn't run right now (e.g. the
         // migration code failed to load): play in memory and leave save:v2 unwritten so the next load retries.
-        if (result.reason !== 'empty') available = false;
+        if (result.reason !== 'empty') {
+          available = false;
+          session = null; // nor the session fallback: a fresh save there would hide the v1 import
+        }
         return { kind: 'empty' };
       }
       void write(result.save); // the store doesn't write a loaded save; keep the migration on reload
       return { kind: 'loaded', save: result.save };
     } catch {
       available = false; // unexpected: start in memory rather than risk writing over a stored save
+      session = null;
       return { kind: 'empty' };
     }
   }

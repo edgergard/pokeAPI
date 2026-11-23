@@ -1,11 +1,10 @@
 import type { Metadata, Viewport } from 'next';
 import type { ReactNode } from 'react';
 import { Bricolage_Grotesque, Inter, JetBrains_Mono } from 'next/font/google';
-import { QueryProvider } from '@/app/providers/QueryProvider';
 import { SaveProvider } from '@/app/providers/SaveProvider';
 import { AppNav } from '@/widgets/app-nav';
 import { motionScript } from '@/app/motionScript';
-import { SITE_URL } from '@/shared/config/site';
+import { OG_IMAGE, SITE_URL } from '@/shared/config/site';
 import '@/app/styles.css';
 
 // Fonts are downloaded at build time and served from the site itself: no render-blocking request
@@ -35,7 +34,9 @@ export const metadata: Metadata = {
     title: 'Trainer Studio',
     description: 'Open capsules, level up your team and watch your collection fight in 3D.',
     type: 'website',
+    images: [OG_IMAGE],
   },
+  twitter: { card: 'summary_large_image', images: [OG_IMAGE] },
 };
 
 export const viewport: Viewport = {
@@ -54,7 +55,6 @@ export default function RootLayout({ children }: { children: ReactNode }) {
     >
       <head>
         <script dangerouslySetInnerHTML={{ __html: motionScript }} />
-        <link rel="preconnect" href="https://pokeapi.co" crossOrigin="anonymous" />
         <link rel="preconnect" href="https://raw.githubusercontent.com" />
       </head>
       <body>
@@ -64,12 +64,10 @@ export default function RootLayout({ children }: { children: ReactNode }) {
         >
           Skip to content
         </a>
-        <QueryProvider>
-          <SaveProvider>
-            <AppNav />
-            {children}
-          </SaveProvider>
-        </QueryProvider>
+        <SaveProvider>
+          <AppNav />
+          {children}
+        </SaveProvider>
       </body>
     </html>
   );
