@@ -1,6 +1,6 @@
 import type { CSSProperties } from 'react';
 import { cn } from '@/shared/lib/cn';
-import { Pokeball } from '@/shared/ui/Pokeball';
+import { CapsuleGlyph } from '@/shared/ui/CapsuleGlyph';
 
 type Props = {
   slot: number;
@@ -37,7 +37,7 @@ export function PokemonCardPlaceholder({ slot, variant, entrance = 'rise' }: Pro
         variant === 'loading' && 'shimmer border-solid',
       )}
     >
-      <Pokeball
+      <CapsuleGlyph
         className={cn(
           'size-16 text-white',
           variant === 'loading'
