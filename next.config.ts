@@ -1,15 +1,8 @@
 import type { NextConfig } from 'next';
-import { BASE_PATH } from './src/shared/config/site';
-
-// GitHub Pages serves the site under /trainer-studio/; Vercel and `next dev` serve it at the root.
-const basePath = BASE_PATH;
 
 const nextConfig: NextConfig = {
   // Fully static site: every route is prerendered to HTML at build time and served from Pages' CDN.
   output: 'export',
-  basePath,
-  // Client code can't see VERCEL (only NEXT_PUBLIC_* reaches the browser): hand it the resolved basePath.
-  env: { NEXT_PUBLIC_BASE_PATH: basePath },
   // /battle → /battle/index.html, which Pages can serve without rewrites.
   trailingSlash: true,
   // Pages has no image optimizer; Pokémon sprites are tiny pixel art served by GitHub's CDN anyway.
